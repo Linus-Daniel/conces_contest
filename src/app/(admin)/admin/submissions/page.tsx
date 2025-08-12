@@ -386,7 +386,7 @@ export default function LogoContestSubmissions() {
 
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as "date"|"votes"|"views")}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="votes">Sort by Votes</option>

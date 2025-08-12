@@ -10,8 +10,6 @@ import {
   TrophyIcon,
   UserGroupIcon,
   EyeIcon,
-  HeartIcon,
-  ChatBubbleLeftEllipsisIcon,
   DocumentArrowUpIcon,
   ShareIcon,
 } from "@heroicons/react/24/outline";
