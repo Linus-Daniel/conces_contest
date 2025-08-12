@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { PRIZES } from "@/lib/contants";
 
 export default function ContestSection() {
   return (
@@ -71,36 +70,7 @@ export default function ContestSection() {
           </motion.div>
         </div>
 
-        {/* Prize Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          {PRIZES.map((prize, index) => (
-            <motion.div
-              key={prize.place}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05 }}
-              className={`p-6 rounded-xl text-center text-white ${
-                index === 0
-                  ? "bg-gradient-to-br from-conces-gold to-yellow-600"
-                  : index === 1
-                  ? "bg-gradient-to-br from-gray-300 to-gray-500"
-                  : "bg-gradient-to-br from-amber-700 to-amber-900"
-              }`}
-            >
-              <div className="text-2xl font-bold mb-2">{prize.place}</div>
-              <div className="text-3xl font-bold mb-4">{prize.amount}</div>
-              <p className="text-sm">{prize.bonus}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+      
       </div>
     </section>
   );

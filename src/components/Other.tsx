@@ -99,7 +99,7 @@ const CONTEST_DATA = {
   },
 };
 
-export default function ContestPreviewDataDriven() {
+export default function Contests() {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-6">
@@ -226,37 +226,40 @@ function PrizesSection({
   consolation: { title: string; amount: string; count: number };
 }) {
   return (
-    <div className="mb-16">
+    <div className="mb-16 ">
       <h3 className="text-2xl font-bold text-center text-conces-blue mb-10">
         Prize Breakdown
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      {/* Prize Breakdown */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        viewport={{ once: true }}
+        className="mt-16  bg-gradient-to-r from-conces-blue to-conces-blue/90 p-5 rounded-md grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
         {prizes.map((prize, index) => (
           <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.05, y: -10 }}
-            className={`bg-gradient-to-br ${prize.gradient} p-6 rounded-xl shadow-lg text-center text-white`}
+            key={prize.place}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            viewport={{ once: true }}
+            whileHover={{ scale: 1.05 }}
+            className={`p-6 rounded-xl text-center text-white ${
+              index === 0
+                ? "bg-gradient-to-br from-conces-gold to-yellow-600"
+                : index === 1
+                ? "bg-gradient-to-br from-gray-300 to-gray-500"
+                : "bg-gradient-to-br from-amber-700 to-amber-900"
+            }`}
           >
-            {prize.icon && <div className="text-4xl mb-2">{prize.icon}</div>}
-            <div className="text-3xl font-bold mb-2">{prize.place}</div>
-            <div className="text-4xl font-bold mb-4">{prize.amount}</div>
-            <p>{prize.bonus}</p>
+            <div className="text-2xl font-bold mb-2">{prize.place}</div>
+            <div className="text-3xl font-bold mb-4">{prize.amount}</div>
+            <p className="text-sm">{prize.bonus}</p>
           </motion.div>
         ))}
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        className="mt-6 bg-gray-100 p-6 rounded-xl text-center"
-      >
-        <div className="text-xl font-bold mb-2">{consolation.title}</div>
-        <div className="text-2xl font-bold text-conces-blue">
-          {consolation.amount} × {consolation.count}
-        </div>
       </motion.div>
     </div>
   );

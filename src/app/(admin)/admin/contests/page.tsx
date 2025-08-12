@@ -171,7 +171,7 @@ export default function ContestDetails() {
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as "overview" | "submissions" | "rules")}
                     className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
                       activeTab === tab.id
                         ? "border-primary-500 text-primary-600"

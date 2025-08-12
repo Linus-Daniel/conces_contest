@@ -6,7 +6,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen flex items-center overflow-hidden bg-gradient-to-br from-conces-blue to-conces-blue/80">
+    <section className="relative h-screen justify-around p-10 flex items-center overflow-hidden bg-gradient-to-br from-conces-blue to-conces-blue/80">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-conces-blue/80 to-conces-blue/60" />
       </div>
@@ -60,6 +60,13 @@ export default function HeroSection() {
           </motion.div>
         </motion.div>
       </div>
+
+      <div className="bg-white w-1/2 h-1/2 rounded-md p-2 hover:scale-105 transition-all duration-700 ease-in-out hover:rotate-3 z-10">
+
+        hello world
+
+        
+        </div>
     </section>
   );
 }

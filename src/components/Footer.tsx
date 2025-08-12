@@ -3,18 +3,13 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+
 const footerLinks = {
   quickLinks: [
     { label: "Home", href: "/" },
     { label: "About Us", href: "/#about" },
     { label: "Rebrand Challenge", href: "/signup" },
     { label: "News & Events", href: "#" },
-  ],
-  resources: [
-    { label: "Student Chapters", href: "#" },
-    { label: "Leadership", href: "#" },
-    { label: "Partners", href: "#" },
-    { label: "Gallery", href: "#" },
   ],
 };
 
@@ -74,7 +69,7 @@ export default function Footer() {
               ))}
             </ul>
           </motion.div>
-
+{/* 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -94,7 +89,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

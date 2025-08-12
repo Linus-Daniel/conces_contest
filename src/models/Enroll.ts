@@ -34,7 +34,7 @@ const EnrollSchema = new Schema<IEnroll>({
         trim: true,
         lowercase: true,
         match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
-        index: true // Ensure index for faster lookups
+        index: true
     },
     phone: {
         type: String,
@@ -88,14 +88,12 @@ const EnrollSchema = new Schema<IEnroll>({
         }
     }
 }, {
-    timestamps: true // Automatically handles createdAt and updatedAt
+    timestamps: true 
 });
 
-// Indexes for performance
 EnrollSchema.index({ email: 1, authToken: 1 });
 EnrollSchema.index({ createdAt: -1 });
 
-// Generate auth token before saving if not provided
 EnrollSchema.pre('save', function(next) {
     if (!this.authToken) {
         this.authToken = crypto.randomBytes(32).toString('hex');
@@ -103,7 +101,6 @@ EnrollSchema.pre('save', function(next) {
     next();
 });
 
-// Handle unique email error
 EnrollSchema.post('save', function(error: any, doc: any, next: any) {
     if (error.name === 'MongoServerError' && error.code === 11000) {
         if (error.keyPattern?.email) {
