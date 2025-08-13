@@ -223,7 +223,7 @@ export default function ContestDetails() {
                   </div>
                   <div className="mt-4">
                     <Link
-                      href={`/contests/${contestDetails.id}/submissions`}
+                      href={`/admin/contests/${contestDetails.id}/submissions`}
                       className="text-primary-600 hover:text-primary-900 font-medium"
                     >
                       View all submissions →

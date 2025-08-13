@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import HighchartsReact from "highcharts-react-official";
 import Image from "next/image";
 import {
   MagnifyingGlassIcon,
@@ -182,7 +183,7 @@ export default function VoteManagement() {
           <div className="h-64">
             {chartOptions && (
               <Highcharts
-                highcharts={require("highcharts")}
+                highcharts={HighchartsReact}
                 options={chartOptions}
               />
             )}

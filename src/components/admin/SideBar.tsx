@@ -9,26 +9,30 @@ import {
   TrophyIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  activeTab: string;
-  onTabChange: (tab: "users" | "votes" | "contests") => void;
 }
 
 const navigation = [
-  { id: "users", name: "User Management", icon: UsersIcon },
-  { id: "votes", name: "Vote Management", icon: ChartBarIcon },
-  { id: "contests", name: "Contest Management", icon: TrophyIcon },
+  { link: "/admin/contestants", name: "User Management", icon: UsersIcon },
+  { link: "/admin/votes", name: "Vote Management", icon: ChartBarIcon },
+  { link: "/admin/contests", name: "Contest Management", icon: TrophyIcon },
 ];
 
 export default function Sidebar({
   isOpen,
   onClose,
-  activeTab,
-  onTabChange,
+
 }: SidebarProps) {
+
+  const pathname = usePathname();
+  console.log(pathname)
+  
+
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -42,23 +46,21 @@ export default function Sidebar({
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
-        {navigation.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              onTabChange(item.id as "users" | "votes" | "contests");
-              onClose();
-            }}
+        {navigation.map((nav) => (
+          <Link
+            href={nav.link}
+            key={nav.link}
+          
             className={clsx(
               "w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-              activeTab === item.id
+              pathname === nav.link
                 ? "bg-primary-100 text-primary-700 border-r-2 border-primary-500"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             )}
           >
-            <item.icon className="mr-3 w-5 h-5" />
-            {item.name}
-          </button>
+            <nav.icon className="mr-3 w-5 h-5" />
+            {nav.name}
+          </Link>
         ))}
       </nav>
     </div>

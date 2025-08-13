@@ -10,6 +10,7 @@ export interface IEnroll {
     department: string;
     matricNumber: string;
     authToken: string;
+    avatar:string;
     agreeToTerms: boolean;
     contestPack: {
         sent: boolean;
@@ -26,6 +27,12 @@ const EnrollSchema = new Schema<IEnroll>({
         trim: true,
         minlength: [3, 'Full name must be at least 3 characters'],
         maxlength: [100, 'Full name cannot exceed 100 characters']
+    },
+    avatar: {
+        type: String,
+        required: [true, 'Avatar is required'],
+        trim: true,
+        match: [/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/, 'Please provide a valid image URL']
     },
     email: {
         type: String,

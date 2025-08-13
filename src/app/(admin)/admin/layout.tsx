@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "../../globals.css";
-
+import Layout from "@/components/admin/Layout";
 
 export const metadata: Metadata = {
   title: "Conces Contest Admin",
@@ -14,10 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={` antialiased`}
-      >
-        {children}
+      <body className={` antialiased`}>
+        <Layout>{children}</Layout>
       </body>
     </html>
   );

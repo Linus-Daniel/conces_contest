@@ -50,13 +50,7 @@ export default function HeroSection() {
               Join the Rebrand Challenge
               <ArrowRightIcon className="w-5 h-5 ml-2" />
             </Link>
-            <Link
-              href="/#about"
-              className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg btn-outline inline-flex items-center justify-center"
-            >
-              Learn About CONCES
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
-            </Link>
+           
           </motion.div>
         </motion.div>
       </div>

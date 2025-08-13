@@ -8,6 +8,9 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { UNIVERSITIES, DEPARTMENTS } from "@/lib/contants";
 import api from "@/lib/axiosInstance";
+import { useCandidate } from "@/context/authContext";
+import ImageUpload from "./ImageUpload";
+import { FaUpload, FaTimes } from "react-icons/fa";
 
 interface SignUpFormData {
   fullName: string;
@@ -17,13 +20,17 @@ interface SignUpFormData {
   department: string;
   level: string;
   matricNumber: string;
-
   agreeToTerms: boolean;
+}
+
+interface FormData {
+  avatar: string;
 }
 
 export default function SignUpForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<FormData>({ avatar: "" });
 
   const {
     register,
@@ -31,18 +38,58 @@ export default function SignUpForm() {
     formState: { errors },
   } = useForm<SignUpFormData>();
 
+  const { candidate } = useCandidate();
 
   const onSubmit = async (data: SignUpFormData) => {
     setIsSubmitting(true);
 
-    // Simulate API call
-    const response = await api.post("/enroll", {data})
-    console.log(response.data);
-    setIsSubmitting(false);
+    try {
+      // Include avatar in the submission data
+      const submissionData = {
+        ...data,
+        avatar: formData.avatar,
+      };
 
-    alert("Registration successful! You can now submit your project.");
-    router.push("/submit");
+      const response = await api.post("/enroll", { data: submissionData });
+      console.log(response.data);
+
+      alert("Registration successful! You can now submit your project.");
+      router.push("/submit");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleImageUpload = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      avatar: url,
+    }));
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      avatar: "",
+    }));
+  };
+
+  if (candidate) {
+    return (
+      <div className="text-center p-8">
+        <h1 className="text-2xl font-bold text-conces-blue mb-4">
+          Welcome Back, {candidate.fullName}
+        </h1>
+        <p className="text-gray-600 mb-6">
+          You are already registered for the Rebrand Challenge.
+        </p>
+        <Button onClick={() => router.push("/submit")}>Go to Submission</Button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -60,6 +107,40 @@ export default function SignUpForm() {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Profile Photo
+          </label>
+          <div className="space-y-4">
+            <ImageUpload
+              onSuccess={(info) => handleImageUpload(info.secure_url)}
+              folder="products/"
+            >
+              <div className="flex items-center justify-center p-4 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                <FaUpload className="mr-2" />
+                Upload Images
+              </div>
+            </ImageUpload>
+
+            {formData.avatar && (
+              <div className="relative group">
+                <img
+                  src={formData.avatar}
+                  alt="Profile preview"
+                  className="rounded-md object-cover h-32 w-full"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <FaTimes className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
             label="Full Name"
@@ -98,7 +179,7 @@ export default function SignUpForm() {
               {...register("university", {
                 required: "University is required",
               })}
-              className="form-input w-full"
+              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select University</option>
               {UNIVERSITIES.map((uni) => (
@@ -122,7 +203,7 @@ export default function SignUpForm() {
               {...register("department", {
                 required: "Department is required",
               })}
-              className="form-input w-full"
+              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select Department</option>
               {DEPARTMENTS.map((dept) => (
@@ -144,7 +225,7 @@ export default function SignUpForm() {
             </label>
             <select
               {...register("level", { required: "Level is required" })}
-              className="form-input w-full"
+              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select Level</option>
               {["100", "200", "300", "400", "500"].map((level) => (
@@ -168,8 +249,6 @@ export default function SignUpForm() {
             error={errors.matricNumber?.message}
             placeholder="ENG/2020/001"
           />
-
-         
         </div>
 
         <div className="bg-conces-blue/5 rounded-lg p-4">
@@ -193,15 +272,21 @@ export default function SignUpForm() {
             {...register("agreeToTerms", {
               required: "You must agree to the terms",
             })}
-            className="mt-1 mr-3"
+            className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
           <label className="text-sm text-gray-700">
             I agree to the{" "}
-            <a href="#" className="text-conces-green font-medium">
+            <a
+              href="#"
+              className="text-conces-green font-medium hover:underline"
+            >
               Terms and Conditions
             </a>{" "}
             and{" "}
-            <a href="#" className="text-conces-green font-medium">
+            <a
+              href="#"
+              className="text-conces-green font-medium hover:underline"
+            >
               Competition Rules
             </a>
           </label>
@@ -215,6 +300,7 @@ export default function SignUpForm() {
             {isSubmitting ? "Creating Account..." : "Create Account"}
           </Button>
           <Button
+            type="button"
             variant="outline"
             onClick={() => router.push("/")}
             className="flex-1"
@@ -225,7 +311,7 @@ export default function SignUpForm() {
 
         <p className="text-center text-gray-600">
           Already have an account?{" "}
-          <a href="#" className="text-conces-green font-medium">
+          <a href="#" className="text-conces-green font-medium hover:underline">
             Sign In
           </a>
         </p>

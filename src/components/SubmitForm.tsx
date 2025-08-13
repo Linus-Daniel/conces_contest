@@ -6,8 +6,11 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import FileUpload from "./FileUpload";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import ImageUpload from "./ImageUpload";
+import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useCandidate } from "@/context/authContext";
+import Image from "next/image";
+import api from "@/lib/axiosInstance";
 
 interface ProjectFormData {
   projectTitle: string;
@@ -19,40 +22,132 @@ interface ProjectFormData {
 export default function SubmitProjectForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [primaryFile, setPrimaryFile] = useState<File[]>([]);
-  const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
-  const [mockups, setMockups] = useState<File[]>([]);
+  const [primaryFileUrl, setPrimaryFileUrl] = useState<string>("");
+  const [mockupUrl, setMockupUrl] = useState<string>("");
+  const [uploadError, setUploadError] = useState<string>("");
+  const { candidate } = useCandidate();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProjectFormData>();
 
+  const handlePrimaryFileUpload = (result: any) => {
+    setPrimaryFileUrl(result.secure_url);
+    setUploadError("");
+  };
+
+  const handleMockupUpload = (result: any) => {
+    setMockupUrl(result.secure_url);
+  };
+
+  const removePrimaryFile = () => {
+    setPrimaryFileUrl("");
+  };
+
+  const removeMockup = () => {
+    setMockupUrl("");
+  };
+
   const onSubmit = async (data: ProjectFormData) => {
-    if (!primaryFile.length) {
-      alert("Please upload a primary logo file");
+    if (!primaryFileUrl) {
+      setUploadError("Please upload a primary logo file");
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            alert("Project submitted successfully! Good luck!");
-            router.push("/");
-          }, 500);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    try {
+      const response = await api.post("/submit", 
+  {
+          candidateId: candidate?._id || candidate?._id, // Handle both id formats
+          ...data,
+          primaryFileUrl,
+          mockupUrl,
+        })
+      
+
+      const result = response.data;
+
+
+      // Success
+      alert("Project submitted successfully! Good luck!");
+      reset();
+      setPrimaryFileUrl("");
+      setMockupUrl("");
+      router.push("/dashboard"); // Or wherever you want to redirect
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit project. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const saveDraft = async () => {
+    const formData = {
+      projectTitle: (
+        document.querySelector('[name="projectTitle"]') as HTMLInputElement
+      )?.value,
+      designConcept: (
+        document.querySelector('[name="designConcept"]') as HTMLTextAreaElement
+      )?.value,
+      colorPalette: (
+        document.querySelector('[name="colorPalette"]') as HTMLTextAreaElement
+      )?.value,
+      inspiration: (
+        document.querySelector('[name="inspiration"]') as HTMLTextAreaElement
+      )?.value,
+    };
+
+    try {
+      const response = await fetch("/api/projects/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          candidateId: candidate?._id || candidate?._id,
+          ...formData,
+          primaryFileUrl: primaryFileUrl || "",
+          mockupUrl,
+          status: "draft",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to save draft");
+      }
+
+      alert("Draft saved successfully!");
+    } catch (error) {
+      console.error("Draft save error:", error);
+      alert("Failed to save draft. Please try again.");
+    }
+  };
+
+  if (!candidate) {
+    return (
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <h1 className="text-3xl font-bold text-conces-blue mb-4">
+          Please input your token to submit your design
+        </h1>
+        <p className="text-gray-600 mb-6">
+          You need to be logged in to submit your project. Please log in or sign
+          up.
+        </p>
+        <Button onClick={() => router.push("/auth")}>Go to Sign Up</Button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -78,8 +173,9 @@ export default function SubmitProjectForm() {
             <div className="flex items-center">
               <InformationCircleIcon className="w-5 h-5 text-conces-green mr-3 flex-shrink-0" />
               <span className="text-sm text-gray-700">
-                You can submit up to 3 different designs. Make sure your files
-                are in high resolution (AI, SVG, PNG, or PDF format).
+                Upload your logo design in high resolution (AI, SVG, PNG, or PDF
+                format). You can also add a mockup to showcase your design in
+                action.
               </span>
             </div>
           </motion.div>
@@ -110,8 +206,8 @@ export default function SubmitProjectForm() {
                   required: "Design concept is required",
                 })}
                 rows={4}
-                className={`form-input w-full ${
-                  errors.designConcept ? "border-red-500" : ""
+                className={`form-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-conces-blue focus:border-transparent ${
+                  errors.designConcept ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Explain your design concept and what it represents..."
               />
@@ -131,8 +227,8 @@ export default function SubmitProjectForm() {
                   required: "Color palette explanation is required",
                 })}
                 rows={3}
-                className={`form-input w-full ${
-                  errors.colorPalette ? "border-red-500" : ""
+                className={`form-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-conces-blue focus:border-transparent ${
+                  errors.colorPalette ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Explain your color choices and their significance..."
               />
@@ -152,8 +248,8 @@ export default function SubmitProjectForm() {
                   required: "Inspiration is required",
                 })}
                 rows={4}
-                className={`form-input w-full ${
-                  errors.inspiration ? "border-red-500" : ""
+                className={`form-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-conces-blue focus:border-transparent ${
+                  errors.inspiration ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="What inspired your design? Tell us the story behind it..."
               />
@@ -171,57 +267,95 @@ export default function SubmitProjectForm() {
               File Uploads
             </h2>
 
-            <FileUpload
-              label="Primary Logo File (AI, SVG, PNG, or PDF)"
-              accept=".ai,.svg,.png,.pdf"
-              required
-              onFilesSelected={setPrimaryFile}
-              error={
-                primaryFile.length === 0 && isSubmitting
-                  ? "Primary file is required"
-                  : undefined
-              }
-            />
+            {/* Primary Logo File */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Primary Logo File * (AI, SVG, PNG, or PDF)
+              </label>
 
-            <FileUpload
-              label="Additional Files (Variations, Black & White versions, etc.)"
-              accept=".ai,.svg,.png,.pdf,.jpg,.jpeg"
-              multiple
-              onFilesSelected={setAdditionalFiles}
-            />
+              {!primaryFileUrl ? (
+                <div>
+                  <ImageUpload
+                    onSuccess={handlePrimaryFileUpload}
+                    folder="conces-logos"
+                    className="w-full justify-center"
+                  >
+                    Upload Primary Logo
+                  </ImageUpload>
+                  {uploadError && (
+                    <p className="text-red-500 text-sm mt-2">{uploadError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative w-20 h-20">
+                        <Image
+                          src={primaryFileUrl}
+                          alt="Primary logo"
+                          fill
+                          className="object-contain rounded"
+                        />
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        Primary logo uploaded successfully
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removePrimaryFile}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            <FileUpload
-              label="Mockups (Show your logo in action)"
-              accept="image/*"
-              multiple
-              onFilesSelected={setMockups}
-            />
+            {/* Mockup (Optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mockup (Optional - Show your logo in action)
+              </label>
+
+              {!mockupUrl ? (
+                <ImageUpload
+                  onSuccess={handleMockupUpload}
+                  folder="conces-mockups"
+                  className="w-full justify-center"
+                >
+                  Upload Mockup
+                </ImageUpload>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative w-20 h-20">
+                        <Image
+                          src={mockupUrl}
+                          alt="Mockup"
+                          fill
+                          className="object-contain rounded"
+                        />
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        Mockup uploaded successfully
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeMockup}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Upload Progress */}
-          {isSubmitting && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-gray-50 rounded-lg p-4"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Uploading project...
-                </span>
-                <span className="text-sm text-conces-green">
-                  {uploadProgress}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${uploadProgress}%` }}
-                  className="bg-conces-green h-2 rounded-full"
-                />
-              </div>
-            </motion.div>
-          )}
 
           {/* Submit Buttons */}
           <div className="flex gap-4 pt-6 border-t">
@@ -232,6 +366,7 @@ export default function SubmitProjectForm() {
               type="button"
               variant="outline"
               disabled={isSubmitting}
+              onClick={saveDraft}
               className="flex-1"
             >
               Save as Draft
@@ -256,19 +391,19 @@ export default function SubmitProjectForm() {
               File Requirements
             </h3>
             <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Vector format (AI or SVG) required</li>
-              <li>• Include PNG version (min 2000px width)</li>
-              <li>• Black & white version</li>
-              <li>• Maximum file size: 50MB per file</li>
+              <li>• Vector format (AI or SVG) preferred</li>
+              <li>• High resolution PNG (min 2000px width)</li>
+              <li>• Maximum file size: 10MB per file</li>
+              <li>• Clear, scalable design</li>
             </ul>
           </div>
           <div>
             <h3 className="font-medium text-gray-700 mb-2">Design Standards</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Original work only</li>
-              <li>• Scalable design</li>
               <li>• Works on light and dark backgrounds</li>
               <li>• Represents Nigerian engineering excellence</li>
+              <li>• Professional and timeless design</li>
             </ul>
           </div>
         </div>

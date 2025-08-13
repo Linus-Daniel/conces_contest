@@ -71,6 +71,7 @@ function validateEnrollmentData(data: IEnroll): ValidationResult {
     "email",
     "phone",
     "university",
+    "avatar",
     "department",
     "matricNumber",
   ];
@@ -203,6 +204,7 @@ export async function POST(
       fullName: sanitizeString(data.fullName),
       email: normalizedEmail,
       phone: sanitizeString(data.phone),
+      avatar: sanitizeString(data.avatar),
       university: sanitizeString(data.university),
       department: sanitizeString(data.department),
       matricNumber: sanitizeString(data.matricNumber).toUpperCase(),

@@ -131,7 +131,6 @@ export default function Contests() {
               prizes={CONTEST_DATA.prizes}
               consolation={CONTEST_DATA.consolation}
             />
-            <CTAButton />
           </div>
         </motion.div>
       </div>
@@ -264,28 +263,6 @@ function PrizesSection({
     </div>
   );
 }
-
-function CTAButton() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      className="text-center"
-    >
-      <Link
-        href="/signup"
-        className="bg-conces-green text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl inline-flex items-center group"
-      >
-        Visit Contest Platform
-        <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-      </Link>
-    </motion.div>
-  );
-}
-
-
-
-
 
 
 
