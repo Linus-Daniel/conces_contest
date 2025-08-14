@@ -10,7 +10,11 @@ import {
   FaTrophy,
   FaShare,
   FaStar,
+  FaCrown,
+  FaMedal,
+  FaAward,
 } from "react-icons/fa";
+import { GiTrophyCup, GiGoldBar } from "react-icons/gi";
 
 interface Step {
   icon: IconType;
@@ -24,76 +28,76 @@ interface Prize {
   amount: string;
   bonus: string;
   gradient: string;
-  icon?: string;
+  icon: IconType;
 }
 
 const CONTEST_DATA = {
-  title: "Brand Challenge Platform",
+  title: "CONCES Brand Challenge",
   subtitle:
-    "Take a peek at our dedicated contest platform where you can submit your designs and compete for the grand prize.",
+    "Join our exclusive design competition platform where you can submit your visionary rebrand concepts and compete for amazing prizes.",
   url: "brandchallenge.conces.org",
   mainCTA: {
-    title: "Redesign the Face of CONCES — and Win ₦500,000",
+    title: "Redesign the Future of CONCES — Win ₦500,000",
     subtitle:
-      "Open to every engineering and tech student in Nigeria. Submit your vision. Inspire a movement.",
+      "Open to all engineering and tech students across Nigeria. Showcase your creativity. Lead the transformation.",
   },
   steps: [
     {
       icon: FaUserPlus,
-      title: "Sign Up",
-      description: "Get your contest pack",
+      title: "Register",
+      description: "Get your contest package",
       color: "blue",
     },
     {
       icon: FaPenSquare,
-      title: "Design & Submit",
-      description: "Show us your vision",
+      title: "Create",
+      description: "Design your submission",
       color: "green",
     },
     {
       icon: FaTrophy,
-      title: "Get Selected",
-      description: "Be one of the finalists",
-      color: "yellow",
+      title: "Compete",
+      description: "Become a finalist",
+      color: "gold",
     },
     {
       icon: FaShare,
-      title: "Go Viral",
-      description: "Share and get votes",
-      color: "purple",
+      title: "Promote",
+      description: "Share for votes",
+      color: "blue",
     },
     {
       icon: FaStar,
-      title: "Win Big",
-      description: "Present live and win",
-      color: "red",
+      title: "Win",
+      description: "Present and claim prizes",
+      color: "green",
     },
   ] as Step[],
   prizes: [
     {
-      place: "1st Place",
+      place: "Grand Prize",
       amount: "₦500,000",
-      bonus: "+ National Recognition",
+      bonus: "National Recognition + Trophy",
       gradient: "from-conces-gold to-yellow-600",
-      icon: "🥇",
+      icon: FaCrown,
     },
     {
       place: "2nd Place",
       amount: "₦150,000",
-      bonus: "+ Certificate of Excellence",
-      gradient: "from-gray-300 to-gray-500",
-      icon: "🥈",
+      bonus: "Certificate of Excellence",
+      gradient: "from-conces-blue/80 to-conces-blue",
+      icon: FaMedal,
     },
     {
       place: "3rd Place",
       amount: "₦100,000",
-      bonus: "+ Certificate of Excellence",
-      gradient: "from-amber-700 to-amber-900",
-      icon: "🥉",
+      bonus: "Certificate of Excellence",
+      gradient: "from-conces-green to-conces-green/90",
+      icon: FaAward,
     },
   ] as Prize[],
   consolation: {
-    title: "Finalist Consolations",
+    title: "Finalist Awards",
     amount: "₦50,000",
     count: 7,
   },
@@ -101,11 +105,12 @@ const CONTEST_DATA = {
 
 export default function Contests() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gradient-to-b from-white to-conces-blue/5">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-conces-blue mb-4">
@@ -119,11 +124,12 @@ export default function Contests() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          className="bg-gray-50 rounded-2xl shadow-xl overflow-hidden"
+          transition={{ duration: 0.6 }}
+          className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
         >
           <BrowserHeader url={CONTEST_DATA.url} />
 
-          <div className="p-10">
+          <div className="p-8 md:p-12">
             <SplitHero />
             <CTASection {...CONTEST_DATA.mainCTA} />
             <StepsSection steps={CONTEST_DATA.steps} />
@@ -141,34 +147,49 @@ export default function Contests() {
 // Sub-components
 function BrowserHeader({ url }: { url: string }) {
   return (
-    <div className="bg-conces-blue text-white p-4 flex items-center">
+    <div className="bg-gradient-to-r from-conces-blue to-conces-blue/90 text-white p-4 flex items-center">
       <div className="flex space-x-2">
         <div className="w-3 h-3 rounded-full bg-red-500" />
         <div className="w-3 h-3 rounded-full bg-yellow-500" />
         <div className="w-3 h-3 rounded-full bg-green-500" />
       </div>
-      <div className="ml-4 text-sm">{url}</div>
+      <div className="ml-4 text-sm font-medium">{url}</div>
     </div>
   );
 }
 
 function SplitHero() {
   return (
-    <div className="flex flex-col md:flex-row mb-10 rounded-xl overflow-hidden">
-      <div className="md:w-1/2 p-8 bg-gray-100">
+    <div className="flex flex-col md:flex-row mb-12 rounded-xl overflow-hidden border border-gray-200">
+      <div className="md:w-1/2 p-8 bg-conces-blue/5">
         <div className="text-center">
-          <p className="mb-4 text-gray-700 font-medium">Current Logo</p>
-          <div className="w-32 h-32 mx-auto bg-white rounded-lg shadow-md flex items-center justify-center">
-            <span className="text-2xl font-bold text-conces-blue">CONCES</span>
+          <p className="mb-4 text-conces-blue font-medium">Current Brand</p>
+          <div className="w-40 h-40 mx-auto bg-white rounded-xl shadow-md flex items-center justify-center border-2 border-conces-blue/20">
+            <span className="text-3xl font-bold text-conces-blue">CONCES</span>
           </div>
         </div>
       </div>
-      <div className="md:w-1/2 p-8 bg-gradient-to-br from-conces-blue/10 to-conces-green/10">
+      <div className="md:w-1/2 p-8 bg-gradient-to-br from-conces-blue/5 to-conces-green/10">
         <div className="text-center">
-          <p className="mb-4 text-gray-700 font-medium">Your Design Here</p>
-          <div className="w-32 h-32 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
-            <span className="text-5xl">?</span>
-          </div>
+          <p className="mb-4 text-conces-blue font-medium">Your Vision Here</p>
+          <motion.div
+            className="w-40 h-40 mx-auto rounded-xl bg-gradient-to-br from-conces-gold/10 to-conces-green/10 flex items-center justify-center border-2 border-dashed border-conces-gold/50"
+            animate={{
+              scale: [1, 1.02, 1],
+              borderColor: [
+                "rgba(255,195,0,0.5)",
+                "rgba(255,195,0,0.8)",
+                "rgba(255,195,0,0.5)",
+              ],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <span className="text-5xl text-conces-gold">?</span>
+          </motion.div>
         </div>
       </div>
     </div>
@@ -179,7 +200,19 @@ function CTASection({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="text-center mb-16">
       <h3 className="text-3xl font-bold text-conces-blue mb-4">{title}</h3>
-      <p className="text-lg text-gray-600">{subtitle}</p>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="mt-8 inline-block"
+      >
+        <Link
+          href="#"
+          className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-8 py-3 rounded-lg font-bold text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl"
+        >
+          Register Now <ArrowRightIcon className="w-5 h-5 ml-2" />
+        </Link>
+      </motion.div>
     </div>
   );
 }
@@ -190,20 +223,31 @@ function StepsSection({ steps }: { steps: Step[] }) {
       <h3 className="text-2xl font-bold text-center text-conces-blue mb-10">
         How It Works
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {steps.map((step, index) => {
           const Icon = step.icon;
+          const colorMap = {
+            blue: "conces-blue",
+            green: "conces-green",
+            gold: "conces-gold",
+          };
+          const colorClass =
+            colorMap[step.color as keyof typeof colorMap] || "conces-blue";
+
           return (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
               whileHover={{ scale: 1.05, y: -5 }}
-              className="bg-white p-6 rounded-xl shadow-sm text-center"
+              viewport={{ once: true }}
+              className={`bg-white p-6 rounded-xl shadow-sm text-center border-t-4 border-${colorClass}`}
             >
-              <div className="w-12 h-12 rounded-full bg-conces-blue/10 flex items-center justify-center mx-auto mb-4">
-                <Icon className="text-conces-blue" size={24} />
+              <div
+                className={`w-12 h-12 rounded-full bg-${colorClass}/10 flex items-center justify-center mx-auto mb-4`}
+              >
+                <Icon className={`text-${colorClass}`} size={24} />
               </div>
               <div className="font-bold text-lg mb-2">
                 {index + 1}. {step.title}
@@ -225,60 +269,72 @@ function PrizesSection({
   consolation: { title: string; amount: string; count: number };
 }) {
   return (
-    <div className="mb-16 ">
+    <div className="mb-8">
       <h3 className="text-2xl font-bold text-center text-conces-blue mb-10">
         Prize Breakdown
       </h3>
 
-      {/* Prize Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {prizes.map((prize, index) => {
+          const Icon = prize.icon;
+          return (
+            <motion.div
+              key={prize.place}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -5 }}
+              className={`p-8 rounded-xl text-center text-white shadow-lg ${
+                index === 0
+                  ? "bg-gradient-to-br from-conces-gold to-yellow-600"
+                  : index === 1
+                  ? "bg-gradient-to-br from-conces-blue to-conces-blue/90"
+                  : "bg-gradient-to-br from-conces-green to-conces-green/90"
+              }`}
+            >
+              <div className="flex justify-center mb-4">
+                <Icon className="w-10 h-10" />
+              </div>
+              <div className="text-2xl font-bold mb-2">{prize.place}</div>
+              <motion.div
+                className="text-4xl font-extrabold mb-4"
+                animate={{
+                  scale: [1, 1.05, 1],
+                  textShadow: [
+                    "0 0 8px rgba(255,255,255,0.3)",
+                    "0 0 16px rgba(255,255,255,0.5)",
+                    "0 0 8px rgba(255,255,255,0.3)",
+                  ],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                {prize.amount}
+              </motion.div>
+              <p className="text-sm font-medium">{prize.bonus}</p>
+            </motion.div>
+          );
+        })}
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        className="mt-16  bg-gradient-to-r from-conces-blue to-conces-blue/90 p-5 rounded-md grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="bg-gradient-to-r from-conces-blue/5 to-conces-green/5 p-6 rounded-xl border border-conces-blue/20 text-center"
       >
-        {prizes.map((prize, index) => (
-          <motion.div
-            key={prize.place}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.05 }}
-            className={`p-6 rounded-xl text-center text-white ${
-              index === 0
-                ? "bg-gradient-to-br from-conces-gold to-yellow-600"
-                : index === 1
-                ? "bg-gradient-to-br from-gray-300 to-gray-500"
-                : "bg-gradient-to-br from-amber-700 to-amber-900"
-            }`}
-          >
-            <div className="text-2xl font-bold mb-2">{prize.place}</div>
-            <div className="text-3xl font-bold mb-4">{prize.amount}</div>
-            <p className="text-sm">{prize.bonus}</p>
-          </motion.div>
-        ))}
+        <h4 className="text-lg font-bold text-conces-blue mb-2">
+          {consolation.count} {consolation.title}
+        </h4>
+        <p className="text-conces-blue font-medium">
+          Each receiving {consolation.amount}
+        </p>
       </motion.div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 

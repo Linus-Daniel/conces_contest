@@ -1,29 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb"; // Adjust path to your connectDB
-import Project from "@/models/Project";
+import { connectDB } from "@/lib/mongodb";
+import Project, { IProject } from "@/models/Project";
+import Enroll, { IEnroll } from "@/models/Enroll";
+import { Types } from "mongoose";
 
+// 🔹 Helper: Transform candidate data into consistent format
+function formatCandidate(candidate: Partial<IEnroll> | null) {
+  return {
+    fullName: candidate?.fullName || "Unknown",
+    schoolName: candidate?.university || "Unknown School",
+    department: candidate?.department || "Unknown Department",
+    email: candidate?.email || "",
+    avatar: candidate?.avatar || null,
+  };
+}
+
+// 🔹 POST — Create Project
 export async function POST(request: NextRequest) {
   try {
-    // Connect to database
     await connectDB();
-
-    // Parse the request body
-    const body = await request.json();
-
-    // Extract candidateId from headers or body
-    // Assuming you're sending it from the frontend
     const {
-      candidateId,
+      candidate,
       projectTitle,
       designConcept,
       colorPalette,
       inspiration,
       primaryFileUrl,
       mockupUrl,
-    } = body;
+    } = await request.json();
 
-    // Validate required fields
-    if (!candidateId) {
+    if (!candidate) {
       return NextResponse.json(
         { error: "Candidate ID is required" },
         { status: 401 }
@@ -44,20 +50,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new project
-    const newProject = new Project({
-      candidateId,
-      projectTitle,
-      designConcept,
-      colorPalette,
-      inspiration,
-      primaryFileUrl,
-      mockupUrl,
-      status: "submitted",
-      submittedAt: new Date(),
-    });
+const newProject = new Project({
+  candidate: new Types.ObjectId(candidate),
+  projectTitle,
+  designConcept,
+  colorPalette,
+  inspiration,
+  primaryFileUrl,
+  mockupUrl,
+  status: "submitted",
+  submittedAt: new Date(),
+});
 
-    // Save to database
     const savedProject = await newProject.save();
 
     return NextResponse.json(
@@ -70,7 +74,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Project submission error:", error);
-
     return NextResponse.json(
       {
         error: "Failed to submit project",
@@ -81,35 +84,69 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint to retrieve projects
+// 🔹 GET — Fetch Projects
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const candidateId = searchParams.get("candidateId");
+    const candidate = searchParams.get("candidate");
     const projectId = searchParams.get("projectId");
+    const status = searchParams.get("status") || "approved";
 
-    let query = {};
+    const query: Record<string, unknown> = { status };
 
     if (projectId) {
-      const project = await Project.findById(projectId);
+      const project = await Project.findById(projectId)
+        .populate<{ candidate: IEnroll }>(
+          "candidate",
+          "fullName university department email avatar"
+        )
+        .lean();
+
       if (!project) {
         return NextResponse.json(
           { error: "Project not found" },
           { status: 404 }
         );
       }
-      return NextResponse.json({ project }, { status: 200 });
+
+      return NextResponse.json(
+        {
+          project: {
+            ...project,
+            candidate: formatCandidate(project.candidate),
+          },
+        },
+        { status: 200 }
+      );
     }
 
-    if (candidateId) {
-      query = { candidateId };
+    if (candidate) {
+      query.candidate = new Types.ObjectId(candidate);
     }
 
-    const projects = await Project.find(query).sort({ submittedAt: -1 });
+    const projects = await Project.find(query)
+      .populate<{ candidate: IEnroll }>(
+        "candidate",
+        "fullName university department email avatar"
+      )
+      .sort({ submittedAt: -1 })
+      .lean();
 
-    return NextResponse.json({ projects }, { status: 200 });
+    const transformedProjects = projects.map((project) => ({
+      ...project,
+      candidate: formatCandidate(project.candidate),
+    }));
+
+    return NextResponse.json(
+      {
+        success: true,
+        projects: transformedProjects,
+        total: transformedProjects.length,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching projects:", error);
     return NextResponse.json(
@@ -122,13 +159,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH endpoint to update project (for draft functionality)
+// 🔹 PATCH — Update Project
 export async function PATCH(request: NextRequest) {
   try {
     await connectDB();
 
-    const body = await request.json();
-    const { projectId, ...updateData } = body;
+    const { projectId, ...updateData } = await request.json();
 
     if (!projectId) {
       return NextResponse.json(
@@ -139,12 +175,14 @@ export async function PATCH(request: NextRequest) {
 
     const updatedProject = await Project.findByIdAndUpdate(
       projectId,
-      {
-        ...updateData,
-        updatedAt: new Date(),
-      },
+      { ...updateData, updatedAt: new Date() },
       { new: true, runValidators: true }
-    );
+    )
+      .populate<{ candidate: IEnroll }>(
+        "candidate",
+        "fullName university department email"
+      )
+      .lean();
 
     if (!updatedProject) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -154,7 +192,10 @@ export async function PATCH(request: NextRequest) {
       {
         success: true,
         message: "Project updated successfully",
-        project: updatedProject,
+        project: {
+          ...updatedProject,
+          candidate: formatCandidate(updatedProject.candidate),
+        },
       },
       { status: 200 }
     );

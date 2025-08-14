@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
+import { IEnroll } from "./Enroll";
 
 export interface IProject extends Document {
-  candidateId: string;
+  candidate: Types.ObjectId | IEnroll; // Candidate is stored as an ObjectId referencing Enroll
   projectTitle: string;
   designConcept: string;
   colorPalette: string;
@@ -11,14 +12,15 @@ export interface IProject extends Document {
   status: "draft" | "submitted" | "reviewed" | "selected" | "rejected";
   submittedAt: Date;
   updatedAt?: Date;
-  score?: number;
+  vote?: number;
   feedback?: string;
 }
 
 const ProjectSchema = new Schema<IProject>(
   {
-    candidateId: {
-      type: String,
+    candidate: {
+      type: Schema.Types.ObjectId,
+      ref: "Enroll",
       required: [true, "Candidate ID is required"],
       index: true,
     },
@@ -52,7 +54,6 @@ const ProjectSchema = new Schema<IProject>(
     },
     mockupUrl: {
       type: String,
-      required: false,
     },
     status: {
       type: String,
@@ -66,10 +67,11 @@ const ProjectSchema = new Schema<IProject>(
     updatedAt: {
       type: Date,
     },
-    score: {
+    vote: {
       type: Number,
       min: 0,
       max: 100,
+      default: 0,
     },
     feedback: {
       type: String,
@@ -81,11 +83,11 @@ const ProjectSchema = new Schema<IProject>(
   }
 );
 
-// Indexes for better query performance
-ProjectSchema.index({ candidateId: 1, submittedAt: -1 });
+// Indexes for performance
+ProjectSchema.index({ candidate: 1, submittedAt: -1 });
 ProjectSchema.index({ status: 1 });
 
-// Prevent multiple model compilation in development
+// Avoid recompiling model in dev/watch mode
 const Project: Model<IProject> =
   mongoose.models.Project || mongoose.model<IProject>("Project", ProjectSchema);
 

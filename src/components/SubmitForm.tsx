@@ -62,7 +62,7 @@ export default function SubmitProjectForm() {
     try {
       const response = await api.post("/submit", 
   {
-          candidateId: candidate?._id || candidate?._id, // Handle both id formats
+          candidate: candidate?._id || candidate?._id, // Handle both id formats
           ...data,
           primaryFileUrl,
           mockupUrl,
