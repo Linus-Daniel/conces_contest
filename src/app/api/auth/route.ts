@@ -7,6 +7,7 @@ export async function POST(request: Request) {
     await connectDB();
     const data = await request.json();
     const { authToken } = data;
+    console.log(authToken)
 
     if (!authToken) {
       return NextResponse.json(
@@ -18,16 +19,18 @@ export async function POST(request: Request) {
     const candidate = await Enroll.findOne({ authToken });
     console.log("Existing Enrollment:", candidate,authToken);
 
-    if (candidate) {
+    if (!candidate) {
       return NextResponse.json(
-        { message: "signed in successfully", candidate },
+        { message: "Candidate not found" },
 
-        { status: 200 }
+        { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { message: "Enrollment successful" },
+      { message: "Auth token verifird",
+        candidate
+       },
       { status: 201 }
     );
   } catch (error) {

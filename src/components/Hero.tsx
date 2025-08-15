@@ -447,42 +447,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Bottom stats */}
-      <motion.div
-        className="mt-auto bg-gradient-to-t from-conces-blue/90 via-conces-blue/80 to-conces-blue/50 backdrop-blur-sm py-4 sm:py-6 z-20 border-t border-conces-blue/70"
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1 }}
-      >
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8 lg:gap-12 text-blue-100">
-            <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
-              <div className="text-2xl sm:text-3xl font-bold text-white">
-                2,847
-              </div>
-              <div className="text-xs sm:text-sm opacity-90">
-                Thrilled Participants
-              </div>
-            </motion.div>
-            <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
-              <div className="text-2xl sm:text-3xl font-bold text-conces-gold">
-                ₦1M+
-              </div>
-              <div className="text-xs sm:text-sm opacity-90">
-                In Amazing Prizes
-              </div>
-            </motion.div>
-            <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
-              <div className="text-2xl sm:text-3xl font-bold text-conces-green">
-                45
-              </div>
-              <div className="text-xs sm:text-sm opacity-90">
-                Days Left to Win!
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
 
       {/* Confetti effect on hover over main prize - desktop only */}
       <AnimatePresence>

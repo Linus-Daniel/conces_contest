@@ -6,7 +6,7 @@ export interface IEnroll {
     fullName: string;
     email: string;
     phone: string;
-    university: string;
+    institution: string;
     department: string;
     matricNumber: string;
     authToken: string;
@@ -49,7 +49,7 @@ const EnrollSchema = new Schema<IEnroll>({
         trim: true,
         match: [/^(\+234|0)[789]\d{9}$/, 'Please provide a valid Nigerian phone number']
     },
-    university: {
+    institution: {
         type: String,
         required: [true, 'School name is required'],
         trim: true

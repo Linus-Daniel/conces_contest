@@ -8,7 +8,7 @@ import { Types } from "mongoose";
 function formatCandidate(candidate: Partial<IEnroll> | null) {
   return {
     fullName: candidate?.fullName || "Unknown",
-    schoolName: candidate?.university || "Unknown School",
+    schoolName: candidate?.institution || "Unknown School",
     department: candidate?.department || "Unknown Department",
     email: candidate?.email || "",
     avatar: candidate?.avatar || null,
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       const project = await Project.findById(projectId)
         .populate<{ candidate: IEnroll }>(
           "candidate",
-          "fullName university department email avatar"
+          "fullName institution department email avatar"
         )
         .lean();
 
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     const projects = await Project.find(query)
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName university department email avatar"
+        "fullName institution department email avatar"
       )
       .sort({ submittedAt: -1 })
       .lean();
@@ -182,7 +182,7 @@ export async function PATCH(request: NextRequest) {
     )
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName university department email"
+        "fullName institution department email"
       )
       .lean();
 

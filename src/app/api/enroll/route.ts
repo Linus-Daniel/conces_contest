@@ -70,7 +70,7 @@ function validateEnrollmentData(data: IEnroll): ValidationResult {
     "fullName",
     "email",
     "phone",
-    "university",
+    "institution",
     "avatar",
     "department",
     "matricNumber",
@@ -205,7 +205,7 @@ export async function POST(
       email: normalizedEmail,
       phone: sanitizeString(data.phone),
       avatar: sanitizeString(data.avatar),
-      university: sanitizeString(data.university),
+      institution: sanitizeString(data.institution),
       department: sanitizeString(data.department),
       matricNumber: sanitizeString(data.matricNumber).toUpperCase(),
       authToken,
@@ -220,7 +220,7 @@ export async function POST(
       fullName: savedEnrollment.fullName,
       email: savedEnrollment.email,
       authToken: savedEnrollment.authToken,
-      university: savedEnrollment.university, // Map university to schoolName
+      institution: savedEnrollment.institution, // Map institution to schoolName
       department: savedEnrollment.department,
     };
 

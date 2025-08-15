@@ -138,13 +138,12 @@ export default function SubmitProjectForm() {
     return (
       <div className="bg-white rounded-2xl shadow-xl p-8">
         <h1 className="text-3xl font-bold text-conces-blue mb-4">
-          Please input your token to submit your design
+          Verify you token
         </h1>
         <p className="text-gray-600 mb-6">
-          You need to be logged in to submit your project. Please log in or sign
-          up.
+      please veify your code before Submitting your design 
         </p>
-        <Button onClick={() => router.push("/auth")}>Go to Sign Up</Button>
+        <Button onClick={() => router.push("/auth")}>verify code</Button>
       </div>
     );
   }

@@ -2,7 +2,7 @@ export interface EmailTemplateData {
   fullName: string;
   email: string;
   authToken: string;
-  university: string;
+  institution: string;
   department: string;
 }
 
@@ -71,7 +71,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                                     <td width="48%" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; vertical-align: top;">
                                         <h3 style="color: #002B5B; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase;">Your Details</h3>
                                         <p style="color: #666666; font-size: 14px; margin: 5px 0;">
-                                            <strong>School:</strong> ${data.university}<br>
+                                            <strong>School:</strong> ${data.institution}<br>
                                             <strong>Department:</strong> ${data.department}<br>
                                             <strong>Email:</strong> ${data.email}
                                         </p>
@@ -229,7 +229,7 @@ Hi ${data.fullName},
 You're in! Welcome to the CONCES Logo Rebrand Challenge.
 
 YOUR DETAILS:
-- School: ${data.university}
+- School: ${data.institution}
 - Department: ${data.department}
 - Email: ${data.email}
 

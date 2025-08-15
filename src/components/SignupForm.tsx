@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { UNIVERSITIES, DEPARTMENTS } from "@/lib/contants";
+import { DEPARTMENTS } from "@/lib/contants";
 import api from "@/lib/axiosInstance";
 import { useCandidate } from "@/context/authContext";
 import ImageUpload from "./ImageUpload";
@@ -16,7 +16,7 @@ interface SignUpFormData {
   fullName: string;
   email: string;
   phone: string;
-  university: string;
+  institution: string;
   department: string;
   level: string;
   matricNumber: string;
@@ -79,14 +79,19 @@ export default function SignUpForm() {
 
   if (candidate) {
     return (
-      <div className="text-center p-8">
-        <h1 className="text-2xl font-bold text-conces-blue mb-4">
+      <div className="text-center p-4 sm:p-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-conces-blue mb-4">
           Welcome Back, {candidate.fullName}
         </h1>
         <p className="text-gray-600 mb-6">
           You are already registered for the Rebrand Challenge.
         </p>
-        <Button onClick={() => router.push("/submit")}>Go to Submission</Button>
+        <Button
+          onClick={() => router.push("/submit")}
+          className="w-full sm:w-auto"
+        >
+          Go to Submission
+        </Button>
       </div>
     );
   }
@@ -96,27 +101,30 @@ export default function SignUpForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-2xl shadow-xl p-8"
+      className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-4xl mx-auto"
     >
-      <h1 className="text-3xl font-bold text-conces-blue mb-2">
+      <h1 className="text-2xl sm:text-3xl font-bold text-conces-blue mb-2">
         Join the Rebrand Challenge
       </h1>
-      <p className="text-gray-600 mb-8">
+      <p className="text-gray-600 mb-6 text-sm sm:text-base">
         Create your account to submit your design and compete for ₦1,000,000 in
         prizes
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4 sm:space-y-6"
+      >
         <div>
           <label className="block text-sm font-medium mb-1">
             Profile Photo
           </label>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <ImageUpload
               onSuccess={(info) => handleImageUpload(info.secure_url)}
               folder="products/"
             >
-              <div className="flex items-center justify-center p-4 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="flex items-center justify-center p-1 sm:p-2 rounded-md cursor-pointer transition-colors text-sm sm:text-base">
                 <FaUpload className="mr-2" />
                 Upload Images
               </div>
@@ -127,7 +135,7 @@ export default function SignUpForm() {
                 <img
                   src={formData.avatar}
                   alt="Profile preview"
-                  className="rounded-md object-cover h-32 w-full"
+                  className="rounded-md object-cover h-24 sm:h-32 w-full"
                 />
                 <button
                   type="button"
@@ -141,7 +149,7 @@ export default function SignUpForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
           <Input
             label="Full Name"
             {...register("fullName", { required: "Full name is required" })}
@@ -171,75 +179,23 @@ export default function SignUpForm() {
             placeholder="+234 800 000 0000"
           />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              University *
-            </label>
-            <select
-              {...register("university", {
-                required: "University is required",
-              })}
-              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Select University</option>
-              {UNIVERSITIES.map((uni) => (
-                <option key={uni} value={uni}>
-                  {uni}
-                </option>
-              ))}
-            </select>
-            {errors.university && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.university.message}
-              </p>
-            )}
-          </div>
+          <Input
+            label="Institution"
+            {...register("institution", {
+              required: "Institution is required",
+            })}
+            error={errors.institution?.message}
+            placeholder="Enter your institution name"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Department *
-            </label>
-            <select
-              {...register("department", {
-                required: "Department is required",
-              })}
-              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Select Department</option>
-              {DEPARTMENTS.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-            {errors.department && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.department.message}
-              </p>
-            )}
-          </div>
+          <Input
+            label="Department"
+            {...register("department", { required: "Department is required" })}
+            error={errors.department?.message}
+            placeholder="Enter your department"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Level *
-            </label>
-            <select
-              {...register("level", { required: "Level is required" })}
-              className="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Select Level</option>
-              {["100", "200", "300", "400", "500"].map((level) => (
-                <option key={level} value={level}>
-                  {level} Level
-                </option>
-              ))}
-            </select>
-            {errors.level && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.level.message}
-              </p>
-            )}
-          </div>
+    
 
           <Input
             label="Matric Number"
@@ -251,14 +207,14 @@ export default function SignUpForm() {
           />
         </div>
 
-        <div className="bg-conces-blue/5 rounded-lg p-4">
-          <h3 className="font-semibold text-conces-blue mb-2">
+        <div className="bg-conces-blue/5 rounded-lg p-3 sm:p-4">
+          <h3 className="font-semibold text-conces-blue mb-2 text-sm sm:text-base">
             Competition Rules
           </h3>
-          <ul className="text-sm text-gray-600 space-y-1">
+          <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
             <li>
               • Must be a registered engineering student in a Nigerian
-              university
+              institution
             </li>
             <li>• Original designs only - no plagiarism</li>
             <li>• Maximum of 3 submissions per participant</li>
@@ -274,7 +230,7 @@ export default function SignUpForm() {
             })}
             className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
-          <label className="text-sm text-gray-700">
+          <label className="text-xs sm:text-sm text-gray-700">
             I agree to the{" "}
             <a
               href="#"
@@ -292,24 +248,30 @@ export default function SignUpForm() {
           </label>
         </div>
         {errors.agreeToTerms && (
-          <p className="text-red-500 text-sm">{errors.agreeToTerms.message}</p>
+          <p className="text-red-500 text-xs sm:text-sm">
+            {errors.agreeToTerms.message}
+          </p>
         )}
 
-        <div className="flex gap-4">
-          <Button type="submit" disabled={isSubmitting} className="flex-1">
-            {isSubmitting ? "Creating Account..." : "Create Account"}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:flex-1"
+          >
+            {isSubmitting ? "Joining contest..." : "Join the contest"}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => router.push("/")}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             Cancel
           </Button>
         </div>
 
-        <p className="text-center text-gray-600">
+        <p className="text-center text-gray-600 text-xs sm:text-sm">
           Already have an account?{" "}
           <a href="#" className="text-conces-green font-medium hover:underline">
             Sign In
