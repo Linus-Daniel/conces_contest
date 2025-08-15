@@ -178,7 +178,7 @@ export default function HeroSection() {
           src="/images/winner.jpg"
           alt="Happy contest participants celebrating"
           fill
-          className="object-cover opacity-20"
+          className="object-cover opacity-60"
           quality={100}
           priority
         />
