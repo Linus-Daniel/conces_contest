@@ -1,12 +1,119 @@
+// api/vote/request-otp/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import OTP from "@/models/OTP";
+import Project from "@/models/Project";
 import Vote from "@/models/Vote";
-import {
-  getSMSProvider,
-  generateOTP,
-  validateNigerianPhone,
-} from "@/lib/sms/smsService";
+import crypto from "crypto";
+
+// WhatsApp Service
+class WhatsAppService {
+  private accessToken: string;
+  private phoneNumberId: string;
+
+  constructor() {
+    this.accessToken = process.env.WHATSAPP_ACCESS_TOKEN!;
+    this.phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!;
+  }
+
+  async sendOTP(
+    phoneNumber: string,
+    code: string,
+    projectTitle: string
+  ): Promise<{
+    success: boolean;
+    messageId?: string;
+    error?: string;
+  }> {
+    try {
+      const message = `Your voting code for "${projectTitle}": ${code}\n\nThis code expires in 5 minutes. Use it to confirm your vote.`;
+
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: phoneNumber.replace("+", ""),
+            type: "text",
+            text: { body: message },
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.messages) {
+        return {
+          success: true,
+          messageId: result.messages[0].id,
+        };
+      } else {
+        return {
+          success: false,
+          error: result.error?.message || "Failed to send WhatsApp message",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || "WhatsApp service error",
+      };
+    }
+  }
+}
+
+// Encryption functions (same as your original)
+function encrypt(text: string): string {
+  const algorithm = "aes-256-gcm";
+  const keyString =
+    process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
+  const key = crypto.createHash("sha256").update(keyString).digest();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  const authTag = cipher.getAuthTag();
+
+  return iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
+}
+
+// Create voter hash (same as your original)
+function createVoterHash(email: string, phone: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(`${email.toLowerCase().trim()}-${phone.trim()}`)
+    .digest("hex");
+}
+
+// Validate Nigerian phone number (same as your original)
+function validateNigerianPhone(phone: string): boolean {
+  const cleaned = phone.replace(/\D/g, "");
+  const patterns = [/^234[789]\d{9}$/, /^0[789]\d{9}$/, /^[789]\d{9}$/];
+  return patterns.some((pattern) => pattern.test(cleaned));
+}
+
+// Format Nigerian phone number (same as your original)
+function formatNigerianPhone(phone: string): string {
+  const cleaned = phone.replace(/\D/g, "");
+  if (cleaned.startsWith("234")) {
+    return `+${cleaned}`;
+  } else if (cleaned.startsWith("0")) {
+    return `+234${cleaned.slice(1)}`;
+  } else if (cleaned.length === 10 && /^[789]/.test(cleaned)) {
+    return `+234${cleaned}`;
+  }
+  return phone;
+}
+
+// Generate OTP
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 // Rate limiting store (use Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -41,34 +148,37 @@ function checkRateLimit(phoneNumber: string): {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phoneNumber, projectId } = body;
+    const { projectId, voterEmail, voterPhone } = body;
 
-    // Basic validation
-    if (!phoneNumber || !projectId) {
+    // Validate input
+    if (!projectId || !voterEmail || !voterPhone) {
       return NextResponse.json(
-        { error: "Phone number and project ID are required" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Validate project ID format (basic MongoDB ObjectId check)
-    if (!/^[0-9a-fA-F]{24}$/.test(projectId)) {
+    // Email validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(voterEmail)) {
       return NextResponse.json(
-        { error: "Invalid project ID format" },
+        { error: "Invalid email format" },
         { status: 400 }
       );
     }
 
-    // Enhanced Nigerian phone validation
-    const phoneValidation = validateNigerianPhone(phoneNumber);
-    if (!phoneValidation.isValid) {
+    // Phone validation
+    if (!validateNigerianPhone(voterPhone)) {
       return NextResponse.json(
-        { error: phoneValidation.error },
+        {
+          error:
+            "Invalid Nigerian phone number format. Use formats like: 08012345678, +2348012345678, or 8012345678",
+        },
         { status: 400 }
       );
     }
 
-    const formattedPhone = phoneValidation.formatted!;
+    const formattedPhone = formatNigerianPhone(voterPhone);
 
     // Check rate limit
     const rateLimit = checkRateLimit(formattedPhone);
@@ -90,91 +200,107 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Check if user has already voted
-    const phoneHash = (Vote as any).hashPhone(formattedPhone);
+    // Check if project exists
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // Create voter hash and check for existing vote
+    const voterHash = createVoterHash(voterEmail, formattedPhone);
     const existingVote = await Vote.findOne({
-      phoneNumberHash: phoneHash,
       projectId,
+      voterHash,
     });
 
     if (existingVote) {
       return NextResponse.json(
-        {
-          error: "You have already voted for this design",
-          code: "ALREADY_VOTED",
-        },
+        { error: "You have already voted for this design" },
         { status: 409 }
       );
     }
 
-    // Clean up expired OTPs
-    await OTP.deleteMany({
-      expiresAt: { $lt: new Date() },
-    });
-
-    // Check for existing unused OTP
-    const existingOTP = await OTP.findOne({
-      phoneNumber: formattedPhone,
+    // Check for existing pending OTP session
+    const existingPendingVote = await Vote.findOne({
+      voterHash,
       projectId,
-      used: false,
-      expiresAt: { $gt: new Date() },
+      status: "pending",
+      "otp.expiresAt": { $gt: new Date() },
     });
 
-    if (existingOTP) {
+    if (existingPendingVote) {
       const expiresIn = Math.floor(
-        (existingOTP.expiresAt.getTime() - Date.now()) / 1000
+        (existingPendingVote?.otp?.expiresAt?.getTime() - Date.now()) / 1000
       );
       return NextResponse.json(
         {
-          error: "A verification code was already sent to this number",
+          error: "A verification code was already sent",
           expiresIn,
-          message: `Please check your messages or wait ${Math.ceil(
+          message: `Please check your WhatsApp or wait ${Math.ceil(
             expiresIn / 60
           )} minute(s)`,
-          code: "OTP_ALREADY_SENT",
+          sessionId: existingPendingVote._id,
         },
         { status: 400 }
       );
     }
 
-    // Generate new OTP
-    const code = generateOTP(6);
+    // Generate OTP and create session
+    const otpCode = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Save OTP to database
-    const otp = new OTP({
-      phoneNumber: formattedPhone,
-      code,
+    // Get IP and user agent
+    const ipAddress =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const userAgent = request.headers.get("user-agent") || "unknown";
+
+    // Create OTP session (reusing your Vote model but with pending status)
+    const otpSession = new Vote({
       projectId,
-      expiresAt,
-      attempts: 0,
-      createdAt: new Date(),
+      voterHash,
+      voterEmail: encrypt(voterEmail),
+      voterPhone: encrypt(formattedPhone),
+      ipAddress,
+      userAgent,
+      status: "pending",
+      otp: {
+        code: otpCode,
+        expiresAt,
+        attempts: 0,
+        used: false,
+      },
     });
 
-    await otp.save();
+    await otpSession.save();
 
-    // Send SMS using the enhanced service
-    const smsService = getSMSProvider();
-    const smsResult = await smsService.sendOTP(formattedPhone, code);
+    // Send WhatsApp OTP
+    const whatsAppService = new WhatsAppService();
+    const whatsAppResult = await whatsAppService.sendOTP(
+      formattedPhone,
+      otpCode,
+      project.projectTitle
+    );
 
-    if (!smsResult.success) {
-      // Clean up the OTP record if SMS failed
-      await OTP.deleteOne({ _id: otp._id });
+    if (!whatsAppResult.success) {
+      // Clean up session if WhatsApp failed
+      await Vote.deleteOne({ _id: otpSession._id });
 
-      console.error("Failed to send SMS:", {
-        error: smsResult.error,
+      console.error("Failed to send WhatsApp OTP:", {
+        error: whatsAppResult.error,
         phoneNumber: formattedPhone,
-        provider: smsResult.provider,
+        projectId,
       });
 
       return NextResponse.json(
         {
-          error: "Failed to send verification code. Please try again.",
+          error:
+            "Failed to send verification code via WhatsApp. Please try again.",
           details:
             process.env.NODE_ENV === "development"
-              ? smsResult.error
+              ? whatsAppResult.error
               : undefined,
-          code: "SMS_FAILED",
         },
         { status: 500 }
       );
@@ -183,22 +309,22 @@ export async function POST(request: NextRequest) {
     // Success response
     const response: any = {
       success: true,
-      message: "Verification code sent successfully",
-      expiresIn: 300, // 5 minutes in seconds
+      message: "Verification code sent to your WhatsApp",
+      sessionId: otpSession._id,
+      expiresIn: 300, // 5 minutes
       phoneNumber: formattedPhone.replace(
         /(\+234)(\d{3})(\d{3})(\d{4})/,
         "$1$2***$4"
-      ), // Mask middle digits
-      carrier: phoneValidation.carrier,
-      messageId: smsResult.messageId,
+      ),
+      projectTitle: project.projectTitle,
+      messageId: whatsAppResult.messageId,
     };
 
-    // Include code in development mode only
+    // Include code in development mode
     if (process.env.NODE_ENV === "development") {
-      response.devCode = code;
-      response.provider = smsResult.provider;
+      response.devCode = otpCode;
       console.log(
-        `[DEV] OTP for ${formattedPhone}: ${code} (${phoneValidation.carrier})`
+        `[DEV] OTP for ${formattedPhone} (${project.projectTitle}): ${otpCode}`
       );
     }
 
@@ -213,37 +339,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "An unexpected error occurred. Please try again.",
-        code: "INTERNAL_ERROR",
       },
       { status: 500 }
-    );
-  }
-}
-
-// Health check endpoint
-export async function GET() {
-  try {
-    await connectDB();
-
-    // Check if SMS service is configured
-    const smsProvider = getSMSProvider();
-    const hasValidConfig = !!(
-      process.env.TWILIO_ACCOUNT_SID &&
-      process.env.TWILIO_AUTH_TOKEN &&
-      process.env.TWILIO_PHONE_NUMBER
-    );
-
-    return NextResponse.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      smsConfigured: hasValidConfig,
-      environment: process.env.NODE_ENV,
-    });
-  } catch (error) {
-    console.error("Health check failed:", error);
-    return NextResponse.json(
-      { status: "unhealthy", error: "Database connection failed" },
-      { status: 503 }
     );
   }
 }

@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
     const candidate = searchParams.get("candidate");
     const projectId = searchParams.get("projectId");
     const status = searchParams.get("status") || "approved";
+    const enroll = await Enroll.find({});
+
 
     const query: Record<string, unknown> = { status };
 

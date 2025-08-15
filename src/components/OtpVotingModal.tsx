@@ -1,60 +1,100 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
+"use client"
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  XMarkIcon,
-  DevicePhoneMobileIcon,
-  LockClosedIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+  X,
+  MessageCircle,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  RotateCcw,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 interface OTPVotingModalProps {
   projectId: string;
   projectTitle: string;
+  candidateName?: string;
   onClose: () => void;
   onSuccess: (newVoteCount: number) => void;
 }
 
-type StepType = "phone" | "otp" | "success";
+interface OTPResponse {
+  success: boolean;
+  message: string;
+  sessionId?: string;
+  expiresIn?: number;
+  error?: string;
+  phoneNumber?: string;
+  projectTitle?: string;
+  devCode?: string; // For development mode
+}
+
+interface VoteResponse {
+  success: boolean;
+  message: string;
+  newVoteCount?: number;
+  voteId?: string;
+  projectTitle?: string;
+  error?: string;
+  remainingAttempts?: number;
+}
 
 export default function OTPVotingModal({
   projectId,
   projectTitle,
+  candidateName,
   onClose,
   onSuccess,
 }: OTPVotingModalProps) {
-  const [step, setStep] = useState<StepType>("phone");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [step, setStep] = useState<"details" | "otp" | "success">("details");
+  const [voterEmail, setVoterEmail] = useState("");
+  const [voterPhone, setVoterPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [countdown, setCountdown] = useState(0);
-  const [canResend, setCanResend] = useState(false);
-
-  const otpRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
+  const [sessionData, setSessionData] = useState<OTPResponse | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [attempts, setAttempts] = useState(0);
 
   // Countdown timer
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0 && step === "otp") {
-      setCanResend(true);
+    let interval: NodeJS.Timeout;
+
+    if (timeRemaining && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev && prev <= 1) {
+            setStep("details");
+            setSessionData(null);
+            toast.error("Verification code expired. Please try again.");
+            return null;
+          }
+          return prev ? prev - 1 : null;
+        });
+      }, 1000);
     }
-  }, [countdown, step]);
 
-  // Handle phone number submission
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timeRemaining]);
 
-    // Validate phone number
-    const phoneRegex = /^(0[789]\d{9}|(\+234|234)[789]\d{9})$/;
-    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ""))) {
-      setError("Please enter a valid Nigerian phone number");
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const handleRequestOTP = async () => {
+    if (!voterEmail.trim() || !voterPhone.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Basic validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(voterEmail)) {
+      toast.error("Please enter a valid email");
       return;
     }
 
@@ -65,411 +105,313 @@ export default function OTPVotingModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phoneNumber: phoneNumber.replace(/\s/g, ""),
           projectId,
+          voterEmail: voterEmail.trim(),
+          voterPhone: voterPhone.trim(),
         }),
       });
 
-      const data = await response.json();
+      const data: OTPResponse = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
+        setSessionData(data);
         setStep("otp");
-        setCountdown(300); // 5 minutes
-        toast.success("Verification code sent to your phone");
+        setTimeRemaining(data.expiresIn || 300);
 
-        // Show dev code in development
+        // Auto-fill OTP in development mode
         if (data.devCode) {
-          console.log("Dev OTP:", data.devCode);
-          toast(`Dev mode - Your code: ${data.devCode}`, {
-            duration: 10000,
-            icon: "🔧",
-          });
+          setOtpCode(data.devCode);
+          toast.success(`Development mode: Code is ${data.devCode}`);
         }
       } else {
-        setError(data.error || "Failed to send verification code");
-
-        if (response.status === 409) {
-          // Already voted
-          setTimeout(() => {
-            onClose();
-          }, 3000);
-        }
+        toast.error(data.message || "Failed to send verification code");
       }
     } catch (error) {
-      setError("Network error. Please try again");
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle OTP input
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return; // Prevent multiple digits
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    // Auto-focus next input
-    if (value && index < 5 && otpRefs.current[index + 1]) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-submit when complete
-    if (newOtp.every((digit) => digit) && newOtp.join("").length === 6) {
-      handleOtpSubmit(newOtp.join(""));
-    }
-  };
-
-  // Handle OTP keyboard navigation
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (
-      e.key === "Backspace" &&
-      !otp[index] &&
-      index > 0 &&
-      otpRefs.current[index - 1]
-    ) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  // Handle OTP paste
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 6);
-    const digits = pastedData.split("");
-
-    const newOtp = [...otp];
-    digits.forEach((digit, index) => {
-      if (index < 6 && /\d/.test(digit)) {
-        newOtp[index] = digit;
-      }
-    });
-
-    setOtp(newOtp);
-
-    if (newOtp.every((digit) => digit)) {
-      handleOtpSubmit(newOtp.join(""));
-    }
-  };
-
-  // Handle OTP submission
-  const handleOtpSubmit = async (code?: string) => {
-    const otpCode = code || otp.join("");
-
-    if (otpCode.length !== 6) {
-      setError("Please enter the complete 6-digit code");
+  const handleVerifyAndVote = async () => {
+    if (!otpCode.trim() || otpCode.length !== 6) {
+      toast.error("Please enter the 6-digit code");
       return;
     }
 
-    setError("");
+    if (!sessionData?.sessionId) {
+      toast.error("Session expired. Please start again.");
+      setStep("details");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch("/api/vote/verify-otp", {
+      const response = await fetch("/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phoneNumber: phoneNumber.replace(/\s/g, ""),
-          code: otpCode,
-          projectId,
+          sessionId: sessionData.sessionId,
+          otpCode: otpCode.trim(),
         }),
       });
 
-      const data = await response.json();
+      const data: VoteResponse = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
         setStep("success");
-        onSuccess(data.newVoteCount);
-        toast.success("Vote recorded successfully!");
+        toast.success("Vote confirmed successfully!");
 
+        // Notify parent component
+        if (data.newVoteCount !== undefined) {
+          onSuccess(data.newVoteCount);
+        }
+
+        // Auto-close after 3 seconds
         setTimeout(() => {
           onClose();
         }, 3000);
       } else {
-        setError(data.error || "Invalid verification code");
-
-        if (response.status === 409) {
-          // Already voted
-          setTimeout(() => {
-            onClose();
-          }, 3000);
+        if (data.remainingAttempts !== undefined) {
+          setAttempts(3 - data.remainingAttempts);
+          toast.error(
+            `Invalid code. ${data.remainingAttempts} attempts remaining.`
+          );
+          setOtpCode("");
+        } else {
+          toast.error(data.message || "Verification failed");
+          if (
+            data.error?.includes("expired") ||
+            data.error?.includes("attempts")
+          ) {
+            setStep("details");
+            setSessionData(null);
+            setOtpCode("");
+            setAttempts(0);
+          }
         }
       }
     } catch (error) {
-      setError("Network error. Please try again");
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Resend OTP
-  const handleResend = async () => {
-    setCanResend(false);
-    setError("");
-    setOtp(["", "", "", "", "", ""]);
-
-    try {
-      const response = await fetch("/api/vote/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phoneNumber: phoneNumber.replace(/\s/g, ""),
-          projectId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCountdown(300);
-        toast.success("New verification code sent");
-
-        if (data.devCode) {
-          console.log("Dev OTP:", data.devCode);
-          toast(`Dev mode - Your code: ${data.devCode}`, {
-            duration: 10000,
-            icon: "🔧",
-          });
-        }
-      } else {
-        setError(data.error || "Failed to resend code");
-        setCanResend(true);
-      }
-    } catch (error) {
-      setError("Network error. Please try again");
-      setCanResend(true);
-    }
-  };
-
-  // Format countdown
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  const handleRetry = () => {
+    setStep("details");
+    setSessionData(null);
+    setOtpCode("");
+    setTimeRemaining(null);
+    setAttempts(0);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-      onClick={onClose}
-    >
+    <AnimatePresence>
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl max-w-md w-full p-6"
-        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-conces-blue">
-            {step === "success" ? "Vote Successful!" : "Cast Your Vote"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
-
-        <AnimatePresence mode="wait">
-          {/* Step 1: Phone Number */}
-          {step === "phone" && (
-            <motion.div
-              key="phone"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-conces-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <DevicePhoneMobileIcon className="w-8 h-8 text-conces-blue" />
-                </div>
-                <p className="text-gray-600">
-                  Enter your phone number to vote for
-                </p>
-                <p className="font-semibold text-conces-blue">
-                  "{projectTitle}"
-                </p>
-              </div>
-
-              <form onSubmit={handlePhoneSubmit}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nigerian Phone Number
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                      +234
-                    </span>
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full pl-14 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-conces-green"
-                      placeholder="803 456 7890"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm flex items-center">
-                      <ExclamationCircleIcon className="w-5 h-5 mr-2" />
-                      {error}
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                    loading
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-conces-green text-white hover:bg-conces-green/90"
-                  }`}
-                >
-                  {loading ? "Sending Code..." : "Send Verification Code"}
-                </button>
-              </form>
-
-              <p className="text-xs text-gray-500 text-center mt-4">
-                We'll send a 6-digit code to verify your vote. One vote per
-                phone number.
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-2xl max-w-md w-full p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-conces-blue">
+                {step === "success" ? "Vote Confirmed!" : "Cast Your Vote"}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {step === "details" && "Enter your details to get OTP"}
+                {step === "otp" && "Enter the verification code"}
+                {step === "success" && "Your vote has been recorded"}
               </p>
-            </motion.div>
-          )}
-
-          {/* Step 2: OTP Verification */}
-          {step === "otp" && (
-            <motion.div
-              key="otp"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-conces-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <LockClosedIcon className="w-8 h-8 text-conces-green" />
-                </div>
-                <p className="text-gray-600">Enter the 6-digit code sent to</p>
-                <p className="font-semibold text-conces-blue">{phoneNumber}</p>
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Project Info */}
+          <div className="mb-6 p-4 bg-conces-blue/5 rounded-lg">
+            <p className="font-medium text-conces-blue">{projectTitle}</p>
+            {candidateName && (
+              <p className="text-sm text-gray-600">by {candidateName}</p>
+            )}
+          </div>
+
+          {/* Step Content */}
+          {step === "details" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={voterEmail}
+                  onChange={(e) => setVoterEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-conces-green focus:border-conces-green transition-colors"
+                  disabled={loading}
+                />
               </div>
 
-              <div className="mb-6">
-                <div className="flex justify-center gap-2">
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => {
-                        otpRefs.current[index] = el;
-                      }}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:border-conces-green"
-                      autoFocus={index === 0}
-                      maxLength={1}
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                    />
-                  ))}
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  WhatsApp Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  value={voterPhone}
+                  onChange={(e) => setVoterPhone(e.target.value)}
+                  placeholder="+234 801 234 5678"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-conces-green focus:border-conces-green transition-colors"
+                  disabled={loading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Must be a Nigerian WhatsApp number
+                </p>
               </div>
 
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm flex items-center">
-                    <ExclamationCircleIcon className="w-5 h-5 mr-2" />
-                    {error}
-                  </p>
+              <div className="bg-conces-blue/5 rounded-lg p-4">
+                <div className="flex items-start">
+                  <AlertCircle className="w-5 h-5 text-conces-blue mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium mb-1">Secure Voting Process:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• We'll send a verification code to your WhatsApp</li>
+                      <li>• One vote per email/phone combination</li>
+                      <li>• Your information is encrypted and secure</li>
+                    </ul>
+                  </div>
                 </div>
-              )}
+              </div>
 
               <button
-                onClick={() => handleOtpSubmit()}
-                disabled={loading || !otp.every((d) => d)}
-                className={`w-full py-3 rounded-lg font-semibold transition-colors mb-4 ${
-                  loading || !otp.every((d) => d)
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-conces-green text-white hover:bg-conces-green/90"
-                }`}
+                onClick={handleRequestOTP}
+                disabled={loading || !voterEmail.trim() || !voterPhone.trim()}
+                className="w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-conces-green/90 transition-colors flex items-center justify-center"
               >
-                {loading ? "Verifying..." : "Verify & Vote"}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Sending Code...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Get Verification Code
+                  </>
+                )}
               </button>
-
-              <div className="text-center">
-                {countdown > 0 ? (
-                  <p className="text-sm text-gray-500">
-                    Code expires in {formatTime(countdown)}
-                  </p>
-                ) : null}
-
-                {canResend ? (
-                  <button
-                    onClick={handleResend}
-                    className="text-conces-green font-medium hover:underline"
-                  >
-                    Resend Code
-                  </button>
-                ) : countdown > 0 ? (
-                  <p className="text-sm text-gray-500">
-                    Didn't receive? Resend in{" "}
-                    {formatTime(120 - (300 - countdown))}
-                  </p>
-                ) : null}
-              </div>
-            </motion.div>
+            </div>
           )}
 
-          {/* Step 3: Success */}
+          {step === "otp" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={otpCode}
+                  onChange={(e) =>
+                    setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="000000"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-conces-green focus:border-conces-green transition-colors text-center text-2xl font-mono tracking-widest"
+                  disabled={loading}
+                  maxLength={6}
+                />
+                {timeRemaining && (
+                  <p className="text-sm text-gray-600 mt-1 flex items-center justify-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    Expires in: {formatTime(timeRemaining)}
+                  </p>
+                )}
+                {attempts > 0 && (
+                  <p className="text-sm text-red-600 mt-1 text-center">
+                    {3 - attempts} attempts remaining
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <MessageCircle className="w-5 h-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="text-sm text-green-800">
+                    <p className="font-medium mb-1">Check your WhatsApp</p>
+                    <p className="text-xs">
+                      Enter the 6-digit code we sent to{" "}
+                      {sessionData?.phoneNumber}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleRetry}
+                  className="flex-1 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Back
+                </button>
+                <button
+                  onClick={handleVerifyAndVote}
+                  disabled={loading || otpCode.length !== 6}
+                  className="flex-1 bg-conces-green text-white py-3 px-6 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-conces-green/90 transition-colors"
+                >
+                  {loading ? "Confirming..." : "Confirm Vote"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {step === "success" && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center py-8"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", delay: 0.2 }}
-                className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <CheckCircleIcon className="w-12 h-12 text-green-500" />
-              </motion.div>
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <CheckCircle className="w-16 h-16 text-green-500" />
+              </div>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Vote Recorded!
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Thank you for participating in the CONCES Logo Challenge
-              </p>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600">
-                  Your vote for{" "}
-                  <span className="font-semibold">"{projectTitle}"</span> has
-                  been successfully recorded.
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Vote Confirmed!
+                </h3>
+                <p className="text-gray-600">
+                  Your vote for "{projectTitle}" has been successfully recorded.
                 </p>
               </div>
-            </motion.div>
+
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-800">
+                  Thank you for participating in the CONCES design voting!
+                </p>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+              >
+                Done
+              </button>
+            </div>
           )}
-        </AnimatePresence>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 }
