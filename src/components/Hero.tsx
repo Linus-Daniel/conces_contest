@@ -266,7 +266,7 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 justify-center lg:justify-start"
               >
-                <motion.button
+                <motion.a
                   className="bg-gradient-to-r from-conces-green to-conces-blue hover:from-conces-green/90 hover:to-conces-blue/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl order-1"
                   whileHover={{
                     y: -2,
@@ -274,10 +274,11 @@ export default function HeroSection() {
                     boxShadow: "0 10px 25px -5px rgba(0,184,148,0.4)",
                   }}
                   whileTap={{ scale: 0.98 }}
+                  href="/signup"
                 >
                   <span className="drop-shadow-md">Register Now</span>
                   <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2 drop-shadow-md" />
-                </motion.button>
+                </motion.a>
 
                 <motion.button
                   className="border-2 border-conces-gold text-conces-gold hover:bg-conces-blue/50 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-all duration-300 inline-flex items-center justify-center hover:shadow-lg hover:shadow-conces-gold/20 order-2"
