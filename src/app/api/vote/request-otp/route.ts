@@ -13,6 +13,7 @@ class WhatsAppService {
   constructor() {
     this.accessToken = process.env.WHATSAPP_ACCESS_TOKEN!;
     this.phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!;
+    console.log(this.accessToken,this.phoneNumberId, "whatsapp credentals")
   }
 
   async sendOTP(
@@ -28,7 +29,7 @@ class WhatsAppService {
       const message = `Your voting code for "${projectTitle}": ${code}\n\nThis code expires in 5 minutes. Use it to confirm your vote.`;
 
       const response = await fetch(
-        `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`,
+        `https://graph.facebook.com/v22.0/${this.phoneNumberId}/messages`,
         {
           method: "POST",
           headers: {
@@ -230,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     if (existingPendingVote) {
       const expiresIn = Math.floor(
-        (existingPendingVote?.otp?.expiresAt?.getTime() - Date.now()) / 1000
+        (existingPendingVote.otp.expiresAt.getTime() - Date.now()) / 1000
       );
       return NextResponse.json(
         {

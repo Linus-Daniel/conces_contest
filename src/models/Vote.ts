@@ -11,13 +11,14 @@ interface IOtp {
 
 interface IVote extends Document {
   projectId: mongoose.Types.ObjectId;
+  _id:mongoose.Types.ObjectId;
   voterHash: string;
   voterEmail: string;
   voterPhone: string;
   ipAddress: string;
   userAgent: string;
   status: "pending" | "confirmed" | "expired";
-  otp?: IOtp;
+  otp: IOtp;
   votedAt: Date;
 
   // Instance methods
