@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRightIcon,
-  TrophyIcon,
   StarIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
@@ -12,6 +11,7 @@ import { FaMedal, FaTrophy, FaCrown, FaRegGem, FaPray } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import Image from "next/image";
 import { ComponentType } from "react";
+import CountdownTimer from "./CountDown";
 
 interface FloatingRewardProps {
   icon: ComponentType<{ className?: string }>;
@@ -162,13 +162,6 @@ export default function HeroSection() {
     },
   ];
 
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-to-b from-conces-blue to-conces-blue/90">
@@ -280,16 +273,17 @@ export default function HeroSection() {
                   <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2 drop-shadow-md" />
                 </motion.a>
 
-                <motion.button
+                <motion.a
                   className="border-2 border-conces-gold text-conces-gold hover:bg-conces-blue/50 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-all duration-300 inline-flex items-center justify-center hover:shadow-lg hover:shadow-conces-gold/20 order-2"
                   whileHover={{ y: -2 }}
+                  href="/#how"
                   whileTap={{ scale: 0.98 }}
                 >
                   <span className="drop-shadow-md">View Guidelines</span>
-                </motion.button>
+                </motion.a>
               </motion.div>
 
-              {/* Testimonials */}
+          
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -304,18 +298,7 @@ export default function HeroSection() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <div className="flex items-start mb-3 sm:mb-4">
-                      <FaPray className="w-5 h-5 sm:w-6 sm:h-6 text-conces-gold mr-2 mt-1 flex-shrink-0" />
-                      <p className="text-blue-100 italic text-sm sm:text-base lg:text-lg leading-relaxed">
-                        "{testimonials[activeIndex].quote}"
-                      </p>
-                    </div>
-                    <div className="text-conces-gold font-bold text-sm sm:text-base">
-                      {testimonials[activeIndex].name}
-                      <span className="text-blue-300 text-xs sm:text-sm block font-medium">
-                        {testimonials[activeIndex].role}
-                      </span>
-                    </div>
+                   <CountdownTimer />
                   </motion.div>
                 </AnimatePresence>
               </motion.div>

@@ -40,19 +40,25 @@ export default function CountdownTimer() {
   }, []);
 
   return (
-    <section className="bg-gradient-to-r from-conces-blue to-conces-blue/90 py-8">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center">
+    <section className="bg-gradient-to-r from-conces-blue to-conces-blue/90 py-4 sm:py-6 md:py-8">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex flex-col space-y-4 sm:space-y-6 md:flex-row md:justify-between md:items-center md:space-y-0">
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-2xl font-bold text-white mb-4 md:mb-0"
+            className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-white text-center md:text-left"
           >
-            Logo Rebrand Challenge Closes In...
+            <span className="block sm:hidden">Contest Closes In...</span>
+            <span className="hidden sm:block md:hidden">
+              Challenge Closes In...
+            </span>
+            <span className="hidden md:block">
+              Logo Rebrand Challenge Closes In...
+            </span>
           </motion.h2>
 
-          <div className="flex space-x-6">
+          <div className="flex justify-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6">
             {Object.entries(timeLeft).map(([unit, value], index) => (
               <motion.div
                 key={unit}
@@ -61,12 +67,12 @@ export default function CountdownTimer() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="bg-white/10 rounded-lg px-4 py-3 w-20">
-                  <span className="text-3xl font-bold text-conces-gold">
+                <div className="bg-white/10 rounded-md sm:rounded-lg px-2 py-2 w-12 sm:w-14 md:w-16 lg:w-20 sm:px-3 sm:py-3 md:px-4 md:py-3">
+                  <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-conces-gold block">
                     {value}
                   </span>
                 </div>
-                <span className="text-white/80 text-sm mt-1 block capitalize">
+                <span className="text-white/80 text-xs sm:text-sm mt-1 block capitalize">
                   {unit}
                 </span>
               </motion.div>

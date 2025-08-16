@@ -217,8 +217,8 @@ export default function SignUpForm() {
               institution
             </li>
             <li>• Original designs only - no plagiarism</li>
-            <li>• Maximum of 3 submissions per participant</li>
-            <li>• Winners will present live at the national conference</li>
+            <li>• Maximum of 1 submissions per participant</li>
+            <li>• Winning entries will be viewed live at Grand Finale</li>
           </ul>
         </div>
 

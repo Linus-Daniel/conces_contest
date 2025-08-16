@@ -2,6 +2,7 @@
 
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { IconType } from "react-icons";
 import {
@@ -44,7 +45,7 @@ const CONTEST_DATA = {
   steps: [
     {
       icon: FaUserPlus,
-      title: "Register",
+      title: "Join Contest",
       description: "Get your contest package",
       color: "blue",
     },
@@ -106,7 +107,7 @@ const CONTEST_DATA = {
 export default function Contests() {
   return (
     <section className="py-20 bg-gradient-to-b from-white to-conces-blue/5">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -131,8 +132,10 @@ export default function Contests() {
 
           <div className="p-8 md:p-12">
             <SplitHero />
-            <CTASection {...CONTEST_DATA.mainCTA} />
+            <CTASection {...CONTEST_DATA.mainCTA} showIntro={true} />
             <StepsSection steps={CONTEST_DATA.steps} />
+            <CTASection {...CONTEST_DATA.mainCTA} showButton />
+
             <PrizesSection
               prizes={CONTEST_DATA.prizes}
               consolation={CONTEST_DATA.consolation}
@@ -164,8 +167,8 @@ function SplitHero() {
       <div className="md:w-1/2 p-8 bg-conces-blue/5">
         <div className="text-center">
           <p className="mb-4 text-conces-blue font-medium">Current Brand</p>
-          <div className="w-40 h-40 mx-auto bg-white rounded-xl shadow-md flex items-center justify-center border-2 border-conces-blue/20">
-            <span className="text-3xl font-bold text-conces-blue">CONCES</span>
+          <div className="w-40 h-40 mx-auto bg-white p-2 rounded-xl shadow-md flex itemgs-center justify-center border-2 border-conces-blue/20">
+            <Image src={"/images/logo.png"} width={250} height={250} alt="current logo" />
           </div>
         </div>
       </div>
@@ -196,22 +199,38 @@ function SplitHero() {
   );
 }
 
-function CTASection({ title, subtitle }: { title: string; subtitle: string }) {
+function CTASection({
+  title,
+  subtitle,
+  showIntro,
+  showButton,
+}: {
+  title: string;
+  subtitle: string;
+  showIntro?: boolean;
+  showButton?: boolean;
+}) {
   return (
     <div className="text-center mb-16">
-      <h3 className="text-3xl font-bold text-conces-blue mb-4">{title}</h3>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+      {showIntro && (
+        <div>
+          <h3 className="text-3xl font-bold text-conces-blue mb-4">{title}</h3>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+        </div>
+      )}
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className="mt-8 inline-block"
       >
-        <Link
-          href="#"
-          className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-8 py-3 rounded-lg font-bold text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          Register Now <ArrowRightIcon className="w-5 h-5 ml-2" />
-        </Link>
+        {showButton && (
+          <Link
+            href="/signup"
+            className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-8 py-3 rounded-lg font-bold text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            Register Now <ArrowRightIcon className="w-5 h-5 ml-2" />
+          </Link>
+        )}
       </motion.div>
     </div>
   );
@@ -219,7 +238,7 @@ function CTASection({ title, subtitle }: { title: string; subtitle: string }) {
 
 function StepsSection({ steps }: { steps: Step[] }) {
   return (
-    <div className="mb-16">
+    <div id="how" className="mb-16">
       <h3 className="text-2xl font-bold text-center text-conces-blue mb-10">
         How It Works
       </h3>

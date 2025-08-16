@@ -69,8 +69,8 @@ export default function ContestSection() {
               className="text-xl md:text-2xl mb-8 max-w-2xl"
             >
               The CONCES Logo Rebrand Challenge is your opportunity to make
-              history. Design the new face of engineering students in Nigeria
-              and win life-changing prizes!
+              history. Design the new face of Christain Engineering and
+              Technology students in Nigeria and win life-changing prizes!
             </motion.p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -98,15 +98,7 @@ export default function ContestSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
                 viewport={{ once: true }}
-              >
-                <Link
-                  href="#prizes"
-                  className="border-2 border-conces-gold text-conces-gold hover:bg-conces-gold/10 px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center justify-center transition-all duration-300"
-                >
-                  View Prizes
-                  <TrophyIcon className="w-5 h-5 ml-2" />
-                </Link>
-              </motion.div>
+              ></motion.div>
             </div>
 
             {/* Prize highlights */}

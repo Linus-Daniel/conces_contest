@@ -8,7 +8,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full flex flex-col">
       <CandidateProvider>
         <Header />
-        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
         <Footer />
       </CandidateProvider>
     </div>

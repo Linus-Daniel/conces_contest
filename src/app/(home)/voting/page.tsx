@@ -12,6 +12,8 @@ import {
   ChevronRightIcon,
   MessageCircle,
   X,
+  Share,
+  Share2,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast, { Toaster } from "react-hot-toast";
@@ -421,7 +423,7 @@ function ProjectCard({
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <ShareIcon className="w-5 h-5" />
+            <Share2 className="w-5 h-5" />
           </button>
         </div>
       </div>

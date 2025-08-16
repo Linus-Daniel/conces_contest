@@ -46,7 +46,7 @@ export default function Header() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed w-full z-50 transition-all duration-300 bg-conces-blue shadow-lg"
+        className="sticky top-0 w-full z-50 transition-all duration-300 bg-conces-blue shadow-lg"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">

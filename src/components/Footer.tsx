@@ -9,7 +9,7 @@ const footerLinks = {
     { label: "Home", href: "/" },
     { label: "About Us", href: "/#about" },
     { label: "Rebrand Challenge", href: "/signup" },
-    { label: "News & Events", href: "#" },
+ 
   ],
 };
 
@@ -103,10 +103,7 @@ export default function Footer() {
                 <i className="fas fa-envelope mt-1 mr-3 text-conces-green"></i>
                 <span className="text-white/70">info@conces.org</span>
               </li>
-              <li className="flex items-start">
-                <i className="fas fa-phone mt-1 mr-3 text-conces-green"></i>
-                <span className="text-white/70">+234 800 CONCES</span>
-              </li>
+              
               <li className="flex items-start">
                 <i className="fas fa-location-dot mt-1 mr-3 text-conces-green"></i>
                 <span className="text-white/70">
