@@ -14,7 +14,7 @@ export interface IProject extends Document {
   updatedAt?: Date;
   vote?: number;
   feedback?: string;
-}
+}  
 
 const ProjectSchema = new Schema<IProject>(
   {
@@ -86,8 +86,6 @@ const ProjectSchema = new Schema<IProject>(
 // Indexes for performance
 ProjectSchema.index({ candidate: 1, submittedAt: -1 });
 ProjectSchema.index({ status: 1 });
-
-// Avoid recompiling model in dev/watch mode
 const Project: Model<IProject> =
   mongoose.models.Project || mongoose.model<IProject>("Project", ProjectSchema);
 

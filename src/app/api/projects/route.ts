@@ -11,6 +11,7 @@ function formatCandidate(candidate: Partial<IEnroll> | null) {
     schoolName: candidate?.institution || "Unknown School",
     department: candidate?.department || "Unknown Department",
     email: candidate?.email || "",
+    _id:candidate?._id,
     avatar: candidate?.avatar || null,
     isQualified: candidate?.isQualified ?? true, // ✅ Added isQualified field
     matricNumber: candidate?.matricNumber || "", // ✅ Added matricNumber for completeness
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
       const project = await Project.findById(projectId)
         .populate<{ candidate: IEnroll }>(
           "candidate",
-          "fullName institution isQualified department email avatar matricNumber phone"
+          "_id fullName institution isQualified department email avatar matricNumber phone"
         )
         .lean();
 
@@ -143,7 +144,7 @@ export async function GET(request: NextRequest) {
     const allProjects = await Project.find(query)
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName institution isQualified department email avatar matricNumber phone"
+        "_id fullName institution isQualified department email avatar matricNumber phone"
       )
       .sort({ totalVotes: -1, submittedAt: -1 }) // Sort by votes first, then by submission date
       .lean();
@@ -226,7 +227,7 @@ export async function PATCH(request: NextRequest) {
     )
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName institution isQualified department email avatar matricNumber phone" // ✅ Added isQualified, matricNumber, phone
+        "_id fullName institution isQualified department email avatar matricNumber phone" // ✅ Added isQualified, matricNumber, phone
       )
       .lean();
 
