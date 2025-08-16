@@ -12,6 +12,9 @@ function formatCandidate(candidate: Partial<IEnroll> | null) {
     department: candidate?.department || "Unknown Department",
     email: candidate?.email || "",
     avatar: candidate?.avatar || null,
+    isQualified: candidate?.isQualified ?? true, // ✅ Added isQualified field
+    matricNumber: candidate?.matricNumber || "", // ✅ Added matricNumber for completeness
+    phone: candidate?.phone || "", // ✅ Added phone for completeness
   };
 }
 
@@ -50,17 +53,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-const newProject = new Project({
-  candidate: new Types.ObjectId(candidate),
-  projectTitle,
-  designConcept,
-  colorPalette,
-  inspiration,
-  primaryFileUrl,
-  mockupUrl,
-  status: "submitted",
-  submittedAt: new Date(),
-});
+    const newProject = new Project({
+      candidate: new Types.ObjectId(candidate),
+      projectTitle,
+      designConcept,
+      colorPalette,
+      inspiration,
+      primaryFileUrl,
+      mockupUrl,
+      status: "submitted",
+      submittedAt: new Date(),
+    });
 
     const savedProject = await newProject.save();
 
@@ -93,22 +96,30 @@ export async function GET(request: NextRequest) {
     const candidate = searchParams.get("candidate");
     const projectId = searchParams.get("projectId");
     const status = searchParams.get("status") || "approved";
-    const enroll = await Enroll.find({});
-
+    const onlyQualified = searchParams.get("onlyQualified") !== "false"; // Default to true
 
     const query: Record<string, unknown> = { status };
+    const enroll = await Enroll.find({})
 
     if (projectId) {
       const project = await Project.findById(projectId)
         .populate<{ candidate: IEnroll }>(
           "candidate",
-          "fullName institution department email avatar"
+          "fullName institution isQualified department email avatar matricNumber phone"
         )
         .lean();
 
       if (!project) {
         return NextResponse.json(
           { error: "Project not found" },
+          { status: 404 }
+        );
+      }
+
+      // Check if candidate is qualified (if onlyQualified is true)
+      if (onlyQualified && !project.candidate?.isQualified) {
+        return NextResponse.json(
+          { error: "Project not found or candidate not qualified" },
           { status: 404 }
         );
       }
@@ -128,24 +139,57 @@ export async function GET(request: NextRequest) {
       query.candidate = new Types.ObjectId(candidate);
     }
 
-    const projects = await Project.find(query)
+    // Get all projects first
+    const allProjects = await Project.find(query)
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName institution department email avatar"
+        "fullName institution isQualified department email avatar matricNumber phone"
       )
-      .sort({ submittedAt: -1 })
+      .sort({ totalVotes: -1, submittedAt: -1 }) // Sort by votes first, then by submission date
       .lean();
 
-    const transformedProjects = projects.map((project) => ({
+    // Filter for qualified candidates only (if onlyQualified is true)
+    const filteredProjects = onlyQualified
+      ? allProjects.filter((project) => project.candidate?.isQualified === true)
+      : allProjects;
+
+    const transformedProjects = filteredProjects.map((project) => ({
       ...project,
       candidate: formatCandidate(project.candidate),
     }));
+
+    // Calculate total votes across all qualified projects
+    const totalVotes = transformedProjects.reduce(
+      (sum, project) => sum + (project.vote || 0),
+      0
+    );
+
+    // Get voting statistics
+    const votingStats = {
+      totalVotes,
+      totalProjects: transformedProjects.length,
+      totalQualifiedCandidates: transformedProjects.length,
+      averageVotesPerProject:
+        transformedProjects.length > 0
+          ? Math.round(totalVotes / transformedProjects.length)
+          : 0,
+      topVoted: transformedProjects.slice(0, 5).map((p) => ({
+        projectTitle: p.projectTitle,
+        candidate: p.candidate.fullName,
+        votes: p.vote || 0,
+      })),
+    };
 
     return NextResponse.json(
       {
         success: true,
         projects: transformedProjects,
         total: transformedProjects.length,
+        votingStats,
+        filters: {
+          status,
+          onlyQualified,
+        },
       },
       { status: 200 }
     );
@@ -182,7 +226,7 @@ export async function PATCH(request: NextRequest) {
     )
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "fullName institution department email"
+        "fullName institution isQualified department email avatar matricNumber phone" // ✅ Added isQualified, matricNumber, phone
       )
       .lean();
 

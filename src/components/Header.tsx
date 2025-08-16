@@ -42,10 +42,8 @@ export default function Header() {
 
   return (
     <>
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+      <header
+        
         className="sticky top-0 w-full z-50 transition-all duration-300 bg-conces-blue shadow-lg"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,7 +132,7 @@ export default function Header() {
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>

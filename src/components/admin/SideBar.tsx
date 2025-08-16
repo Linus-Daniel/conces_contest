@@ -20,7 +20,7 @@ interface SidebarProps {
 const navigation = [
   { link: "/admin/contestants", name: "User Management", icon: UsersIcon },
   { link: "/admin/votes", name: "Vote Management", icon: ChartBarIcon },
-  { link: "/admin/contests", name: "Contest Management", icon: TrophyIcon },
+  { link: "/admin/contests", name: "submissions", icon: TrophyIcon },
 ];
 
 export default function Sidebar({
