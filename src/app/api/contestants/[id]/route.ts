@@ -5,13 +5,13 @@ import { connectDB } from "@/lib/mongodb";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
     const { isQualified } = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
     // Validate input
     if (typeof isQualified !== "boolean") {
@@ -66,12 +66,12 @@ export async function PATCH(
 // Optional: GET route to fetch single contestant qualification status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
     const contestant = await Enroll.findById(
       id,
       "fullName email isQualified updatedAt"

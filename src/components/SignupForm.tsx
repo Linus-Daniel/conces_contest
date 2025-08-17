@@ -138,7 +138,7 @@ export default function SignUpForm() {
   return (
     <>
       <Toaster
-        position="top-center"
+        position="top-left"
         toastOptions={{
           style: {
             background: "#363636",
