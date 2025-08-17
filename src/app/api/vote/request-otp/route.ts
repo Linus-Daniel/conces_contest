@@ -84,10 +84,10 @@ function encrypt(text: string): string {
 }
 
 // Create voter hash (same as your original)
-function createVoterHash(email: string, phone: string): string {
+function createVoterHash(phone: string): string {
   return crypto
     .createHash("sha256")
-    .update(`${email.toLowerCase().trim()}-${phone.trim()}`)
+    .update(`${phone.trim()}`)
     .digest("hex");
 }
 
@@ -152,22 +152,12 @@ export async function POST(request: NextRequest) {
     const { projectId, voterEmail, voterPhone } = body;
 
     // Validate input
-    if (!projectId || !voterEmail || !voterPhone) {
+    if (!projectId ||  !voterPhone) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
-
-    // Email validation
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(voterEmail)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
-    }
-
     // Phone validation
     if (!validateNigerianPhone(voterPhone)) {
       return NextResponse.json(
@@ -208,7 +198,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create voter hash and check for existing vote
-    const voterHash = createVoterHash(voterEmail, formattedPhone);
+    const voterHash = createVoterHash( formattedPhone);
     const existingVote = await Vote.findOne({
       projectId,
       voterHash,
@@ -340,6 +330,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "An unexpected error occurred. Please try again.",
+        message:error
       },
       { status: 500 }
     );

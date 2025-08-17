@@ -38,13 +38,6 @@ export default function AboutSection() {
               programs, and industry connections that prepare students for the
               challenges of tomorrow.
             </p>
-            <Link
-              href="#"
-              className="text-conces-green font-bold flex items-center hover:text-conces-green/80 transition-colors"
-            >
-              Learn more about our history
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
-            </Link>
           </motion.div>
 
           <motion.div

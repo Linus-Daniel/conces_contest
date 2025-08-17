@@ -15,7 +15,6 @@ import {
   FaMedal,
   FaAward,
 } from "react-icons/fa";
-import { GiTrophyCup, GiGoldBar } from "react-icons/gi";
 
 interface Step {
   icon: IconType;

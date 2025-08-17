@@ -48,7 +48,6 @@ export default function OTPVotingModal({
   onSuccess,
 }: OTPVotingModalProps) {
   const [step, setStep] = useState<"details" | "otp" | "success">("details");
-  const [voterEmail, setVoterEmail] = useState("");
   const [voterPhone, setVoterPhone] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,7 +55,6 @@ export default function OTPVotingModal({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [attempts, setAttempts] = useState(0);
 
-  // Countdown timer
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -86,17 +84,10 @@ export default function OTPVotingModal({
   };
 
   const handleRequestOTP = async () => {
-    if (!voterEmail.trim() || !voterPhone.trim()) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+   
 
     // Basic validation
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(voterEmail)) {
-      toast.error("Please enter a valid email");
-      return;
-    }
+  
 
     setLoading(true);
 
@@ -106,7 +97,6 @@ export default function OTPVotingModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          voterEmail: voterEmail.trim(),
           voterPhone: voterPhone.trim(),
         }),
       });
@@ -254,20 +244,7 @@ export default function OTPVotingModal({
           {/* Step Content */}
           {step === "details" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={voterEmail}
-                  onChange={(e) => setVoterEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-conces-green focus:border-conces-green transition-colors"
-                  disabled={loading}
-                />
-              </div>
-
+             
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   WhatsApp Phone Number *
@@ -301,7 +278,7 @@ export default function OTPVotingModal({
 
               <button
                 onClick={handleRequestOTP}
-                disabled={loading || !voterEmail.trim() || !voterPhone.trim()}
+                disabled={loading || !voterPhone.trim()}
                 className="w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-conces-green/90 transition-colors flex items-center justify-center"
               >
                 {loading ? (

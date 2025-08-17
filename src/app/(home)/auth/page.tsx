@@ -96,21 +96,26 @@ function AuthPage() {
                 Authentication Token
               </label>
               <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                </div>
                 <input
                   id="token"
+                  name="token"
                   type="password"
                   value={inputToken}
                   onChange={(e) => setInputToken(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter your token here..."
-                  className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl 
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           transition-all duration-200 text-sm sm:text-base
-                           placeholder-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl 
+             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+             transition-all duration-200 text-sm sm:text-base
+             placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-500
+             disabled:cursor-not-allowed"
                   disabled={isLoading}
                   autoComplete="off"
+                  aria-label="Token input"
+                  aria-disabled={isLoading}
                 />
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
             </div>
 
