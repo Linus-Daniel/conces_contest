@@ -96,10 +96,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const candidate = searchParams.get("candidate");
     const projectId = searchParams.get("projectId");
-    const status = searchParams.get("status") || "approved";
+    const status = searchParams.get("status") || "submitted"||"approved";
     const onlyQualified = searchParams.get("onlyQualified") !== "false"; // Default to true
 
-    const query: Record<string, unknown> = { status };
+    // const query: Record<string, unknown> = { status };
     const enroll = await Enroll.find({})
 
     if (projectId) {
@@ -136,12 +136,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (candidate) {
-      query.candidate = new Types.ObjectId(candidate);
-    }
+    // if (candidate) {
+    //   query.candidate = new Types.ObjectId(candidate);
+    // }
 
     // Get all projects first
-    const allProjects = await Project.find(query)
+    const allProjects = await Project.find({})
       .populate<{ candidate: IEnroll }>(
         "candidate",
         "_id fullName institution isQualified department email avatar matricNumber phone"
