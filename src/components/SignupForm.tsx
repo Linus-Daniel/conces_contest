@@ -10,7 +10,7 @@ import api from "@/lib/axiosInstance";
 import { useCandidate } from "@/context/authContext";
 import ImageUpload from "./ImageUpload";
 import { FaUpload, FaTimes } from "react-icons/fa";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { AxiosError } from "axios";
@@ -22,7 +22,6 @@ const formSchema = z.object({
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   institution: z.string().min(3, "Institution name is required"),
   department: z.string().min(2, "Department is required"),
-  level: z.string().min(1, "Level is required"),
   matricNumber: z.string().min(5, "Matric number is required"),
   agreeToTerms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms",
@@ -74,8 +73,6 @@ export default function SignUpForm() {
           duration: 5000,
         }
       );
-
-      // Redirect after a short delay to allow user to see the success message
       setTimeout(() => router.push("/submit"), 2000);
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -137,25 +134,7 @@ export default function SignUpForm() {
 
   return (
     <>
-      <Toaster
-        position="top-left"
-        toastOptions={{
-          style: {
-            background: "#363636",
-            color: "#fff",
-          },
-          success: {
-            duration: 4000,
-            iconTheme: {
-              primary: "#4BB543",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            duration: 5000,
-          },
-        }}
-      />
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -172,7 +151,12 @@ export default function SignUpForm() {
         </p>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(
+            onSubmit, // success callback
+            (errors) => {
+              console.log("❌ Validation errors:", errors)
+            }
+          )}
           className="space-y-4 sm:space-y-6"
           noValidate
         >
@@ -259,8 +243,6 @@ export default function SignUpForm() {
               required
             />
 
-          
-
             <Input
               label="Matric Number"
               {...register("matricNumber")}
@@ -274,7 +256,7 @@ export default function SignUpForm() {
             <h3 className="font-semibold text-conces-blue mb-2 text-sm sm:text-base">
               Competition Rules
             </h3>
-            <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
+            <ul className="text-xs sm:text-sm  text-gray-600 space-y-1">
               <li>
                 • Must be a registered engineering student in a Nigerian
                 institution
@@ -331,16 +313,6 @@ export default function SignUpForm() {
               Cancel
             </Button>
           </div>
-
-          <p className="text-center text-gray-600 text-xs sm:text-sm">
-            Already have an account?{" "}
-            <a
-              href="#"
-              className="text-conces-green font-medium hover:underline"
-            >
-              Sign In
-            </a>
-          </p>
         </form>
       </motion.div>
     </>

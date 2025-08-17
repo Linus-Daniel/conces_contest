@@ -16,7 +16,7 @@ import {
   Share2,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import OTPVotingModal from "@/components/OtpVotingModal";
 import api from "@/lib/axiosInstance";
 
@@ -157,7 +157,7 @@ export default function VotingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <Toaster position="top-center" />
+   
 
       {/* Keep your existing header */}
       <header className="bg-gradient-to-r from-conces-blue to-conces-blue/90 text-white">
