@@ -14,7 +14,7 @@ export interface IProject extends Document {
   updatedAt?: Date;
   vote?: number;
   feedback?: string;
-}  
+}
 
 const ProjectSchema = new Schema<IProject>(
   {
@@ -23,6 +23,7 @@ const ProjectSchema = new Schema<IProject>(
       ref: "Enroll",
       required: [true, "Candidate ID is required"],
       index: true,
+      unique: true, // ✅ Ensure one project per candidate
     },
     projectTitle: {
       type: String,
@@ -83,9 +84,26 @@ const ProjectSchema = new Schema<IProject>(
   }
 );
 
-// Indexes for performance
+// ✅ Create unique compound index to ensure one project per candidate
+ProjectSchema.index({ candidate: 1 }, { unique: true });
+
+// Other indexes for performance
 ProjectSchema.index({ candidate: 1, submittedAt: -1 });
 ProjectSchema.index({ status: 1 });
+
+// ✅ Add error handling for duplicate submissions
+ProjectSchema.post("save", function (error: any, doc: any, next: any) {
+  if (error.name === "MongoServerError" && error.code === 11000) {
+    if (error.keyPattern?.candidate) {
+      next(new Error("You have already submitted a project for this contest"));
+    } else {
+      next(error);
+    }
+  } else {
+    next(error);
+  }
+});
+
 const Project: Model<IProject> =
   mongoose.models.Project || mongoose.model<IProject>("Project", ProjectSchema);
 

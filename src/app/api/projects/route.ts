@@ -11,11 +11,11 @@ function formatCandidate(candidate: Partial<IEnroll> | null) {
     schoolName: candidate?.institution || "Unknown School",
     department: candidate?.department || "Unknown Department",
     email: candidate?.email || "",
-    _id:candidate?._id,
+    _id: candidate?._id,
     avatar: candidate?.avatar || null,
-    isQualified: candidate?.isQualified ?? true, // ✅ Added isQualified field
-    matricNumber: candidate?.matricNumber || "", // ✅ Added matricNumber for completeness
-    phone: candidate?.phone || "", // ✅ Added phone for completeness
+    isQualified: candidate?.isQualified ?? true,
+    matricNumber: candidate?.matricNumber || "",
+    phone: candidate?.phone || "",
   };
 }
 
@@ -37,6 +37,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Candidate ID is required" },
         { status: 401 }
+      );
+    }
+
+    // ✅ Check if candidate exists and is qualified
+    const candidateRecord = await Enroll.findById(candidate);
+    if (!candidateRecord) {
+      return NextResponse.json(
+        { error: "Candidate not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!candidateRecord.isQualified) {
+      return NextResponse.json(
+        { error: "You are not qualified to submit a project" },
+        { status: 403 }
+      );
+    }
+
+    // ✅ Check if candidate has already submitted a project
+    const existingProject = await Project.findOne({
+      candidate: new Types.ObjectId(candidate),
+    });
+    if (existingProject) {
+      return NextResponse.json(
+        {
+          error: "You have already submitted a project for this contest",
+          existingProject: {
+            _id: existingProject._id,
+            projectTitle: existingProject.projectTitle,
+            status: existingProject.status,
+            submittedAt: existingProject.submittedAt,
+          },
+        },
+        { status: 409 } // Conflict status code
       );
     }
 
@@ -78,6 +113,12 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Project submission error:", error);
+
+    // ✅ Handle duplicate submission error specifically
+    if (error instanceof Error && error.message.includes("already submitted")) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+
     return NextResponse.json(
       {
         error: "Failed to submit project",
@@ -88,7 +129,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 🔹 GET — Fetch Projects
+// 🔹 GET — Fetch Projects (Updated to include submission status check)
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -96,11 +137,34 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const candidate = searchParams.get("candidate");
     const projectId = searchParams.get("projectId");
-    const status = searchParams.get("status") || "submitted"||"approved";
-    const onlyQualified = searchParams.get("onlyQualified") !== "false"; // Default to true
+    const status = searchParams.get("status") || "submitted" || "approved";
+    const onlyQualified = searchParams.get("onlyQualified") !== "false";
+    const checkSubmission = searchParams.get("checkSubmission") === "true"; // ✅ New parameter
 
-    // const query: Record<string, unknown> = { status };
-    const enroll = await Enroll.find({})
+    // ✅ Check if specific candidate has submitted a project
+    if (checkSubmission && candidate) {
+      const existingProject = await Project.findOne({
+        candidate: new Types.ObjectId(candidate),
+      })
+        .populate<{ candidate: IEnroll }>(
+          "candidate",
+          "_id fullName institution isQualified department email avatar matricNumber phone"
+        )
+        .lean();
+
+      return NextResponse.json(
+        {
+          hasSubmitted: !!existingProject,
+          project: existingProject
+            ? {
+                ...existingProject,
+                candidate: formatCandidate(existingProject.candidate),
+              }
+            : null,
+        },
+        { status: 200 }
+      );
+    }
 
     if (projectId) {
       const project = await Project.findById(projectId)
@@ -117,7 +181,6 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Check if candidate is qualified (if onlyQualified is true)
       if (onlyQualified && !project.candidate?.isQualified) {
         return NextResponse.json(
           { error: "Project not found or candidate not qualified" },
@@ -136,20 +199,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // if (candidate) {
-    //   query.candidate = new Types.ObjectId(candidate);
-    // }
-
-    // Get all projects first
+    // Get all projects
     const allProjects = await Project.find({})
       .populate<{ candidate: IEnroll }>(
         "candidate",
         "_id fullName institution isQualified department email avatar matricNumber phone"
       )
-      .sort({ totalVotes: -1, submittedAt: -1 }) // Sort by votes first, then by submission date
+      .sort({ totalVotes: -1, submittedAt: -1 })
       .lean();
 
-    // Filter for qualified candidates only (if onlyQualified is true)
     const filteredProjects = onlyQualified
       ? allProjects.filter((project) => project.candidate?.isQualified === true)
       : allProjects;
@@ -159,13 +217,11 @@ export async function GET(request: NextRequest) {
       candidate: formatCandidate(project.candidate),
     }));
 
-    // Calculate total votes across all qualified projects
     const totalVotes = transformedProjects.reduce(
       (sum, project) => sum + (project.vote || 0),
       0
     );
 
-    // Get voting statistics
     const votingStats = {
       totalVotes,
       totalProjects: transformedProjects.length,
@@ -227,7 +283,7 @@ export async function PATCH(request: NextRequest) {
     )
       .populate<{ candidate: IEnroll }>(
         "candidate",
-        "_id fullName institution isQualified department email avatar matricNumber phone" // ✅ Added isQualified, matricNumber, phone
+        "_id fullName institution isQualified department email avatar matricNumber phone"
       )
       .lean();
 

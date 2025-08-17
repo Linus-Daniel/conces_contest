@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import ImageUpload from "./ImageUpload";
+import ImageUpload from "./ImageUpload"; // ✅ Import the modal
 import {
   InformationCircleIcon,
   XMarkIcon,
@@ -17,6 +17,7 @@ import { useCandidate } from "@/context/authContext";
 import Image from "next/image";
 import api from "@/lib/axiosInstance";
 import Confetti from "react-confetti";
+import SubmissionStatusModal from "./SubmissionModal";
 
 interface ProjectFormData {
   projectTitle: string;
@@ -32,6 +33,9 @@ export default function SubmitProjectForm() {
   const [mockupUrl, setMockupUrl] = useState<string>("");
   const [uploadError, setUploadError] = useState<string>("");
   const [submissionComplete, setSubmissionComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ✅ Loading state
+  const [existingProject, setExistingProject] = useState<any>(null); // ✅ Store existing project
+  const [showStatusModal, setShowStatusModal] = useState(false); // ✅ Modal state
   const { candidate } = useCandidate();
 
   const {
@@ -40,6 +44,35 @@ export default function SubmitProjectForm() {
     formState: { errors },
     reset,
   } = useForm<ProjectFormData>();
+
+  // ✅ Check if user has already submitted a project
+  useEffect(() => {
+    const checkExistingSubmission = async () => {
+      if (!candidate?._id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get(
+          `/projects?candidate=${candidate._id}&checkSubmission=true`
+        );
+        const result = response.data;
+
+        if (result.hasSubmitted && result.project) {
+          setExistingProject(result.project);
+          setShowStatusModal(true);
+        }
+      } catch (error) {
+        console.error("Error checking existing submission:", error);
+        // If there's an error, we'll allow the user to proceed
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkExistingSubmission();
+  }, [candidate?._id]);
 
   const handlePrimaryFileUpload = (result: any) => {
     setPrimaryFileUrl(result.secure_url);
@@ -91,14 +124,24 @@ export default function SubmitProjectForm() {
       reset();
       setPrimaryFileUrl("");
       setMockupUrl("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submission error:", error);
       toast.dismiss();
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to submit project. Please try again."
-      );
+
+      // ✅ Handle duplicate submission error
+      if (error.response?.status === 409) {
+        const errorData = error.response.data;
+        if (errorData.existingProject) {
+          setExistingProject(errorData.existingProject);
+          setShowStatusModal(true);
+        }
+        toast.error("You have already submitted a project for this contest");
+      } else {
+        toast.error(
+          error.response?.data?.error ||
+            "Failed to submit project. Please try again."
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -122,36 +165,73 @@ export default function SubmitProjectForm() {
 
     try {
       toast.loading("Saving draft...");
-      const response = await fetch("/api/projects/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          candidateId: candidate?._id || candidate?._id,
-          ...formData,
-          primaryFileUrl: primaryFileUrl || "",
-          mockupUrl,
-          status: "draft",
-        }),
+      const response = await api.post("/projects", {
+        candidate: candidate?._id || candidate?._id,
+        ...formData,
+        primaryFileUrl: primaryFileUrl || "",
+        mockupUrl,
+        status: "draft", // ✅ Explicitly set status to draft
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to save draft");
-      }
+      const result = response.data;
 
       toast.dismiss();
       toast.success(<b>Draft saved successfully!</b>, {
         duration: 3000,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Draft save error:", error);
       toast.dismiss();
-      toast.error("Failed to save draft. Please try again.");
+
+      // ✅ Handle duplicate submission error for drafts too
+      if (error.response?.status === 409) {
+        toast.error("You have already submitted a project for this contest");
+      } else {
+        toast.error("Failed to save draft. Please try again.");
+      }
     }
   };
+
+  // ✅ Loading state while checking existing submission
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <ArrowPathIcon className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Checking your submission status...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ✅ Show status modal if user has already submitted
+  if (showStatusModal && existingProject) {
+    return (
+      <>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              borderRadius: "12px",
+              background: "#333",
+              color: "#fff",
+            },
+          }}
+        />
+        <SubmissionStatusModal
+          project={existingProject}
+          onClose={() => {
+            router.push("/"); // Redirect to dashboard or appropriate page
+            // setShowStatusModal(false);
+          }}
+        />
+      </>
+    );
+  }
 
   if (submissionComplete) {
     return (
@@ -203,7 +283,12 @@ export default function SubmitProjectForm() {
             </div>
           </div>
           <div className="space-y-4">
-      
+            <Button
+              onClick={() => router.push("/dashboard")}
+              className="w-full"
+            >
+              Go to Dashboard
+            </Button>
           </div>
         </motion.div>
       </div>
