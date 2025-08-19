@@ -162,7 +162,7 @@ export default function VotingPage() {
     const newVoted = new Set(votedProjects);
     newVoted.add(selectedProjectToVote._id);
     setVotedProjects(newVoted);
-    localStorage.setItem("votedProjects", JSON.stringify(Array.from(newVoted)));
+    // localStorage.setItem("votedProjects", JSON.stringify(Array.from(newVoted)));
 
     // Update project votes in state (SSE will also update this, but we do it immediately for better UX)
     setProjects((prev) =>
@@ -277,7 +277,7 @@ export default function VotingPage() {
               Help choose the new face of CONCES
             </p>
             <div className="flex items-center justify-center gap-4 text-sm text-white/80 mb-6">
-              <span>🚀 WhatsApp verification - secure and instant!</span>
+              <span> secure and instant!</span>
               <div
                 className={`flex items-center gap-2 px-3 py-1 rounded-full ${
                   connectionStatus === "connected"
@@ -406,7 +406,7 @@ export default function VotingPage() {
                 key={project._id}
                 project={project}
                 index={index}
-                isVoted={votedProjects.has(project._id)}
+                // isVoted={votedProjects.has(project._id)}
                 onVote={() => handleVoteClick(project)}
                 onView={() => setSelectedProject(project)}
                 isLiveConnected={connectionStatus === "connected"}
@@ -451,14 +451,14 @@ export default function VotingPage() {
 function ProjectCard({
   project,
   index,
-  isVoted,
+  // isVoted,
   onVote,
   onView,
   isLiveConnected,
 }: {
   project: Project;
   index: number;
-  isVoted: boolean;
+  // isVoted: boolean;
   onVote: () => void;
   onView: () => void;
   isLiveConnected: boolean;
@@ -575,24 +575,18 @@ function ProjectCard({
         <div className="flex gap-2">
           <button
             onClick={onVote}
-            disabled={isVoted}
+            // disabled={isVoted}
             className={`flex-1 py-2 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-              isVoted
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-conces-green text-white hover:bg-conces-green/90"
+            
+                 "bg-conces-green text-white hover:bg-conces-green/90"
             }`}
           >
-            {isVoted ? (
-              <>
-                <HeartSolidIcon className="w-5 h-5" />
-                Voted
-              </>
-            ) : (
+          
               <>
                 <MessageCircle className="w-4 h-4" />
                 Vote
               </>
-            )}
+          
           </button>
           <button
             onClick={() => {
