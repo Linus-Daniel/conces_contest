@@ -103,7 +103,7 @@ export default function Sidebar({
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-20 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-gray-200 pt-16">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-gray-200">
           <SidebarContent />
         </div>
       </div>

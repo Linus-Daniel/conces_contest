@@ -20,7 +20,7 @@ async function Page() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-2 lg:px-2">
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Admin Dashboard
@@ -38,7 +38,7 @@ async function Page() {
                 Contestant Management
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-2">
               {contestants ? (
                 <UserManagement contestants={contestants} />
               ) : (
@@ -67,15 +67,7 @@ async function Page() {
           </div>
 
           {/* Contest Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                Contest Management
-              </h2>
-            </div>
-            <div className="p-6">
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Wrapper from "@/components/Wrapper";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Logo Rebranding Contest",
+  title: "Conces Logo Rebranding",
   description: "Logo rebranding contest and voting platform",
+  icons: {
+    icon: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <link  rel="icon" href="" />
+      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

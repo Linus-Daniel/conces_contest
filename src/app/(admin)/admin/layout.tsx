@@ -5,6 +5,9 @@ import Layout from "@/components/admin/Layout";
 export const metadata: Metadata = {
   title: "Conces Contest Admin",
   description: "Contest managment dashboard",
+  icons: {
+    icon: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
