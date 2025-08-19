@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         try {
           // Fetch latest vote counts
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_URL}/api/projects/public`
+            `${process.env.NODE_ENV == "production"?"https://brandchallenge.conces.org/api/projects":"http://localhost:3000/api/projects/"}`
           );
           const data = await response.json();
 

@@ -1,5 +1,5 @@
-"use client"
-// Replace the relevant parts in your existing voting page
+// Enhanced VotingPage with SSE integration
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -14,13 +14,16 @@ import {
   X,
   Share,
   Share2,
+  Wifi,
+  WifiOff,
+  TrendingUp,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import OTPVotingModal from "@/components/OtpVotingModal";
 import api from "@/lib/axiosInstance";
 
-// Keep your existing Project interface
+// Your existing Project interface
 interface Project {
   _id: string;
   candidate: {
@@ -40,8 +43,88 @@ interface Project {
   submittedAt: string;
 }
 
+// SSE Data interface
+interface SSEVoteUpdate {
+  type: "connected" | "voteUpdate" | "error";
+  projects?: {
+    id: string;
+    title: string;
+    votes: number;
+    candidate: any;
+  }[];
+  totalVotes?: number;
+  timestamp?: string;
+  message?: string;
+}
+
+// Custom hook for SSE vote updates
+function useRealTimeVotes() {
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connecting" | "connected" | "disconnected"
+  >("connecting");
+  const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [totalVotes, setTotalVotes] = useState(0);
+
+  const updateProjectVotes = (projects: Project[], voteUpdates: any[]) => {
+    return projects.map((project) => {
+      const update = voteUpdates.find((u) => u.id === project._id);
+      return update ? { ...project, vote: update.votes } : project;
+    });
+  };
+
+  const connectToSSE = (onVoteUpdate: (updates: any[]) => void) => {
+    const eventSource = new EventSource("/api/vote/stream");
+
+    eventSource.onopen = () => {
+      setConnectionStatus("connected");
+      console.log("🔴 Live vote tracking connected");
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data: SSEVoteUpdate = JSON.parse(event.data);
+
+        switch (data.type) {
+          case "connected":
+            setConnectionStatus("connected");
+            break;
+
+          case "voteUpdate":
+            if (data.projects) {
+              onVoteUpdate(data.projects);
+              setTotalVotes(data.totalVotes || 0);
+              setLastUpdate(data.timestamp || "");
+            }
+            break;
+
+          case "error":
+            console.error("SSE Error:", data.message);
+            break;
+        }
+      } catch (error) {
+        console.error("Error parsing SSE data:", error);
+      }
+    };
+
+    eventSource.onerror = () => {
+      setConnectionStatus("disconnected");
+      console.log("❌ Live vote tracking disconnected");
+    };
+
+    return eventSource;
+  };
+
+  return {
+    connectionStatus,
+    lastUpdate,
+    totalVotes,
+    updateProjectVotes,
+    connectToSSE,
+  };
+}
+
 export default function VotingPage() {
-  // Keep your existing state variables
+  // Your existing state variables
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,12 +134,21 @@ export default function VotingPage() {
   const [sortBy, setSortBy] = useState<"votes" | "newest" | "title">("votes");
   const [filterSchool, setFilterSchool] = useState<string>("all");
 
-  // Updated OTP modal states
+  // OTP modal states
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
 
-  // Handle vote button click - now opens OTP modal
+  // SSE hook
+  const {
+    connectionStatus,
+    lastUpdate,
+    totalVotes,
+    updateProjectVotes,
+    connectToSSE,
+  } = useRealTimeVotes();
+
+  // Handle vote button click
   const handleVoteClick = (project: Project) => {
     setSelectedProjectToVote(project);
     setShowOTPModal(true);
@@ -72,7 +164,7 @@ export default function VotingPage() {
     setVotedProjects(newVoted);
     localStorage.setItem("votedProjects", JSON.stringify(Array.from(newVoted)));
 
-    // Update project votes in state
+    // Update project votes in state (SSE will also update this, but we do it immediately for better UX)
     setProjects((prev) =>
       prev.map((p) =>
         p._id === selectedProjectToVote._id ? { ...p, vote: newVoteCount } : p
@@ -83,10 +175,10 @@ export default function VotingPage() {
     setShowOTPModal(false);
     setSelectedProjectToVote(null);
 
-    toast.success("Vote confirmed successfully!");
+    toast.success("Vote confirmed successfully! 🎉");
   };
 
-  // Keep all your existing useEffect hooks and functions
+  // Initialize and fetch projects
   useEffect(() => {
     const stored = localStorage.getItem("votedProjects");
     if (stored) {
@@ -94,6 +186,19 @@ export default function VotingPage() {
     }
     fetchProjects();
   }, []);
+
+  // Set up SSE connection
+  useEffect(() => {
+    if (projects.length === 0) return;
+
+    const eventSource = connectToSSE((voteUpdates) => {
+      setProjects((prev) => updateProjectVotes(prev, voteUpdates));
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, [projects.length > 0]);
 
   const fetchProjects = async () => {
     try {
@@ -109,7 +214,7 @@ export default function VotingPage() {
     }
   };
 
-  // Keep your existing filter and sort logic
+  // Filter and sort logic (existing)
   useEffect(() => {
     let filtered = [...projects];
 
@@ -157,9 +262,7 @@ export default function VotingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-   
-
-      {/* Keep your existing header */}
+      {/* Enhanced header with live status */}
       <header className="bg-gradient-to-r from-conces-blue to-conces-blue/90 text-white">
         <div className="container mx-auto px-6 py-8">
           <motion.div
@@ -173,10 +276,37 @@ export default function VotingPage() {
             <p className="text-xl text-white/90 mb-2">
               Help choose the new face of CONCES
             </p>
-            <p className="text-sm text-white/80 mb-6">
-              🚀 Now with WhatsApp verification - secure and instant!
-            </p>
-            {/* Keep your existing stats display */}
+            <div className="flex items-center justify-center gap-4 text-sm text-white/80 mb-6">
+              <span>🚀 WhatsApp verification - secure and instant!</span>
+              <div
+                className={`flex items-center gap-2 px-3 py-1 rounded-full ${
+                  connectionStatus === "connected"
+                    ? "bg-green-500/20 text-green-200"
+                    : connectionStatus === "connecting"
+                    ? "bg-yellow-500/20 text-yellow-200"
+                    : "bg-red-500/20 text-red-200"
+                }`}
+              >
+                {connectionStatus === "connected" ? (
+                  <>
+                    <Wifi className="w-4 h-4" />
+                    <span>Live Updates</span>
+                  </>
+                ) : connectionStatus === "connecting" ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-4 h-4" />
+                    <span>Offline</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Enhanced stats with live indicator */}
             <div className="mt-6 flex justify-center gap-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-conces-gold">
@@ -184,11 +314,22 @@ export default function VotingPage() {
                 </div>
                 <div className="text-sm text-white/80">Total Designs</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-conces-gold">
-                  {projects.reduce((sum, p) => sum + (p.vote || 0), 0)}
+              <div className="text-center relative">
+                <div className="text-3xl font-bold text-conces-gold flex items-center justify-center gap-2">
+                  {totalVotes ||
+                    projects.reduce((sum, p) => sum + (p.vote || 0), 0)}
+                  {connectionStatus === "connected" && (
+                    <TrendingUp className="w-5 h-5 text-green-400 animate-pulse" />
+                  )}
                 </div>
-                <div className="text-sm text-white/80">Total Votes</div>
+                <div className="text-sm text-white/80">
+                  Total Votes
+                  {lastUpdate && connectionStatus === "connected" && (
+                    <div className="text-xs text-green-200 mt-1">
+                      Updated {new Date(lastUpdate).toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-conces-gold">
@@ -201,7 +342,7 @@ export default function VotingPage() {
         </div>
       </header>
 
-      {/* Keep your existing filters and search */}
+      {/* Your existing filters and search (unchanged) */}
       <div className="sticky top-0 z-40 bg-white shadow-md">
         <div className="container mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row gap-4">
@@ -217,7 +358,6 @@ export default function VotingPage() {
                 />
               </div>
             </div>
-            {/* Keep your existing select dropdowns */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -243,7 +383,7 @@ export default function VotingPage() {
         </div>
       </div>
 
-      {/* Keep your existing projects grid */}
+      {/* Projects grid (your existing code) */}
       <div className="container mx-auto px-6 py-12">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -267,15 +407,16 @@ export default function VotingPage() {
                 project={project}
                 index={index}
                 isVoted={votedProjects.has(project._id)}
-                onVote={() => handleVoteClick(project)} // Updated to use OTP flow
+                onVote={() => handleVoteClick(project)}
                 onView={() => setSelectedProject(project)}
+                isLiveConnected={connectionStatus === "connected"}
               />
             ))}
           </motion.div>
         )}
       </div>
 
-      {/* Updated OTP Modal */}
+      {/* Your existing modals */}
       {showOTPModal && selectedProjectToVote && (
         <OTPVotingModal
           projectId={selectedProjectToVote._id}
@@ -289,7 +430,6 @@ export default function VotingPage() {
         />
       )}
 
-      {/* Keep your existing project detail modal */}
       <AnimatePresence>
         {selectedProject && (
           <ProjectDetailModal
@@ -297,7 +437,7 @@ export default function VotingPage() {
             isVoted={votedProjects.has(selectedProject._id)}
             onClose={() => setSelectedProject(null)}
             onVote={() => {
-              handleVoteClick(selectedProject); // Updated to use OTP flow
+              handleVoteClick(selectedProject);
               setSelectedProject(null);
             }}
           />
@@ -307,21 +447,35 @@ export default function VotingPage() {
   );
 }
 
-// Updated ProjectCard component - only the vote button text changes
+// Enhanced ProjectCard with live update animations
 function ProjectCard({
   project,
   index,
   isVoted,
   onVote,
   onView,
+  isLiveConnected,
 }: {
   project: Project;
   index: number;
   isVoted: boolean;
   onVote: () => void;
   onView: () => void;
+  isLiveConnected: boolean;
 }) {
   const [imageLoading, setImageLoading] = useState(true);
+  const [previousVotes, setPreviousVotes] = useState(project.vote || 0);
+  const [showVoteAnimation, setShowVoteAnimation] = useState(false);
+
+  // Animate vote count changes
+  useEffect(() => {
+    const currentVotes = project.vote || 0;
+    if (currentVotes > previousVotes && isLiveConnected) {
+      setShowVoteAnimation(true);
+      setTimeout(() => setShowVoteAnimation(false), 2000);
+    }
+    setPreviousVotes(currentVotes);
+  }, [project.vote, previousVotes, isLiveConnected]);
 
   return (
     <motion.div
@@ -329,9 +483,26 @@ function ProjectCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ y: -5 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden group"
+      className="bg-white rounded-xl shadow-lg overflow-hidden group relative"
     >
-      {/* Keep your existing image and overlay code */}
+      {/* Vote animation overlay */}
+      <AnimatePresence>
+        {showVoteAnimation && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            className="absolute inset-0 z-10 flex items-center justify-center bg-green-500/20 backdrop-blur-sm"
+          >
+            <div className="bg-green-500 text-white px-4 py-2 rounded-full flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              <span className="font-bold">New Vote!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Your existing image and content code */}
       <div className="relative h-64 bg-gray-100">
         {imageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -356,13 +527,28 @@ function ProjectCard({
           </div>
         </div>
 
+        {/* Enhanced vote counter with live indicator */}
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-          <ArrowUpIcon className="w-4 h-4 text-conces-green" />
-          <span className="font-semibold text-sm">{project.vote || 0}</span>
+          <ArrowUpIcon
+            className={`w-4 h-4 text-conces-green ${
+              showVoteAnimation ? "animate-bounce" : ""
+            }`}
+          />
+          <motion.span
+            key={project.vote} // Re-animate on vote change
+            initial={{ scale: showVoteAnimation ? 1.2 : 1 }}
+            animate={{ scale: 1 }}
+            className="font-semibold text-sm"
+          >
+            {project.vote || 0}
+          </motion.span>
+          {isLiveConnected && (
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse ml-1" />
+          )}
         </div>
       </div>
 
-      {/* Keep your existing content section but update the vote button */}
+      {/* Your existing content section */}
       <div className="p-4">
         <h3 className="font-bold text-lg text-conces-blue mb-1 line-clamp-1">
           {project.projectTitle}
@@ -385,7 +571,7 @@ function ProjectCard({
           />
         </div>
 
-        {/* Updated vote button with WhatsApp icon */}
+        {/* Your existing vote button */}
         <div className="flex gap-2">
           <button
             onClick={onVote}
@@ -431,7 +617,7 @@ function ProjectCard({
   );
 }
 
-// Keep your existing ProjectDetailModal but update the vote button text
+// Your existing ProjectDetailModal (unchanged)
 function ProjectDetailModal({
   project,
   isVoted,
@@ -462,7 +648,7 @@ function ProjectDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col md:flex-row h-full">
-          {/* Keep your existing image section */}
+          {/* Your existing modal content - keeping it the same */}
           <div className="md:w-1/2 bg-gray-100 relative">
             <button
               onClick={onClose}
@@ -515,7 +701,6 @@ function ProjectDetailModal({
             </div>
           </div>
 
-          {/* Keep your existing content section but update the vote button */}
           <div className="md:w-1/2 p-6 md:p-8 overflow-y-auto">
             <div className="space-y-6">
               <div>
@@ -541,7 +726,6 @@ function ProjectDetailModal({
                 </div>
               </div>
 
-              {/* Keep your existing design concept, color palette, and inspiration sections */}
               <div>
                 <h3 className="font-semibold text-conces-blue mb-2">
                   Design Concept
@@ -569,7 +753,6 @@ function ProjectDetailModal({
                 </p>
               </div>
 
-              {/* Updated actions with WhatsApp vote button */}
               <div className="flex gap-3 pt-4 border-t">
                 <button
                   onClick={onVote}

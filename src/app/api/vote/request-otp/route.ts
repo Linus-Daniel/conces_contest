@@ -1,11 +1,12 @@
-// api/vote/request-otp/route.ts
+// api/vote/request-otp/route.ts - Updated OTP request endpoint
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
+import OTP from "@/models/OTP";
 import Vote from "@/models/Vote";
 import crypto from "crypto";
 
-// WhatsApp Service
+// WhatsApp Service (your existing code)
 class WhatsAppService {
   private accessToken: string;
   private phoneNumberId: string;
@@ -13,23 +14,19 @@ class WhatsAppService {
   constructor() {
     this.accessToken = process.env.WHATSAPP_ACCESS_TOKEN!;
     this.phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!;
-    console.log(this.accessToken,this.phoneNumberId, "whatsapp credentals")
   }
 
-  async sendOTP(
+  async sendOTPTemplate(
     phoneNumber: string,
-    code: string,
-    projectTitle: string
+    code: string
   ): Promise<{
     success: boolean;
     messageId?: string;
     error?: string;
   }> {
     try {
-      const message = `Your voting code for "${projectTitle}": ${code}\n\nThis code expires in 5 minutes. Use it to confirm your vote.`;
-
       const response = await fetch(
-        `https://graph.facebook.com/v22.0/${this.phoneNumberId}/messages`,
+        `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`,
         {
           method: "POST",
           headers: {
@@ -39,25 +36,34 @@ class WhatsAppService {
           body: JSON.stringify({
             messaging_product: "whatsapp",
             to: phoneNumber.replace("+", ""),
-            type: "text",
-            text: { body: message },
+            type: "template",
+            template: {
+              name: "conces_contest",
+              language: { code: "en_US" },
+              components: [
+                {
+                  type: "body",
+                  parameters: [{ type: "text", text: code }],
+                },
+                {
+                  type: "button",
+                  sub_type: "url",
+                  index: "0",
+                  parameters: [{ type: "text", text: code }],
+                },
+              ],
+            },
           }),
         }
       );
 
       const result = await response.json();
-
-      if (response.ok && result.messages) {
-        return {
-          success: true,
-          messageId: result.messages[0].id,
-        };
-      } else {
-        return {
-          success: false,
-          error: result.error?.message || "Failed to send WhatsApp message",
-        };
-      }
+      return response.ok && result.messages
+        ? { success: true, messageId: result.messages[0].id }
+        : {
+            success: false,
+            error: result.error?.message || "Failed to send WhatsApp message",
+          };
     } catch (error: any) {
       return {
         success: false,
@@ -67,7 +73,7 @@ class WhatsAppService {
   }
 }
 
-// Encryption functions (same as your original)
+// Utility functions
 function encrypt(text: string): string {
   const algorithm = "aes-256-gcm";
   const keyString =
@@ -83,40 +89,25 @@ function encrypt(text: string): string {
   return iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
 }
 
-// Create voter hash (same as your original)
-function createVoterHash(phone: string): string {
-  return crypto
-    .createHash("sha256")
-    .update(`${phone.trim()}`)
-    .digest("hex");
-}
-
-// Validate Nigerian phone number (same as your original)
 function validateNigerianPhone(phone: string): boolean {
   const cleaned = phone.replace(/\D/g, "");
   const patterns = [/^234[789]\d{9}$/, /^0[789]\d{9}$/, /^[789]\d{9}$/];
   return patterns.some((pattern) => pattern.test(cleaned));
 }
 
-// Format Nigerian phone number (same as your original)
 function formatNigerianPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, "");
-  if (cleaned.startsWith("234")) {
-    return `+${cleaned}`;
-  } else if (cleaned.startsWith("0")) {
-    return `+234${cleaned.slice(1)}`;
-  } else if (cleaned.length === 10 && /^[789]/.test(cleaned)) {
-    return `+234${cleaned}`;
-  }
+  if (cleaned.startsWith("234")) return `+${cleaned}`;
+  if (cleaned.startsWith("0")) return `+234${cleaned.slice(1)}`;
+  if (cleaned.length === 10 && /^[789]/.test(cleaned)) return `+234${cleaned}`;
   return phone;
 }
 
-// Generate OTP
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Rate limiting store (use Redis in production)
+// Rate limiting
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 function checkRateLimit(phoneNumber: string): {
@@ -130,10 +121,7 @@ function checkRateLimit(phoneNumber: string): {
   const entry = rateLimitStore.get(phoneNumber);
 
   if (!entry || entry.resetTime < now) {
-    rateLimitStore.set(phoneNumber, {
-      count: 1,
-      resetTime: now + windowSize,
-    });
+    rateLimitStore.set(phoneNumber, { count: 1, resetTime: now + windowSize });
     return { allowed: true };
   }
 
@@ -149,15 +137,16 @@ function checkRateLimit(phoneNumber: string): {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { projectId, voterEmail, voterPhone } = body;
+    const { projectId, voterPhone } = body;
 
     // Validate input
-    if (!projectId ||  !voterPhone) {
+    if (!projectId || !voterPhone) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
+
     // Phone validation
     if (!validateNigerianPhone(voterPhone)) {
       return NextResponse.json(
@@ -170,6 +159,7 @@ export async function POST(request: NextRequest) {
     }
 
     const formattedPhone = formatNigerianPhone(voterPhone);
+    const encryptedPhone = encrypt(formattedPhone);
 
     // Check rate limit
     const rateLimit = checkRateLimit(formattedPhone);
@@ -182,9 +172,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 429,
-          headers: {
-            "Retry-After": rateLimit.retryAfter?.toString() || "120",
-          },
+          headers: { "Retry-After": rateLimit.retryAfter?.toString() || "120" },
         }
       );
     }
@@ -197,11 +185,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Create voter hash and check for existing vote
-    const voterHash = createVoterHash( formattedPhone);
+    // 🔍 CHECK 1: Has this phone number already voted for this project?
     const existingVote = await Vote.findOne({
+      phoneNumber: encryptedPhone,
       projectId,
-      voterHash,
     });
 
     if (existingVote) {
@@ -211,17 +198,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for existing pending OTP session
-    const existingPendingVote = await Vote.findOne({
-      voterHash,
+    // 🔍 CHECK 2: Does this phone number have a pending, unused OTP for this project?
+    const existingOTP = await OTP.findOne({
+      phoneNumber: encryptedPhone,
       projectId,
-      status: "pending",
-      "otp.expiresAt": { $gt: new Date() },
+      expiresAt: { $gt: new Date() },
+      used: false,
     });
 
-    if (existingPendingVote) {
+    if (existingOTP) {
       const expiresIn = Math.floor(
-        (existingPendingVote.otp.expiresAt.getTime() - Date.now()) / 1000
+        (existingOTP.expiresAt.getTime() - Date.now()) / 1000
       );
       return NextResponse.json(
         {
@@ -230,53 +217,62 @@ export async function POST(request: NextRequest) {
           message: `Please check your WhatsApp or wait ${Math.ceil(
             expiresIn / 60
           )} minute(s)`,
-          sessionId: existingPendingVote._id,
+          sessionId: existingOTP._id,
         },
         { status: 400 }
       );
     }
 
-    // Generate OTP and create session
+    // 🔍 CHECK 3: Has this phone number used an OTP to vote (even if vote failed)?
+    const usedOTP = await OTP.findOne({
+      phoneNumber: encryptedPhone,
+      projectId,
+      voteConfirmed: true,
+    });
+
+    if (usedOTP) {
+      return NextResponse.json(
+        { error: "You have already voted for this design" },
+        { status: 409 }
+      );
+    }
+
+    // Generate new OTP
     const otpCode = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Get IP and user agent
+    // Get request metadata
     const ipAddress =
       request.headers.get("x-forwarded-for") ||
       request.headers.get("x-real-ip") ||
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // Create OTP session (reusing your Vote model but with pending status)
-    const otpSession = new Vote({
+    // Create new OTP session
+    const newOTP = new OTP({
+      phoneNumber: encryptedPhone,
+      code: otpCode,
       projectId,
-      voterHash,
-      voterEmail: encrypt(voterEmail),
-      voterPhone: encrypt(formattedPhone),
+      expiresAt,
+      used: false,
+      voteConfirmed: false,
+      attempts: 0,
       ipAddress,
       userAgent,
-      status: "pending",
-      otp: {
-        code: otpCode,
-        expiresAt,
-        attempts: 0,
-        used: false,
-      },
     });
 
-    await otpSession.save();
+    await newOTP.save();
 
     // Send WhatsApp OTP
     const whatsAppService = new WhatsAppService();
-    const whatsAppResult = await whatsAppService.sendOTP(
+    const whatsAppResult = await whatsAppService.sendOTPTemplate(
       formattedPhone,
-      otpCode,
-      project.projectTitle
+      otpCode
     );
 
     if (!whatsAppResult.success) {
-      // Clean up session if WhatsApp failed
-      await Vote.deleteOne({ _id: otpSession._id });
+      // Clean up OTP if WhatsApp failed
+      await OTP.deleteOne({ _id: newOTP._id });
 
       console.error("Failed to send WhatsApp OTP:", {
         error: whatsAppResult.error,
@@ -301,7 +297,7 @@ export async function POST(request: NextRequest) {
     const response: any = {
       success: true,
       message: "Verification code sent to your WhatsApp",
-      sessionId: otpSession._id,
+      sessionId: newOTP._id,
       expiresIn: 300, // 5 minutes
       phoneNumber: formattedPhone.replace(
         /(\+234)(\d{3})(\d{3})(\d{4})/,
@@ -330,7 +326,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "An unexpected error occurred. Please try again.",
-        message:error
+        message: error.message,
       },
       { status: 500 }
     );
