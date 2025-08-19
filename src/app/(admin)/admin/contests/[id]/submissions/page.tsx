@@ -9,8 +9,6 @@ import {
   FunnelIcon,
   HeartIcon,
   ChatBubbleLeftEllipsisIcon,
-  EyeIcon,
-  StarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
