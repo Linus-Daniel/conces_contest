@@ -12,7 +12,7 @@ export default function HomePage() {
       <HeroSection />
       {/* <CountdownTimer /> */}
       <AboutSection />
-      <UniversitiesSection />
+      {/* <UniversitiesSection /> */}
       <ContestSection />
       <Contests />
     </>

@@ -12,7 +12,7 @@
 //     <ParallaxProvider>
 //       <div className="contest-page">
 //         <ContestHero
-//           headline="Redesign the Face of CONCES — and Win ₦500,000"
+//           headline="Redesign the Face of CONCES — and Win ₦400,000"
 //           subtext="Open to every engineering and tech student in Nigeria. Submit your vision. Inspire a movement."
 //         />
 
@@ -27,12 +27,10 @@
 // };
 
 // export default ContestPage;
-import React from 'react'
+import React from "react";
 
 function page() {
-  return (
-    <div>page</div>
-  )
+  return <div>page</div>;
 }
 
-export default page
+export default page;
