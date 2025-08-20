@@ -78,13 +78,7 @@ export default function Header() {
               >
                 Challenge
               </Link>
-              <Link
-                href="/#universities"
-                className="nav-link text-white font-medium hover:text-conces-green transition-colors duration-200"
-              >
-                Universities
-              </Link>
-
+             
               {candidate ? (
                 <div className="flex items-center space-x-3">
                   {/* User Avatar and Name */}
@@ -219,13 +213,7 @@ export default function Header() {
                     >
                       Challenge
                     </Link>
-                    <Link
-                      href="/#universities"
-                      onClick={closeMobileMenu}
-                      className="block text-white font-medium py-3 px-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
-                    >
-                      Universities
-                    </Link>
+                    
                   </div>
                 </nav>
 
