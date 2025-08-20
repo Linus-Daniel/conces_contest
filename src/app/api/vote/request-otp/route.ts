@@ -30,10 +30,8 @@ class WhatsAppService {
   }> {
     try {
       // Ensure phone number has + prefix for WhatsApp API
-      const formattedPhone = phoneNumber.startsWith("+")
-        ? phoneNumber
-        : `+${phoneNumber}`;
-
+      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+      
       console.log("=== WhatsApp OTP Send Attempt ===");
       console.log("Phone Number:", formattedPhone);
       console.log("OTP Code:", code);
@@ -48,7 +46,7 @@ class WhatsAppService {
         template: {
           name: "conces_contest",
           language: {
-            code: "en_US",
+            code: "en_US"
           },
           components: [
             {
@@ -56,9 +54,9 @@ class WhatsAppService {
               parameters: [
                 {
                   type: "text",
-                  text: code,
-                },
-              ],
+                  text: code
+                }
+              ]
             },
             {
               type: "button",
@@ -67,29 +65,33 @@ class WhatsAppService {
               parameters: [
                 {
                   type: "text",
-                  text: code,
-                },
-              ],
-            },
-          ],
-        },
+                  text: code
+                }
+              ]
+            }
+          ]
+        }
       };
 
       console.log("Request URL:", this.baseUrl);
       console.log("Request Payload:", JSON.stringify(requestPayload, null, 2));
 
       // Make the API call using axios
-      const response = await axios.post(this.baseUrl, requestPayload, {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 30000, // 30 seconds timeout
-        validateStatus: function (status) {
-          // Don't throw on any status, we'll handle it manually
-          return true;
-        },
-      });
+      const response = await axios.post(
+        this.baseUrl,
+        requestPayload,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000, // 30 seconds timeout
+          validateStatus: function (status) {
+            // Don't throw on any status, we'll handle it manually
+            return true;
+          }
+        }
+      );
 
       console.log("=== WhatsApp API Response ===");
       console.log("Status:", response.status);
@@ -97,83 +99,78 @@ class WhatsAppService {
       console.log("Response Data:", JSON.stringify(response.data, null, 2));
 
       // Check if the request was successful
-      if (
-        response.status === 200 &&
-        response.data.messages &&
-        response.data.messages[0]
-      ) {
+      if (response.status === 200 && response.data.messages && response.data.messages[0]) {
         console.log("✅ WhatsApp message sent successfully!");
         console.log("Message ID:", response.data.messages[0].id);
-
+        
         return {
           success: true,
           messageId: response.data.messages[0].id,
-          debugInfo: response.data,
+          debugInfo: response.data
         };
       } else {
         // Handle error response
-        const errorMessage =
-          response.data.error?.message ||
-          response.data.error?.error_user_msg ||
-          "Unknown WhatsApp API error";
-
+        const errorMessage = response.data.error?.message || 
+                           response.data.error?.error_user_msg || 
+                           "Unknown WhatsApp API error";
+        
         console.error("❌ WhatsApp API Error:");
         console.error("Error Message:", errorMessage);
         console.error("Full Error:", response.data.error);
-
+        
         return {
           success: false,
           error: errorMessage,
           debugInfo: {
             status: response.status,
             statusText: response.statusText,
-            data: response.data,
-          },
+            data: response.data
+          }
         };
       }
     } catch (error: any) {
       console.error("=== WhatsApp Service Exception ===");
       console.error("Error Type:", error.name);
       console.error("Error Message:", error.message);
-
+      
       if (error.response) {
         // The request was made and the server responded with a status code
         console.error("Response Status:", error.response.status);
         console.error("Response Data:", error.response.data);
-
+        
         return {
           success: false,
           error: error.response.data?.error?.message || error.message,
           debugInfo: {
             status: error.response.status,
             data: error.response.data,
-            headers: error.response.headers,
-          },
+            headers: error.response.headers
+          }
         };
       } else if (error.request) {
         // The request was made but no response was received
         console.error("No response received from WhatsApp API");
         console.error("Request:", error.request);
-
+        
         return {
           success: false,
           error: "No response from WhatsApp API - Network error",
           debugInfo: {
             message: error.message,
-            code: error.code,
-          },
+            code: error.code
+          }
         };
       } else {
         // Something happened in setting up the request
         console.error("Error setting up request:", error.message);
-
+        
         return {
           success: false,
           error: error.message || "WhatsApp service error",
           debugInfo: {
             message: error.message,
-            stack: error.stack,
-          },
+            stack: error.stack
+          }
         };
       }
     }
@@ -183,8 +180,7 @@ class WhatsAppService {
 // Utility functions
 function encrypt(text: string): string {
   const algorithm = "aes-256-gcm";
-  const keyString =
-    process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
+  const keyString = process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
   const key = crypto.createHash("sha256").update(keyString).digest();
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, key, iv);
@@ -199,31 +195,31 @@ function encrypt(text: string): string {
 function validateNigerianPhone(phone: string): boolean {
   const cleaned = phone.replace(/\D/g, "");
   const patterns = [
-    /^234[789]\d{9}$/, // Full international format
-    /^0[789]\d{9}$/, // Local format with 0
-    /^[789]\d{9}$/, // Local format without 0
+    /^234[789]\d{9}$/,  // Full international format
+    /^0[789]\d{9}$/,    // Local format with 0
+    /^[789]\d{9}$/      // Local format without 0
   ];
   return patterns.some((pattern) => pattern.test(cleaned));
 }
 
 function formatNigerianPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, "");
-
+  
   // Already in international format
   if (cleaned.startsWith("234")) {
     return `+${cleaned}`;
   }
-
+  
   // Local format with 0 prefix
   if (cleaned.startsWith("0")) {
     return `+234${cleaned.slice(1)}`;
   }
-
+  
   // Local format without prefix
   if (cleaned.length === 10 && /^[789]/.test(cleaned)) {
     return `+234${cleaned}`;
   }
-
+  
   // Return as-is if doesn't match expected formats
   return phone;
 }
@@ -246,9 +242,9 @@ function checkRateLimit(phoneNumber: string): {
   const entry = rateLimitStore.get(phoneNumber);
 
   if (!entry || entry.resetTime < now) {
-    rateLimitStore.set(phoneNumber, {
-      count: 1,
-      resetTime: now + windowSize,
+    rateLimitStore.set(phoneNumber, { 
+      count: 1, 
+      resetTime: now + windowSize 
     });
     return { allowed: true };
   }
@@ -288,8 +284,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Invalid Nigerian phone number format",
-          details:
-            "Use formats like: 08012345678, +2348012345678, or 8012345678",
+          details: "Use formats like: 08012345678, +2348012345678, or 8012345678"
         },
         { status: 400 }
       );
@@ -297,7 +292,7 @@ export async function POST(request: NextRequest) {
 
     const formattedPhone = formatNigerianPhone(voterPhone);
     console.log("Formatted Phone:", formattedPhone);
-
+    
     const encryptedPhone = encrypt(formattedPhone);
 
     // Check rate limit
@@ -308,13 +303,13 @@ export async function POST(request: NextRequest) {
         {
           error: "Please wait before requesting another code",
           retryAfter: rateLimit.retryAfter,
-          message: `You can request a new code in ${rateLimit.retryAfter} seconds`,
+          message: `You can request a new code in ${rateLimit.retryAfter} seconds`
         },
         {
           status: 429,
-          headers: {
-            "Retry-After": rateLimit.retryAfter?.toString() || "120",
-          },
+          headers: { 
+            "Retry-After": rateLimit.retryAfter?.toString() || "120" 
+          }
         }
       );
     }
@@ -327,50 +322,47 @@ export async function POST(request: NextRequest) {
     const project = await Project.findById(projectId);
     if (!project) {
       console.error("Project not found:", projectId);
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
     }
     console.log("Project found:", project.projectTitle);
 
     // Check if already voted
     const existingVote = await Vote.findOne({
       phoneNumber: encryptedPhone,
-      projectId,
+      projectId
     });
 
     if (existingVote) {
       console.warn("User already voted for this project");
       return NextResponse.json(
-        { error: "You have already voted for this design" },
+        { error: "You have voted already" },
         { status: 409 }
       );
     }
 
     // Check for existing unused OTP
     const existingOTP = await OTP.findOne({
-      phoneNumber: encryptedPhone,
-      projectId,
-      expiresAt: { $gt: new Date() },
-      used: false,
+      phoneNumber: formattedPhone,
     });
+
+    console.log(existingOTP, "Existing OTP found:", !!existingOTP);
+
 
     if (existingOTP) {
       const expiresIn = Math.floor(
         (existingOTP.expiresAt.getTime() - Date.now()) / 1000
       );
-      console.warn(
-        "Existing OTP still valid, expires in:",
-        expiresIn,
-        "seconds"
-      );
-
+      console.warn("Existing OTP still valid, expires in:", expiresIn, "seconds");
+      
       return NextResponse.json(
         {
           error: "A verification code was already sent",
           expiresIn,
-          message: `Please check your WhatsApp or wait ${Math.ceil(
-            expiresIn / 60
-          )} minute(s)`,
-          sessionId: existingOTP._id,
+          message: `Please check your WhatsApp or wait ${Math.ceil(expiresIn / 60)} minute(s)`,
+          sessionId: existingOTP._id
         },
         { status: 400 }
       );
@@ -379,14 +371,14 @@ export async function POST(request: NextRequest) {
     // Check if already used OTP to vote
     const usedOTP = await OTP.findOne({
       phoneNumber: encryptedPhone,
-      projectId,
       voteConfirmed: true,
+      used: true
     });
 
     if (usedOTP) {
       console.warn("User already used OTP to vote");
       return NextResponse.json(
-        { error: "You have already voted for this design" },
+        { error: "You have already voted" },
         { status: 409 }
       );
     }
@@ -399,15 +391,14 @@ export async function POST(request: NextRequest) {
     console.log("Expires at:", expiresAt.toISOString());
 
     // Get request metadata
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
+    const ipAddress = request.headers.get("x-forwarded-for") || 
+                     request.headers.get("x-real-ip") || 
+                     "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
     // Create OTP record
     const newOTP = new OTP({
-      phoneNumber: encryptedPhone,
+      phoneNumber: formattedPhone,
       code: otpCode,
       projectId,
       expiresAt,
@@ -415,8 +406,10 @@ export async function POST(request: NextRequest) {
       voteConfirmed: false,
       attempts: 0,
       ipAddress,
-      userAgent,
+      userAgent
     });
+
+    console.log("saving new OTP to database...");
 
     await newOTP.save();
     console.log("OTP saved to database with ID:", newOTP._id);
@@ -437,13 +430,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Failed to send verification code via WhatsApp",
-          details:
-            process.env.NODE_ENV === "development"
-              ? {
-                  whatsAppError: whatsAppResult.error,
-                  debugInfo: whatsAppResult.debugInfo,
-                }
-              : undefined,
+          details: process.env.NODE_ENV === "development" ? {
+            whatsAppError: whatsAppResult.error,
+            debugInfo: whatsAppResult.debugInfo
+          } : undefined
         },
         { status: 500 }
       );
@@ -465,7 +455,7 @@ export async function POST(request: NextRequest) {
       expiresIn: 300, // 5 minutes in seconds
       phoneNumber: maskedPhone,
       projectTitle: project.projectTitle,
-      messageId: whatsAppResult.messageId,
+      messageId: whatsAppResult.messageId
     };
 
     // Add debug info in development
@@ -474,13 +464,14 @@ export async function POST(request: NextRequest) {
       response.debugInfo = {
         formattedPhone,
         otpCode,
-        whatsAppDebug: whatsAppResult.debugInfo,
+        whatsAppDebug: whatsAppResult.debugInfo
       };
       console.log(`[DEV MODE] OTP Code: ${otpCode}`);
     }
 
     console.log("=== Request Completed Successfully ===\n");
     return NextResponse.json(response);
+
   } catch (error: any) {
     console.error("=== Unexpected Error in OTP Request ===");
     console.error("Error:", error.message);
@@ -490,13 +481,10 @@ export async function POST(request: NextRequest) {
       {
         error: "An unexpected error occurred",
         message: error.message,
-        details:
-          process.env.NODE_ENV === "development"
-            ? {
-                stack: error.stack,
-                timestamp: new Date().toISOString(),
-              }
-            : undefined,
+        details: process.env.NODE_ENV === "development" ? {
+          stack: error.stack,
+          timestamp: new Date().toISOString()
+        } : undefined
       },
       { status: 500 }
     );
