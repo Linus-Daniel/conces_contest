@@ -1,24 +1,28 @@
+// app/admin/layout.tsx (Updated)
 import type { Metadata } from "next";
 import "../../globals.css";
-import Layout from "@/components/admin/Layout";
+import AdminLayoutWrapper from "@/components/admin/Providers";
+import { AdminAuthProvider } from "@/context/AdminAuth";
 
 export const metadata: Metadata = {
   title: "Conces Contest Admin",
-  description: "Contest managment dashboard",
+  description: "Contest management dashboard",
   icons: {
-    icon: "/images/logo.png",
+    icon: "/logo.png",
   },
 };
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body className={` antialiased`}>
-        <Layout>{children}</Layout>
+      <body className="antialiased">
+        <AdminAuthProvider>
+          <AdminLayoutWrapper>{children}</AdminLayoutWrapper>
+        </AdminAuthProvider>
       </body>
     </html>
   );

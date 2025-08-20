@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Bars3Icon,
@@ -23,8 +24,10 @@ export default function Header({ onSidebarToggle }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [notificationCount] = useState(3);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -73,10 +76,37 @@ export default function Header({ onSidebarToggle }: HeaderProps) {
     }
   };
 
-  const handleLogout = () => {
-    // Add logout logic here
-    console.log("Logging out...");
-    setProfileDropdownOpen(false);
+  const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple logout attempts
+
+    try {
+      setIsLoggingOut(true);
+      setProfileDropdownOpen(false);
+
+      // Call the logout API
+      const response = await fetch("/api/auth/admin/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Successfully logged out
+        router.push("/admin/auth");
+        router.refresh(); // Force a refresh to clear any cached data
+      } else {
+        // Handle logout error
+        console.error("Logout failed");
+        // You might want to show a toast notification here
+        alert("Logout failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Something went wrong during logout. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -241,10 +271,20 @@ export default function Header({ onSidebarToggle }: HeaderProps) {
                     <div className="border-t border-gray-100 pt-2">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group"
+                        disabled={isLoggingOut}
+                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3 text-red-500" />
-                        <span>Sign out</span>
+                        {isLoggingOut ? (
+                          <>
+                            <div className="w-5 h-5 mr-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span>Signing out...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3 text-red-500" />
+                            <span>Sign out</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

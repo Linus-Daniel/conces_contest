@@ -11,6 +11,7 @@ import {
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { Home } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,9 +19,11 @@ interface SidebarProps {
 }
 
 const navigation = [
+  { link: "/admin", name: "Dashboard", icon: Home },
+
   { link: "/admin/contestants", name: "User Management", icon: UsersIcon },
   { link: "/admin/votes", name: "Vote Management", icon: ChartBarIcon },
-  { link: "/admin/contests", name: "submissions", icon: TrophyIcon },
+  { link: "/admin/submissions", name: "submissions", icon: TrophyIcon },
 ];
 
 export default function Sidebar({

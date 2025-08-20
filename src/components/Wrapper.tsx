@@ -3,6 +3,7 @@ import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Toaster } from "react-hot-toast";
+import { AdminAuthProvider } from "@/context/AdminAuth";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -27,9 +28,9 @@ function Wrapper({ children }: { children: React.ReactNode }) {
         }}
       />
       <CandidateProvider>
-        <Header />
-        <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
-        <Footer />
+          <Header />
+          <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
+          <Footer />
       </CandidateProvider>
     </div>
   );
