@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const Url =
   process.env.NODE_ENV === "production"
-    ? "https://conces-contest.vercel.app/api"
+    ? "https://brandchallenge.conces.org/api"
     : "http://localhost:3000/api";
 
 const api = axios.create({
