@@ -106,7 +106,7 @@ const CONTEST_DATA = {
 export default function Contests() {
   return (
     <section className="py-20 bg-gradient-to-b from-white to-conces-blue/5">
-      <div className="container mx-auto sm:px-6">
+      <div className="container mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -292,7 +292,7 @@ function PrizesSection({
         Prize Breakdown
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-12">
         {prizes.map((prize, index) => {
           const Icon = prize.icon;
           return (

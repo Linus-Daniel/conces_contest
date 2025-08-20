@@ -72,8 +72,8 @@ export default function AboutSection() {
                 </h3>
                 <div className="space-y-5">
                   <p className="text-gray-700 leading-relaxed">
-                    The Council of Nigerian Engineering Students (CONCES) is the
-                    unified voice of engineering students across Nigeria.
+                    The Conference of Nigerian Engineering Students (CONCES) is
+                    the unified voice of engineering students across Nigeria.
                     Founded on principles of innovation, excellence, and
                     national development, we bridge the gap between academic
                     learning and industry needs.
@@ -85,8 +85,6 @@ export default function AboutSection() {
                     the challenges of tomorrow.
                   </p>
                 </div>
-
-               
               </div>
             </div>
           </motion.div>
@@ -124,8 +122,6 @@ export default function AboutSection() {
                 );
               })}
             </div>
-
-           
           </motion.div>
         </div>
       </div>

@@ -2,66 +2,69 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-
-
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 const footerLinks = {
   quickLinks: [
     { label: "Home", href: "/" },
     { label: "About Us", href: "/#about" },
     { label: "Rebrand Challenge", href: "/signup" },
- 
   ],
 };
 
 const socialLinks = [
-  { icon: "facebook-f", href: "#" },
-  { icon: "twitter", href: "#" },
-  { icon: "instagram", href: "#" },
-  { icon: "linkedin-in", href: "#" },
+  { Icon: FaFacebook, href: "#" },
+  { Icon: FaTwitter, href: "#" },
+  { Icon: FaInstagram, href: "#" },
+  { Icon: FaLinkedin, href: "#" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-conces-blue text-white pt-16 pb-8">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+    <footer className="bg-conces-blue text-white pt-12 pb-6 md:pt-16 md:pb-8">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 mb-10 md:mb-12">
+          {/* Brand Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
+            className="sm:col-span-2 lg:col-span-1"
           >
             <div className="text-2xl font-bold mb-4">CONCES</div>
-            <p className="text-white/70 mb-4">
-              The Council of Nigerian Engineering Students (CONCES) is the
+            <p className="text-white/70 mb-5 text-sm md:text-base leading-relaxed">
+              The Conference of Nigerian Engineering Students (CONCES) is the
               unified voice of engineering students across Nigeria.
             </p>
             <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.icon}
+              {socialLinks.map((social,index) => (
+                <Link
+                  key={index}
                   href={social.href}
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-white/70 hover:text-white transition-colors p-2 rounded-full bg-white/10 hover:bg-white/20"
                 >
-                  <i className={`fab fa-${social.icon}`}></i>
-                </a>
+                  <social.Icon
+                    className="w-5 h-5 md:w-6 md:h-6"
+                    aria-label={`Follow us on ${social.Icon.name}`} />
+                </Link>
               ))}
             </div>
           </motion.div>
 
+          {/* Quick Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h4 className="text-lg font-bold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
+            <h4 className="text-lg font-bold mb-4 md:mb-5">Quick Links</h4>
+            <ul className="space-y-3">
               {footerLinks.quickLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/70 hover:text-white transition-colors"
+                    className="text-white/70 hover:text-white transition-colors text-sm md:text-base block py-1"
                   >
                     {link.label}
                   </Link>
@@ -69,44 +72,27 @@ export default function Footer() {
               ))}
             </ul>
           </motion.div>
-{/* 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-lg font-bold mb-4">Resources</h4>
-            <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div> */}
 
+          {/* Contact Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             viewport={{ once: true }}
+            className="sm:col-start-1 lg:col-start-3"
           >
-            <h4 className="text-lg font-bold mb-4">Contact Us</h4>
-            <ul className="space-y-2">
+            <h4 className="text-lg font-bold mb-4 md:mb-5">Contact Us</h4>
+            <ul className="space-y-3">
               <li className="flex items-start">
-                <i className="fas fa-envelope mt-1 mr-3 text-conces-green"></i>
-                <span className="text-white/70">info@conces.org</span>
+                <i className="fas fa-envelope mt-1 mr-3 text-conces-green text-sm"></i>
+                <span className="text-white/70 text-sm md:text-base">
+                  info@conces.org
+                </span>
               </li>
-              
+
               <li className="flex items-start">
-                <i className="fas fa-location-dot mt-1 mr-3 text-conces-green"></i>
-                <span className="text-white/70">
+                <i className="fas fa-location-dot mt-1 mr-3 text-conces-green text-sm"></i>
+                <span className="text-white/70 text-sm md:text-base">
                   CONCES Headquarters, Abuja, Nigeria
                 </span>
               </li>
@@ -114,26 +100,27 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-white/70 mb-4 md:mb-0">
+        {/* Bottom Section */}
+        <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="text-white/70 text-sm md:text-base text-center md:text-left">
             © 2024 CONCES. All rights reserved.
           </div>
-          <div className="flex space-x-6">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             <a
               href="#"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
             >
               Privacy Policy
             </a>
             <a
               href="#"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
             >
               Terms of Service
             </a>
             <a
               href="#"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
             >
               Cookie Policy
             </a>

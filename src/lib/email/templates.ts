@@ -199,7 +199,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                             
                             <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
                                 © 2024 CONCES. All rights reserved.<br>
-                                Council of Nigerian Engineering Students
+                                Conference of Nigerian Engineering Students
                             </p>
                         </td>
                     </tr>
@@ -262,6 +262,6 @@ Let's go!
 — CONCES Team
 
 © 2024 CONCES. All rights reserved.
-Council of Nigerian Engineering Students
+Conference of Nigerian Engineering Students
 `;
 };
