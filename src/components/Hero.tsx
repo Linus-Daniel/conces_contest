@@ -275,7 +275,7 @@ export default function HeroSection() {
                 <motion.a
                   className="border-2 border-conces-gold text-conces-gold hover:bg-conces-blue/50 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-all duration-300 inline-flex items-center justify-center hover:shadow-lg hover:shadow-conces-gold/20 order-2"
                   whileHover={{ y: -2 }}
-                  href="/#how"
+                  href="/terms"
                   whileTap={{ scale: 0.98 }}
                 >
                   <span className="drop-shadow-md">View Guidelines</span>

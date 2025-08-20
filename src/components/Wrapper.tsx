@@ -4,6 +4,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { Toaster } from "react-hot-toast";
 import { AdminAuthProvider } from "@/context/AdminAuth";
+import { TimerProvider } from "@/context/CountdownContext";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -28,9 +29,16 @@ function Wrapper({ children }: { children: React.ReactNode }) {
         }}
       />
       <CandidateProvider>
-          <Header />
-          <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
-          <Footer />
+        <TimerProvider
+          contestStartDate={new Date("2025-08-05T00:00:00")}
+          contestEndDate={new Date("2025-08-20T23:59:59")}
+          votingStartDate={new Date("2025-08-23T00:00:00")}
+        >
+        
+        <Header />
+        <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
+        <Footer />
+        </TimerProvider>
       </CandidateProvider>
     </div>
   );
