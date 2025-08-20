@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://brandchallenge.conces.org/admin",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://brandchallenge.conces.org/admin/$1",
+      "permanent": true
+    }
+  ],
+  "domains": ["admin.brandchallenge.conces.org"]
+}
