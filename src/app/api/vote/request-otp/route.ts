@@ -1,19 +1,22 @@
-// api/vote/request-otp/route.ts - Fixed version with debugging
+// api/vote/request-otp/route.ts - Using Axios for WhatsApp API
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
 import OTP from "@/models/OTP";
 import Vote from "@/models/Vote";
 import crypto from "crypto";
+import axios from "axios";
 
-// WhatsApp Service - FIXED VERSION
+// WhatsApp Service using Axios
 class WhatsAppService {
   private accessToken: string;
   private phoneNumberId: string;
+  private baseUrl: string;
 
   constructor() {
     this.accessToken = process.env.WHATSAPP_ACCESS_TOKEN!;
     this.phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!;
+    this.baseUrl = `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`;
   }
 
   async sendOTPTemplate(
@@ -26,96 +29,153 @@ class WhatsAppService {
     debugInfo?: any;
   }> {
     try {
-      // IMPORTANT: WhatsApp API expects the phone number WITH the + sign
-      // Your curl command uses "+2349015648441" which works
-      // Make sure we're sending the same format
+      // Ensure phone number has + prefix for WhatsApp API
       const formattedPhone = phoneNumber.startsWith("+")
         ? phoneNumber
         : `+${phoneNumber}`;
 
-      console.log("Sending WhatsApp OTP:", {
-        phoneNumberId: this.phoneNumberId,
-        to: formattedPhone,
-        code: code,
-        hasAccessToken: !!this.accessToken,
-      });
+      console.log("=== WhatsApp OTP Send Attempt ===");
+      console.log("Phone Number:", formattedPhone);
+      console.log("OTP Code:", code);
+      console.log("Phone Number ID:", this.phoneNumberId);
+      console.log("Has Access Token:", !!this.accessToken);
+      console.log("Access Token Length:", this.accessToken?.length);
 
-      const requestBody = {
+      const requestPayload = {
         messaging_product: "whatsapp",
-        to: formattedPhone, // Keep the + sign, unlike your original code
+        to: formattedPhone,
         type: "template",
         template: {
           name: "conces_contest",
-          language: { code: "en_US" },
+          language: {
+            code: "en_US",
+          },
           components: [
             {
               type: "body",
-              parameters: [{ type: "text", text: code }],
+              parameters: [
+                {
+                  type: "text",
+                  text: code,
+                },
+              ],
             },
             {
               type: "button",
               sub_type: "url",
               index: "0",
-              parameters: [{ type: "text", text: code }],
+              parameters: [
+                {
+                  type: "text",
+                  text: code,
+                },
+              ],
             },
           ],
         },
       };
 
-      console.log(
-        "WhatsApp API Request:",
-        JSON.stringify(requestBody, null, 2)
-      );
+      console.log("Request URL:", this.baseUrl);
+      console.log("Request Payload:", JSON.stringify(requestPayload, null, 2));
 
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      const result = await response.json();
-
-      console.log("WhatsApp API Response:", {
-        status: response.status,
-        ok: response.ok,
-        result: JSON.stringify(result, null, 2),
+      // Make the API call using axios
+      const response = await axios.post(this.baseUrl, requestPayload, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 30000, // 30 seconds timeout
+        validateStatus: function (status) {
+          // Don't throw on any status, we'll handle it manually
+          return true;
+        },
       });
 
-      if (!response.ok) {
-        console.error("WhatsApp API Error:", result);
-        return {
-          success: false,
-          error: result.error?.message || "Failed to send WhatsApp message",
-          debugInfo: result,
-        };
-      }
+      console.log("=== WhatsApp API Response ===");
+      console.log("Status:", response.status);
+      console.log("Status Text:", response.statusText);
+      console.log("Response Data:", JSON.stringify(response.data, null, 2));
 
-      if (result.messages && result.messages[0]) {
+      // Check if the request was successful
+      if (
+        response.status === 200 &&
+        response.data.messages &&
+        response.data.messages[0]
+      ) {
+        console.log("✅ WhatsApp message sent successfully!");
+        console.log("Message ID:", response.data.messages[0].id);
+
         return {
           success: true,
-          messageId: result.messages[0].id,
-          debugInfo: result,
+          messageId: response.data.messages[0].id,
+          debugInfo: response.data,
+        };
+      } else {
+        // Handle error response
+        const errorMessage =
+          response.data.error?.message ||
+          response.data.error?.error_user_msg ||
+          "Unknown WhatsApp API error";
+
+        console.error("❌ WhatsApp API Error:");
+        console.error("Error Message:", errorMessage);
+        console.error("Full Error:", response.data.error);
+
+        return {
+          success: false,
+          error: errorMessage,
+          debugInfo: {
+            status: response.status,
+            statusText: response.statusText,
+            data: response.data,
+          },
         };
       }
-
-      return {
-        success: false,
-        error: "Unexpected response format from WhatsApp API",
-        debugInfo: result,
-      };
     } catch (error: any) {
-      console.error("WhatsApp service exception:", error);
-      return {
-        success: false,
-        error: error.message || "WhatsApp service error",
-        debugInfo: { exception: error.message, stack: error.stack },
-      };
+      console.error("=== WhatsApp Service Exception ===");
+      console.error("Error Type:", error.name);
+      console.error("Error Message:", error.message);
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error("Response Status:", error.response.status);
+        console.error("Response Data:", error.response.data);
+
+        return {
+          success: false,
+          error: error.response.data?.error?.message || error.message,
+          debugInfo: {
+            status: error.response.status,
+            data: error.response.data,
+            headers: error.response.headers,
+          },
+        };
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received from WhatsApp API");
+        console.error("Request:", error.request);
+
+        return {
+          success: false,
+          error: "No response from WhatsApp API - Network error",
+          debugInfo: {
+            message: error.message,
+            code: error.code,
+          },
+        };
+      } else {
+        // Something happened in setting up the request
+        console.error("Error setting up request:", error.message);
+
+        return {
+          success: false,
+          error: error.message || "WhatsApp service error",
+          debugInfo: {
+            message: error.message,
+            stack: error.stack,
+          },
+        };
+      }
     }
   }
 }
@@ -138,15 +198,33 @@ function encrypt(text: string): string {
 
 function validateNigerianPhone(phone: string): boolean {
   const cleaned = phone.replace(/\D/g, "");
-  const patterns = [/^234[789]\d{9}$/, /^0[789]\d{9}$/, /^[789]\d{9}$/];
+  const patterns = [
+    /^234[789]\d{9}$/, // Full international format
+    /^0[789]\d{9}$/, // Local format with 0
+    /^[789]\d{9}$/, // Local format without 0
+  ];
   return patterns.some((pattern) => pattern.test(cleaned));
 }
 
 function formatNigerianPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, "");
-  if (cleaned.startsWith("234")) return `+${cleaned}`;
-  if (cleaned.startsWith("0")) return `+234${cleaned.slice(1)}`;
-  if (cleaned.length === 10 && /^[789]/.test(cleaned)) return `+234${cleaned}`;
+
+  // Already in international format
+  if (cleaned.startsWith("234")) {
+    return `+${cleaned}`;
+  }
+
+  // Local format with 0 prefix
+  if (cleaned.startsWith("0")) {
+    return `+234${cleaned.slice(1)}`;
+  }
+
+  // Local format without prefix
+  if (cleaned.length === 10 && /^[789]/.test(cleaned)) {
+    return `+234${cleaned}`;
+  }
+
+  // Return as-is if doesn't match expected formats
   return phone;
 }
 
@@ -154,7 +232,7 @@ function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Rate limiting
+// Rate limiting store
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 function checkRateLimit(phoneNumber: string): {
@@ -168,7 +246,10 @@ function checkRateLimit(phoneNumber: string): {
   const entry = rateLimitStore.get(phoneNumber);
 
   if (!entry || entry.resetTime < now) {
-    rateLimitStore.set(phoneNumber, { count: 1, resetTime: now + windowSize });
+    rateLimitStore.set(phoneNumber, {
+      count: 1,
+      resetTime: now + windowSize,
+    });
     return { allowed: true };
   }
 
@@ -181,40 +262,48 @@ function checkRateLimit(phoneNumber: string): {
   return { allowed: true };
 }
 
+// Main POST handler
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { projectId, voterPhone } = body;
 
-    console.log("OTP Request received:", { projectId, voterPhone });
+    console.log("\n=== New OTP Request ===");
+    console.log("Project ID:", projectId);
+    console.log("Voter Phone:", voterPhone);
+    console.log("Timestamp:", new Date().toISOString());
 
     // Validate input
     if (!projectId || !voterPhone) {
+      console.error("Missing required fields");
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Phone validation
+    // Validate phone number format
     if (!validateNigerianPhone(voterPhone)) {
+      console.error("Invalid phone number format:", voterPhone);
       return NextResponse.json(
         {
-          error:
-            "Invalid Nigerian phone number format. Use formats like: 08012345678, +2348012345678, or 8012345678",
+          error: "Invalid Nigerian phone number format",
+          details:
+            "Use formats like: 08012345678, +2348012345678, or 8012345678",
         },
         { status: 400 }
       );
     }
 
     const formattedPhone = formatNigerianPhone(voterPhone);
-    console.log("Formatted phone number:", formattedPhone);
+    console.log("Formatted Phone:", formattedPhone);
 
     const encryptedPhone = encrypt(formattedPhone);
 
     // Check rate limit
     const rateLimit = checkRateLimit(formattedPhone);
     if (!rateLimit.allowed) {
+      console.warn("Rate limit exceeded for:", formattedPhone);
       return NextResponse.json(
         {
           error: "Please wait before requesting another code",
@@ -223,33 +312,40 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 429,
-          headers: { "Retry-After": rateLimit.retryAfter?.toString() || "120" },
+          headers: {
+            "Retry-After": rateLimit.retryAfter?.toString() || "120",
+          },
         }
       );
     }
 
+    // Connect to database
     await connectDB();
+    console.log("Database connected");
 
     // Check if project exists
     const project = await Project.findById(projectId);
     if (!project) {
+      console.error("Project not found:", projectId);
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+    console.log("Project found:", project.projectTitle);
 
-    // Check 1: Has this phone number already voted for this project?
+    // Check if already voted
     const existingVote = await Vote.findOne({
       phoneNumber: encryptedPhone,
       projectId,
     });
 
     if (existingVote) {
+      console.warn("User already voted for this project");
       return NextResponse.json(
         { error: "You have already voted for this design" },
         { status: 409 }
       );
     }
 
-    // Check 2: Does this phone number have a pending, unused OTP for this project?
+    // Check for existing unused OTP
     const existingOTP = await OTP.findOne({
       phoneNumber: encryptedPhone,
       projectId,
@@ -261,6 +357,12 @@ export async function POST(request: NextRequest) {
       const expiresIn = Math.floor(
         (existingOTP.expiresAt.getTime() - Date.now()) / 1000
       );
+      console.warn(
+        "Existing OTP still valid, expires in:",
+        expiresIn,
+        "seconds"
+      );
+
       return NextResponse.json(
         {
           error: "A verification code was already sent",
@@ -274,7 +376,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check 3: Has this phone number used an OTP to vote (even if vote failed)?
+    // Check if already used OTP to vote
     const usedOTP = await OTP.findOne({
       phoneNumber: encryptedPhone,
       projectId,
@@ -282,6 +384,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (usedOTP) {
+      console.warn("User already used OTP to vote");
       return NextResponse.json(
         { error: "You have already voted for this design" },
         { status: 409 }
@@ -292,6 +395,9 @@ export async function POST(request: NextRequest) {
     const otpCode = generateOTP();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+    console.log("Generated OTP:", otpCode);
+    console.log("Expires at:", expiresAt.toISOString());
+
     // Get request metadata
     const ipAddress =
       request.headers.get("x-forwarded-for") ||
@@ -299,7 +405,7 @@ export async function POST(request: NextRequest) {
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // Create new OTP session
+    // Create OTP record
     const newOTP = new OTP({
       phoneNumber: encryptedPhone,
       code: otpCode,
@@ -313,9 +419,10 @@ export async function POST(request: NextRequest) {
     });
 
     await newOTP.save();
-    console.log("OTP saved to database:", { otpCode, sessionId: newOTP._id });
+    console.log("OTP saved to database with ID:", newOTP._id);
 
-    // Send WhatsApp OTP
+    // Send WhatsApp message
+    console.log("Attempting to send WhatsApp message...");
     const whatsAppService = new WhatsAppService();
     const whatsAppResult = await whatsAppService.sendOTPTemplate(
       formattedPhone,
@@ -323,20 +430,13 @@ export async function POST(request: NextRequest) {
     );
 
     if (!whatsAppResult.success) {
-      // Clean up OTP if WhatsApp failed
+      // Delete OTP if WhatsApp sending failed
       await OTP.deleteOne({ _id: newOTP._id });
-
-      console.error("Failed to send WhatsApp OTP:", {
-        error: whatsAppResult.error,
-        phoneNumber: formattedPhone,
-        projectId,
-        debugInfo: whatsAppResult.debugInfo,
-      });
+      console.error("Failed to send WhatsApp, OTP deleted from database");
 
       return NextResponse.json(
         {
-          error:
-            "Failed to send verification code via WhatsApp. Please try again.",
+          error: "Failed to send verification code via WhatsApp",
           details:
             process.env.NODE_ENV === "development"
               ? {
@@ -349,50 +449,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("WhatsApp OTP sent successfully:", {
-      messageId: whatsAppResult.messageId,
-      phoneNumber: formattedPhone,
-    });
+    console.log("✅ OTP sent successfully via WhatsApp!");
+    console.log("Message ID:", whatsAppResult.messageId);
 
-    // Success response
+    // Prepare success response
+    const maskedPhone = formattedPhone.replace(
+      /(\+234)(\d{3})(\d{3})(\d{4})/,
+      "$1$2***$4"
+    );
+
     const response: any = {
       success: true,
       message: "Verification code sent to your WhatsApp",
       sessionId: newOTP._id,
-      expiresIn: 300, // 5 minutes
-      phoneNumber: formattedPhone.replace(
-        /(\+234)(\d{3})(\d{3})(\d{4})/,
-        "$1$2***$4"
-      ),
+      expiresIn: 300, // 5 minutes in seconds
+      phoneNumber: maskedPhone,
       projectTitle: project.projectTitle,
       messageId: whatsAppResult.messageId,
     };
 
-    // Include code and debug info in development mode
+    // Add debug info in development
     if (process.env.NODE_ENV === "development") {
       response.devCode = otpCode;
       response.debugInfo = {
         formattedPhone,
+        otpCode,
         whatsAppDebug: whatsAppResult.debugInfo,
       };
-      console.log(
-        `[DEV] OTP for ${formattedPhone} (${project.projectTitle}): ${otpCode}`
-      );
+      console.log(`[DEV MODE] OTP Code: ${otpCode}`);
     }
 
+    console.log("=== Request Completed Successfully ===\n");
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("Unexpected error in OTP request:", {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    });
+    console.error("=== Unexpected Error in OTP Request ===");
+    console.error("Error:", error.message);
+    console.error("Stack:", error.stack);
 
     return NextResponse.json(
       {
-        error: "An unexpected error occurred. Please try again.",
+        error: "An unexpected error occurred",
         message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details:
+          process.env.NODE_ENV === "development"
+            ? {
+                stack: error.stack,
+                timestamp: new Date().toISOString(),
+              }
+            : undefined,
       },
       { status: 500 }
     );
