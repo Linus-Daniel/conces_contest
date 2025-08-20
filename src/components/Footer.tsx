@@ -103,29 +103,16 @@ export default function Footer() {
 
         {/* Bottom Section */}
         <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-white/70 text-sm md:text-base text-center md:text-left">
-            © 2024 CONCES. All rights reserved.
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <a
-              href="#"
-              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Privacy Policy
-            </a>
+          
+       
             <a
               href="#"
               className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
             >
               Terms of Service
             </a>
-            <a
-              href="#"
-              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Cookie Policy
-            </a>
-          </div>
+       
+        
         </div>
       </div>
     </footer>
