@@ -1,4 +1,4 @@
-// api/vote/request-otp/route.ts - Updated OTP request endpoint
+// api/vote/request-otp/route.ts - Fixed version with debugging
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
@@ -6,7 +6,7 @@ import OTP from "@/models/OTP";
 import Vote from "@/models/Vote";
 import crypto from "crypto";
 
-// WhatsApp Service (your existing code)
+// WhatsApp Service - FIXED VERSION
 class WhatsAppService {
   private accessToken: string;
   private phoneNumberId: string;
@@ -23,8 +23,50 @@ class WhatsAppService {
     success: boolean;
     messageId?: string;
     error?: string;
+    debugInfo?: any;
   }> {
     try {
+      // IMPORTANT: WhatsApp API expects the phone number WITH the + sign
+      // Your curl command uses "+2349015648441" which works
+      // Make sure we're sending the same format
+      const formattedPhone = phoneNumber.startsWith("+")
+        ? phoneNumber
+        : `+${phoneNumber}`;
+
+      console.log("Sending WhatsApp OTP:", {
+        phoneNumberId: this.phoneNumberId,
+        to: formattedPhone,
+        code: code,
+        hasAccessToken: !!this.accessToken,
+      });
+
+      const requestBody = {
+        messaging_product: "whatsapp",
+        to: formattedPhone, // Keep the + sign, unlike your original code
+        type: "template",
+        template: {
+          name: "conces_contest",
+          language: { code: "en_US" },
+          components: [
+            {
+              type: "body",
+              parameters: [{ type: "text", text: code }],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: code }],
+            },
+          ],
+        },
+      };
+
+      console.log(
+        "WhatsApp API Request:",
+        JSON.stringify(requestBody, null, 2)
+      );
+
       const response = await fetch(
         `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`,
         {
@@ -33,41 +75,46 @@ class WhatsAppService {
             Authorization: `Bearer ${this.accessToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: phoneNumber.replace("+", ""),
-            type: "template",
-            template: {
-              name: "conces_contest",
-              language: { code: "en_US" },
-              components: [
-                {
-                  type: "body",
-                  parameters: [{ type: "text", text: code }],
-                },
-                {
-                  type: "button",
-                  sub_type: "url",
-                  index: "0",
-                  parameters: [{ type: "text", text: code }],
-                },
-              ],
-            },
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
       const result = await response.json();
-      return response.ok && result.messages
-        ? { success: true, messageId: result.messages[0].id }
-        : {
-            success: false,
-            error: result.error?.message || "Failed to send WhatsApp message",
-          };
+
+      console.log("WhatsApp API Response:", {
+        status: response.status,
+        ok: response.ok,
+        result: JSON.stringify(result, null, 2),
+      });
+
+      if (!response.ok) {
+        console.error("WhatsApp API Error:", result);
+        return {
+          success: false,
+          error: result.error?.message || "Failed to send WhatsApp message",
+          debugInfo: result,
+        };
+      }
+
+      if (result.messages && result.messages[0]) {
+        return {
+          success: true,
+          messageId: result.messages[0].id,
+          debugInfo: result,
+        };
+      }
+
+      return {
+        success: false,
+        error: "Unexpected response format from WhatsApp API",
+        debugInfo: result,
+      };
     } catch (error: any) {
+      console.error("WhatsApp service exception:", error);
       return {
         success: false,
         error: error.message || "WhatsApp service error",
+        debugInfo: { exception: error.message, stack: error.stack },
       };
     }
   }
@@ -139,6 +186,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { projectId, voterPhone } = body;
 
+    console.log("OTP Request received:", { projectId, voterPhone });
+
     // Validate input
     if (!projectId || !voterPhone) {
       return NextResponse.json(
@@ -159,6 +208,8 @@ export async function POST(request: NextRequest) {
     }
 
     const formattedPhone = formatNigerianPhone(voterPhone);
+    console.log("Formatted phone number:", formattedPhone);
+
     const encryptedPhone = encrypt(formattedPhone);
 
     // Check rate limit
@@ -185,7 +236,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // 🔍 CHECK 1: Has this phone number already voted for this project?
+    // Check 1: Has this phone number already voted for this project?
     const existingVote = await Vote.findOne({
       phoneNumber: encryptedPhone,
       projectId,
@@ -198,7 +249,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 🔍 CHECK 2: Does this phone number have a pending, unused OTP for this project?
+    // Check 2: Does this phone number have a pending, unused OTP for this project?
     const existingOTP = await OTP.findOne({
       phoneNumber: encryptedPhone,
       projectId,
@@ -223,7 +274,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 🔍 CHECK 3: Has this phone number used an OTP to vote (even if vote failed)?
+    // Check 3: Has this phone number used an OTP to vote (even if vote failed)?
     const usedOTP = await OTP.findOne({
       phoneNumber: encryptedPhone,
       projectId,
@@ -262,6 +313,7 @@ export async function POST(request: NextRequest) {
     });
 
     await newOTP.save();
+    console.log("OTP saved to database:", { otpCode, sessionId: newOTP._id });
 
     // Send WhatsApp OTP
     const whatsAppService = new WhatsAppService();
@@ -278,6 +330,7 @@ export async function POST(request: NextRequest) {
         error: whatsAppResult.error,
         phoneNumber: formattedPhone,
         projectId,
+        debugInfo: whatsAppResult.debugInfo,
       });
 
       return NextResponse.json(
@@ -286,12 +339,20 @@ export async function POST(request: NextRequest) {
             "Failed to send verification code via WhatsApp. Please try again.",
           details:
             process.env.NODE_ENV === "development"
-              ? whatsAppResult.error
+              ? {
+                  whatsAppError: whatsAppResult.error,
+                  debugInfo: whatsAppResult.debugInfo,
+                }
               : undefined,
         },
         { status: 500 }
       );
     }
+
+    console.log("WhatsApp OTP sent successfully:", {
+      messageId: whatsAppResult.messageId,
+      phoneNumber: formattedPhone,
+    });
 
     // Success response
     const response: any = {
@@ -307,9 +368,13 @@ export async function POST(request: NextRequest) {
       messageId: whatsAppResult.messageId,
     };
 
-    // Include code in development mode
+    // Include code and debug info in development mode
     if (process.env.NODE_ENV === "development") {
       response.devCode = otpCode;
+      response.debugInfo = {
+        formattedPhone,
+        whatsAppDebug: whatsAppResult.debugInfo,
+      };
       console.log(
         `[DEV] OTP for ${formattedPhone} (${project.projectTitle}): ${otpCode}`
       );
@@ -327,6 +392,7 @@ export async function POST(request: NextRequest) {
       {
         error: "An unexpected error occurred. Please try again.",
         message: error.message,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );
