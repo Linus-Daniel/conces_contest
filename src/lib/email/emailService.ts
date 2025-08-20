@@ -101,7 +101,7 @@ export async function sendReminderEmail(
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #002B5B;">Hi ${fullName},</h2>
           <p>Just a friendly reminder that you have <strong>${daysLeft} days</strong> left to submit your design for the CONCES Logo Rebrand Challenge!</p>
-          <p>Don't miss your chance to win ₦400,000!</p>
+          <p>Don't miss your chance to win ₦500,000!</p>
           <a href="https://brandchallenge.conces.org/submit" style="display: inline-block; background-color: #00B894; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Submit Your Design</a>
         </div>
       `,

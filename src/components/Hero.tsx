@@ -378,7 +378,7 @@ export default function HeroSection() {
                       ease: "easeInOut",
                     }}
                   >
-                    ₦400,000
+                    ₦500,000
                   </motion.div>
                   <div className="text-conces-gold text-sm sm:text-base lg:text-lg font-medium mb-4">
                     Plus featured recognition on all our platforms!

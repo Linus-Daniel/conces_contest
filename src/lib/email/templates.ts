@@ -81,7 +81,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                                         <h3 style="color: #002B5B; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase;">Contest Info</h3>
                                         <p style="color: #666666; font-size: 14px; margin: 5px 0;">
                                             <strong>Deadline:</strong> ${formattedDeadline}<br>
-                                            <strong>Grand Prize:</strong> ₦400,000<br>
+                                            <strong>Grand Prize:</strong> ₦500,000<br>
                                             <strong>Total Prizes:</strong> ₦1,000,000+
                                         </p>
                                     </td>
@@ -240,7 +240,7 @@ ${data.authToken}
 
 CONTEST INFORMATION:
 - Deadline: ${formattedDeadline}
-- Grand Prize: ₦400,000
+- Grand Prize: ₦500,000
 - Total Prizes: Over ₦1,000,000
 
 WHAT'S NEXT?

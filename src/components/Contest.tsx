@@ -60,6 +60,7 @@ export default function ContestSection() {
                 1 National Stage.
               </span>
             </h2>
+            
 
             <motion.p
               initial={{ opacity: 0 }}

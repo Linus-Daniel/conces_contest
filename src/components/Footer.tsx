@@ -37,7 +37,7 @@ export default function Footer() {
               unified voice of engineering students across Nigeria.
             </p>
             <div className="flex space-x-4">
-              {socialLinks.map((social,index) => (
+              {socialLinks.map((social, index) => (
                 <Link
                   key={index}
                   href={social.href}
@@ -45,7 +45,8 @@ export default function Footer() {
                 >
                   <social.Icon
                     className="w-5 h-5 md:w-6 md:h-6"
-                    aria-label={`Follow us on ${social.Icon.name}`} />
+                    aria-label={`Follow us on ${social.Icon.name}`}
+                  />
                 </Link>
               ))}
             </div>
@@ -86,7 +87,7 @@ export default function Footer() {
               <li className="flex items-start">
                 <i className="fas fa-envelope mt-1 mr-3 text-conces-green text-sm"></i>
                 <span className="text-white/70 text-sm md:text-base">
-                  info@conces.org
+                  goodnews@conces.org
                 </span>
               </li>
 
