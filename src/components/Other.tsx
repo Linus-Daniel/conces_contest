@@ -37,7 +37,7 @@ const CONTEST_DATA = {
     "Join our exclusive design competition platform where you can submit your visionary rebrand concepts and compete for amazing prizes.",
   url: "brandchallenge.conces.org",
   mainCTA: {
-    title: "Redesign the Future of CONCES — Win ₦500,000",
+    title: "Redesign the Future of CONCES — Win ₦400,000",
     subtitle:
       "Open to all engineering and tech students across Nigeria. Showcase your creativity. Lead the transformation.",
   },
@@ -76,7 +76,7 @@ const CONTEST_DATA = {
   prizes: [
     {
       place: "Grand Prize",
-      amount: "₦500,000",
+      amount: "₦400,000",
       bonus: "National Recognition + Trophy",
       gradient: "from-conces-gold to-yellow-600",
       icon: FaCrown,

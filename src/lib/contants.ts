@@ -30,7 +30,7 @@ export const DEPARTMENTS = [
 ];
 
 export const PRIZES = [
-  { place: "1st Place", amount: "₦500,000", bonus: "National Recognition" },
+  { place: "1st Place", amount: "₦400,000", bonus: "National Recognition" },
   {
     place: "2nd Place",
     amount: "₦150,000",

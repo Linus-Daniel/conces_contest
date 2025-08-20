@@ -162,6 +162,7 @@ export default function HeroSection() {
     },
   ];
 
+
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-to-b from-conces-blue to-conces-blue/90">
       {/* Background image with overlay */}
@@ -282,6 +283,7 @@ export default function HeroSection() {
                 </motion.a>
               </motion.div>
 
+          
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -296,7 +298,7 @@ export default function HeroSection() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <CountdownTimer />
+                   <CountdownTimer />
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -428,6 +430,7 @@ export default function HeroSection() {
           </motion.div>
         </div>
       </div>
+
 
       {/* Confetti effect on hover over main prize - desktop only */}
       <AnimatePresence>
