@@ -105,12 +105,12 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           
        
-            <a
-              href="#"
+            <Link
+              href="/terms"
               className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
             >
               Terms of Service
-            </a>
+            </Link>
        
         
         </div>

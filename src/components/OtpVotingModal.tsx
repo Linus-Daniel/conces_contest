@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,6 +8,8 @@ import {
   CheckCircle,
   AlertCircle,
   RotateCcw,
+  Smartphone,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -28,6 +30,8 @@ interface OTPResponse {
   phoneNumber?: string;
   projectTitle?: string;
   devCode?: string; // For development mode
+  hasExistingOTP?: boolean;
+  resendAvailable?: boolean;
 }
 
 interface VoteResponse {
@@ -47,13 +51,17 @@ export default function OTPVotingModal({
   onClose,
   onSuccess,
 }: OTPVotingModalProps) {
-  const [step, setStep] = useState<"details" | "otp" | "success">("details");
+  const [step, setStep] = useState<
+    "details" | "otp" | "success" | "existing-otp"
+  >("details");
   const [voterPhone, setVoterPhone] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(false);
   const [sessionData, setSessionData] = useState<OTPResponse | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [attempts, setAttempts] = useState(0);
+  const [hasExistingOTP, setHasExistingOTP] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -83,11 +91,53 @@ export default function OTPVotingModal({
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleRequestOTP = async () => {
-   
+  const checkExistingOTP = async (phone: string) => {
+    setCheckingExisting(true);
+
+    try {
+      const response = await fetch("/api/vote/check-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: phone.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.hasActiveOTP) {
+        setHasExistingOTP(true);
+        setSessionData({
+          success: true,
+          message: "Active OTP found",
+          sessionId: data.sessionId,
+          expiresIn: data.expiresIn,
+          phoneNumber: data.phoneNumber,
+        });
+        setTimeRemaining(data.expiresIn);
+        setStep("existing-otp");
+        toast.success("We found an active verification code for this number");
+      } else {
+        // Proceed with requesting new OTP
+        await handleRequestOTP(phone);
+      }
+    } catch (error) {
+      toast.error("Error checking for existing code");
+      // Fallback to regular OTP request
+      await handleRequestOTP(phone);
+    } finally {
+      setCheckingExisting(false);
+    }
+  };
+
+  const handleRequestOTP = async (phone?: string) => {
+    const phoneToUse = phone || voterPhone;
 
     // Basic validation
-  
+    if (!phoneToUse.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
 
     setLoading(true);
 
@@ -97,7 +147,7 @@ export default function OTPVotingModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          voterPhone: voterPhone.trim(),
+          voterPhone: phoneToUse.trim(),
         }),
       });
 
@@ -114,7 +164,16 @@ export default function OTPVotingModal({
           toast.success(`Development mode: Code is ${data.devCode}`);
         }
       } else {
-        toast.error(data.message || "Failed to send verification code");
+        if (data.error === "Code already sent") {
+          // Handle case where OTP already exists
+          setHasExistingOTP(true);
+          setSessionData(data);
+          setTimeRemaining(data.expiresIn || null);
+          setStep("existing-otp");
+          toast.success("Verification code already sent to your WhatsApp");
+        } else {
+          toast.error(data.message || "Failed to send verification code");
+        }
       }
     } catch (error) {
       toast.error("Network error. Please try again.");
@@ -195,6 +254,22 @@ export default function OTPVotingModal({
     setOtpCode("");
     setTimeRemaining(null);
     setAttempts(0);
+    setHasExistingOTP(false);
+  };
+
+  const handleUseExistingOTP = () => {
+    setStep("otp");
+    toast.success("Please enter the verification code we sent you");
+  };
+
+  const handleRequestNewOTP = async () => {
+    if (!voterPhone.trim()) {
+      toast.error("Phone number is required");
+      return;
+    }
+
+    setLoading(true);
+    await handleRequestOTP(voterPhone);
   };
 
   return (
@@ -217,10 +292,15 @@ export default function OTPVotingModal({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-conces-blue">
-                {step === "success" ? "Vote Confirmed!" : "Cast Your Vote"}
+                {step === "success"
+                  ? "Vote Confirmed!"
+                  : step === "existing-otp"
+                  ? "Code Already Sent"
+                  : "Cast Your Vote"}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {step === "details" && "Enter your details to get OTP"}
+                {step === "existing-otp" && "We already sent you a code"}
                 {step === "otp" && "Enter the verification code"}
                 {step === "success" && "Your vote has been recorded"}
               </p>
@@ -244,7 +324,6 @@ export default function OTPVotingModal({
           {/* Step Content */}
           {step === "details" && (
             <div className="space-y-4">
-             
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   WhatsApp Phone Number *
@@ -255,7 +334,7 @@ export default function OTPVotingModal({
                   onChange={(e) => setVoterPhone(e.target.value)}
                   placeholder="+234 801 234 5678"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-conces-green focus:border-conces-green transition-colors"
-                  disabled={loading}
+                  disabled={loading || checkingExisting}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Must be a Nigerian WhatsApp number
@@ -277,11 +356,16 @@ export default function OTPVotingModal({
               </div>
 
               <button
-                onClick={handleRequestOTP}
-                disabled={loading || !voterPhone.trim()}
+                onClick={() => checkExistingOTP(voterPhone)}
+                disabled={loading || checkingExisting || !voterPhone.trim()}
                 className="w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-conces-green/90 transition-colors flex items-center justify-center"
               >
-                {loading ? (
+                {checkingExisting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Checking...
+                  </>
+                ) : loading ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     Sending Code...
@@ -293,6 +377,58 @@ export default function OTPVotingModal({
                   </>
                 )}
               </button>
+            </div>
+          )}
+
+          {step === "existing-otp" && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <Smartphone className="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Code Already Sent!</p>
+                    <p className="text-xs">
+                      We've already sent a verification code to{" "}
+                      {sessionData?.phoneNumber}. You can use that code or
+                      request a new one.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {timeRemaining && (
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 flex items-center justify-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    Code expires in: {formatTime(timeRemaining)}
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleUseExistingOTP}
+                  className="w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold hover:bg-conces-green/90 transition-colors flex items-center justify-center"
+                >
+                  <ChevronRight className="w-5 h-5 mr-2" />I Have The Code
+                </button>
+
+                <button
+                  onClick={handleRequestNewOTP}
+                  disabled={loading}
+                  className="w-full border border-conces-green text-conces-green py-3 px-6 rounded-lg font-semibold hover:bg-conces-green/5 transition-colors flex items-center justify-center"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {loading ? "Sending New Code..." : "Send New Code"}
+                </button>
+
+                <button
+                  onClick={handleRetry}
+                  className="w-full text-gray-600 py-2 px-6 rounded-lg font-medium hover:text-gray-800 transition-colors"
+                >
+                  Use Different Number
+                </button>
+              </div>
             </div>
           )}
 

@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { AxiosError } from "axios";
+import Link from "next/link";
 
 // Define validation schema with Zod
 const formSchema = z.object({
@@ -275,12 +276,12 @@ export default function SignUpForm() {
             />
             <label className="text-xs sm:text-sm text-gray-700">
               I agree to the{" "}
-              <a
-                href="#"
+              <Link
+                href="/terms"
                 className="text-conces-green font-medium hover:underline"
               >
                 Terms and Conditions
-              </a>{" "}
+              </Link>{" "}
               and{" "}
               <a
                 href="#"
