@@ -68,7 +68,7 @@ export default function AboutSection() {
               <div className="absolute -inset-4 bg-gradient-to-r from-conces-green/20 to-conces-blue/20 rounded-2xl rotate-2"></div>
               <div className="relative bg-white p-8 md:p-10 rounded-2xl shadow-lg">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  The Unified Voice of Engineering Students
+                  The Unified Voice of Christain Engineering and Technology Students
                 </h3>
                 <div className="space-y-5">
                   <p className="text-gray-700 leading-relaxed">

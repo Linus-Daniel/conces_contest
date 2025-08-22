@@ -259,7 +259,7 @@ export default function SignUpForm() {
             </h3>
             <ul className="text-xs sm:text-sm  text-gray-600 space-y-1">
               <li>
-                • Must be a registered engineering student in a Nigerian
+                • Must be a registered engineering or technology student in a Nigerian
                 institution
               </li>
               <li>• Original designs only - no plagiarism</li>
@@ -283,12 +283,12 @@ export default function SignUpForm() {
                 Terms and Conditions
               </Link>{" "}
               and{" "}
-              <a
-                href="#"
+              <p
+          
                 className="text-conces-green font-medium hover:underline"
               >
                 Competition Rules
-              </a>
+              </p>
             </label>
           </div>
           {errors.agreeToTerms && (

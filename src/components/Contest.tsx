@@ -70,8 +70,7 @@ export default function ContestSection() {
               className="text-xl md:text-2xl mb-8 max-w-2xl"
             >
               The CONCES Logo Rebrand Challenge is your opportunity to make
-              history. Design the new face of Christain Engineering and
-              Technology students in Nigeria and win life-changing prizes!
+              history. Design the new face of CONCES in Nigeria and win life-changing prizes!
             </motion.p>
 
             <div className="flex flex-col sm:flex-row gap-4">

@@ -352,11 +352,15 @@ function PrizesSection({
         className="bg-gradient-to-r from-conces-blue/5 to-conces-green/5 p-6 rounded-xl border border-conces-blue/20 text-center"
       >
         <h4 className="text-lg font-bold text-conces-blue mb-2">
-          {consolation.count} {consolation.title}
+        
         </h4>
         <p className="text-conces-blue font-medium">
           Each receiving {consolation.amount}
         </p>
+        <p>
+          Plus other Amazing prices
+          </p>
+        
       </motion.div>
     </div>
   );

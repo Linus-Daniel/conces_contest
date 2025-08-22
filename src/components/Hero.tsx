@@ -419,7 +419,7 @@ export default function HeroSection() {
               >
                 <div className="text-center">
                   <div className="text-xl sm:text-2xl font-bold text-conces-gold">
-                    +5
+                    Plus
                   </div>
                   <div className="text-blue-200 text-xs sm:text-sm font-medium">
                     More Exciting Prizes!
