@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import { Input } from "./ui/input";
@@ -12,6 +12,7 @@ import {
   InformationCircleIcon,
   XMarkIcon,
   ArrowPathIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { useCandidate } from "@/context/authContext";
 import Image from "next/image";
@@ -26,6 +27,193 @@ interface ProjectFormData {
   inspiration: string;
 }
 
+// ✅ New Disclaimer Modal Component
+const DisclaimerModal = ({
+  isOpen,
+  onClose,
+  onProceed,
+  isSubmitting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onProceed: () => void;
+  isSubmitting: boolean;
+}) => {
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // Reset agreement when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setAgreedToTerms(false);
+    }
+  }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          />
+
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="bg-orange-100 p-2 rounded-full">
+                  <ExclamationTriangleIcon className="w-6 h-6 text-orange-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Submission Terms & Disclaimer
+                </h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-6">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="font-semibold text-orange-900 mb-2">
+                  Important Notice
+                </h3>
+                <p className="text-orange-800 text-sm">
+                  Please read and understand the following terms before
+                  submitting your design.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Design Ownership & Usage Rights
+                </h3>
+
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <p>
+                    By submitting your design to the CONCES Logo Design Contest,
+                    you acknowledge and agree to the following terms:
+                  </p>
+
+                  <ul className="space-y-2 mt-4">
+                    <li>
+                      <strong>Transfer of Ownership:</strong> All submitted
+                      designs become the exclusive property of CONCES (Council
+                      for the Regulation of Engineering in Nigeria) upon
+                      submission, regardless of whether your design is selected
+                      as the winner.
+                    </li>
+                    <li>
+                      <strong>Usage Rights:</strong> CONCES reserves the right
+                      to use, modify, reproduce, and distribute any submitted
+                      design for any purpose deemed necessary, including but not
+                      limited to:
+                      <ul className="ml-4 mt-2 space-y-1">
+                        <li>• Official branding and marketing materials</li>
+                        <li>• Digital and print publications</li>
+                        <li>• Promotional activities and campaigns</li>
+                        <li>• Educational and training materials</li>
+                      </ul>
+                    </li>
+                    <li>
+                      <strong>Originality:</strong> You confirm that your
+                      submission is original work created by you and does not
+                      infringe upon any third-party intellectual property
+                      rights.
+                    </li>
+                    <li>
+                      <strong>No Compensation Claims:</strong> You waive any
+                      future claims to compensation beyond the contest prizes
+                      for the use of your submitted design(s).
+                    </li>
+                    <li>
+                      <strong>Attribution:</strong> While CONCES may choose to
+                      credit you as the designer, there is no obligation to do
+                      so in all uses of the design.
+                    </li>
+                  </ul>
+
+                  <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                    <p className="text-blue-800 font-medium">
+                      Contest Participation: By participating in this contest,
+                      you agree to be bound by all contest rules and these
+                      submission terms.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agreement Checkbox */}
+              <div className="border-t pt-6">
+                <label className="flex items-start space-x-3 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="h-5 w-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-gray-900 font-medium group-hover:text-blue-600 transition-colors">
+                      I agree to the submission terms and disclaimer
+                    </span>
+                    <p className="text-sm text-gray-600 mt-1">
+                      I understand that my design will become the property of
+                      CONCES and can be used as necessary for official purposes.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={onProceed}
+                disabled={!agreedToTerms || isSubmitting}
+                className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center">
+                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </span>
+                ) : (
+                  "Proceed with Submission"
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function SubmitProjectForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +224,9 @@ export default function SubmitProjectForm() {
   const [isLoading, setIsLoading] = useState(true); // ✅ Loading state
   const [existingProject, setExistingProject] = useState<any>(null); // ✅ Store existing project
   const [showStatusModal, setShowStatusModal] = useState(false); // ✅ Modal state
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false); // ✅ New disclaimer modal state
+  const [pendingFormData, setPendingFormData] =
+    useState<ProjectFormData | null>(null); // ✅ Store form data while showing disclaimer
   const { candidate } = useCandidate();
 
   const {
@@ -95,6 +286,7 @@ export default function SubmitProjectForm() {
     toast("Mockup removed", { icon: "🗑️" });
   };
 
+  // ✅ Modified to show disclaimer modal first
   const onSubmit = async (data: ProjectFormData) => {
     if (!primaryFileUrl) {
       setUploadError("Please upload a primary logo file");
@@ -102,13 +294,22 @@ export default function SubmitProjectForm() {
       return;
     }
 
+    // Store form data and show disclaimer modal
+    setPendingFormData(data);
+    setShowDisclaimerModal(true);
+  };
+
+  // ✅ Actual submission after disclaimer acceptance
+  const proceedWithSubmission = async () => {
+    if (!pendingFormData) return;
+
     setIsSubmitting(true);
     toast.loading("Submitting your design...");
 
     try {
       const response = await api.post("/projects", {
         candidate: candidate?._id || candidate?._id,
-        ...data,
+        ...pendingFormData,
         primaryFileUrl,
         mockupUrl,
       });
@@ -121,6 +322,8 @@ export default function SubmitProjectForm() {
       });
 
       setSubmissionComplete(true);
+      setShowDisclaimerModal(false);
+      setPendingFormData(null);
       reset();
       setPrimaryFileUrl("");
       setMockupUrl("");
@@ -136,6 +339,7 @@ export default function SubmitProjectForm() {
           setShowStatusModal(true);
         }
         toast.error("You have already submitted a project for this contest");
+        setShowDisclaimerModal(false);
       } else {
         toast.error(
           error.response?.data?.error ||
@@ -145,6 +349,12 @@ export default function SubmitProjectForm() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // ✅ Close disclaimer modal
+  const closeDisclaimerModal = () => {
+    setShowDisclaimerModal(false);
+    setPendingFormData(null);
   };
 
   const saveDraft = async () => {
@@ -321,6 +531,15 @@ export default function SubmitProjectForm() {
           },
         }}
       />
+
+      {/* ✅ Disclaimer Modal */}
+      <DisclaimerModal
+        isOpen={showDisclaimerModal}
+        onClose={closeDisclaimerModal}
+        onProceed={proceedWithSubmission}
+        isSubmitting={isSubmitting}
+      />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -535,14 +754,7 @@ export default function SubmitProjectForm() {
                 disabled={isSubmitting}
                 className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center">
-                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
-                  </span>
-                ) : (
-                  "Submit Final Design"
-                )}
+                Submit Final Design
               </Button>
               <Button
                 type="button"
