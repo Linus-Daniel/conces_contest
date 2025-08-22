@@ -113,7 +113,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                                             <tr>
                                                 <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">1</td>
                                                 <td style="padding-left: 15px; color: #333333; font-size: 15px;">
-                                                    <strong>Download the Contest Pack</strong> - Brand guidelines & requirements
+                                                    <strong><a href="https://www.brandchallenge.conces.org">View contest pack here for </a> </strong> - Brand guidelines & requirements
                                                 </td>
                                             </tr>
                                         </table>
@@ -149,9 +149,9 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="https://brandchallenge.conces.org/submit?token=${data.authToken}" 
+                                        <a href="https://brandchallenge.conces.org/submit" 
                                            style="display: inline-block; background-color: #00B894; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
-                                            Start Designing Now →
+                                            Submit your design when ready here →
                                         </a>
                                     </td>
                                 </tr>
@@ -254,7 +254,7 @@ PRO TIPS FOR SUCCESS:
 - Reflect Nigerian engineering excellence
 - Submit multiple variations for better chances
 
-Start designing now: https://brandchallenge.conces.org/submit?token=${data.authToken}
+To submit you design when ready visit: https://brandchallenge.conces.org/submit and insert your token
 
 Need help? Contact us at support@conces.org
 
