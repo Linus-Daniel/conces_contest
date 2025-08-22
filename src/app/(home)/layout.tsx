@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Wrapper from "@/components/Wrapper";
 import Head from "next/head";
 import { AdminAuthProvider } from "@/context/AdminAuth";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Conces Logo Rebranding",
@@ -34,7 +24,7 @@ export default function RootLayout({
         <link rel="icon" href="" />
       </Head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased`}
       >
         <AdminAuthProvider>
           <Wrapper>{children}</Wrapper>

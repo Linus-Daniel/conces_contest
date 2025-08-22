@@ -1,4 +1,4 @@
-// api/vote/request-otp/route.ts - Using Axios for WhatsApp API
+// api/vote/request-otp/route.ts - Enhanced with proper phone/OTP validation
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
@@ -28,7 +28,6 @@ class WhatsAppService {
     debugInfo?: any;
   }> {
     try {
-      // Ensure phone number has + prefix for WhatsApp API
       const formattedPhone = phoneNumber.startsWith("+")
         ? phoneNumber
         : `+${phoneNumber}`;
@@ -36,9 +35,6 @@ class WhatsAppService {
       console.log("=== WhatsApp OTP Send Attempt ===");
       console.log("Phone Number:", formattedPhone);
       console.log("OTP Code:", code);
-      console.log("Phone Number ID:", this.phoneNumberId);
-      console.log("Has Access Token:", !!this.accessToken);
-      console.log("Access Token Length:", this.accessToken?.length);
 
       const requestPayload = {
         messaging_product: "whatsapp",
@@ -74,51 +70,36 @@ class WhatsAppService {
         },
       };
 
-      console.log("Request URL:", this.baseUrl);
-      console.log("Request Payload:", JSON.stringify(requestPayload, null, 2));
-
-      // Make the API call using axios
       const response = await axios.post(this.baseUrl, requestPayload, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
           "Content-Type": "application/json",
         },
-        timeout: 30000, // 30 seconds timeout
+        timeout: 30000,
         validateStatus: function (status) {
-          // Don't throw on any status, we'll handle it manually
           return true;
         },
       });
 
       console.log("=== WhatsApp API Response ===");
       console.log("Status:", response.status);
-      console.log("Status Text:", response.statusText);
       console.log("Response Data:", JSON.stringify(response.data, null, 2));
 
-      // Check if the request was successful
       if (
         response.status === 200 &&
         response.data.messages &&
         response.data.messages[0]
       ) {
-        console.log("✅ WhatsApp message sent successfully!");
-        console.log("Message ID:", response.data.messages[0].id);
-
         return {
           success: true,
           messageId: response.data.messages[0].id,
           debugInfo: response.data,
         };
       } else {
-        // Handle error response
         const errorMessage =
           response.data.error?.message ||
           response.data.error?.error_user_msg ||
           "Unknown WhatsApp API error";
-
-        console.error("❌ WhatsApp API Error:");
-        console.error("Error Message:", errorMessage);
-        console.error("Full Error:", response.data.error);
 
         return {
           success: false,
@@ -132,14 +113,9 @@ class WhatsAppService {
       }
     } catch (error: any) {
       console.error("=== WhatsApp Service Exception ===");
-      console.error("Error Type:", error.name);
-      console.error("Error Message:", error.message);
+      console.error("Error:", error.message);
 
       if (error.response) {
-        // The request was made and the server responded with a status code
-        console.error("Response Status:", error.response.status);
-        console.error("Response Data:", error.response.data);
-
         return {
           success: false,
           error: error.response.data?.error?.message || error.message,
@@ -150,10 +126,6 @@ class WhatsAppService {
           },
         };
       } else if (error.request) {
-        // The request was made but no response was received
-        console.error("No response received from WhatsApp API");
-        console.error("Request:", error.request);
-
         return {
           success: false,
           error: "No response from WhatsApp API - Network error",
@@ -163,9 +135,6 @@ class WhatsAppService {
           },
         };
       } else {
-        // Something happened in setting up the request
-        console.error("Error setting up request:", error.message);
-
         return {
           success: false,
           error: error.message || "WhatsApp service error",
@@ -178,7 +147,6 @@ class WhatsAppService {
     }
   }
 }
-
 
 // Utility functions
 function encrypt(text: string): string {
@@ -209,22 +177,18 @@ function validateNigerianPhone(phone: string): boolean {
 function formatNigerianPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, "");
 
-  // Already in international format
   if (cleaned.startsWith("234")) {
     return `+${cleaned}`;
   }
 
-  // Local format with 0 prefix
   if (cleaned.startsWith("0")) {
     return `+234${cleaned.slice(1)}`;
   }
 
-  // Local format without prefix
   if (cleaned.length === 10 && /^[789]/.test(cleaned)) {
     return `+234${cleaned}`;
   }
 
-  // Return as-is if doesn't match expected formats
   return phone;
 }
 
@@ -262,12 +226,92 @@ function checkRateLimit(phoneNumber: string): {
   return { allowed: true };
 }
 
-// OTP status enum for better readability
-enum OTPStatus {
-  NOT_FOUND = "NOT_FOUND",
-  ACTIVE = "ACTIVE",
-  USED = "USED",
-  EXPIRED = "EXPIRED",
+// Enhanced phone/OTP validation function
+async function validatePhoneAndOTPStatus(
+  formattedPhone: string,
+  encryptedPhone: string,
+  projectId: string
+) {
+  console.log("=== Starting Phone/OTP Validation ===");
+
+  // 1. Check if this phone number has already voted for this project
+  const existingVote = await Vote.findOne({
+    phoneNumber: encryptedPhone,
+    projectId,
+  });
+
+  if (existingVote) {
+    console.log("❌ Phone number already voted for this project");
+    return {
+      canSendOTP: false,
+      reason: "ALREADY_VOTED",
+      message:
+        "This phone number has already voted for this project. Each phone number can only vote once.",
+    };
+  }
+
+  // 2. Check if this phone number has any confirmed votes (used OTP that resulted in vote)
+  const confirmedOTP = await OTP.findOne({
+    phoneNumber: formattedPhone,
+    projectId,
+    used: true,
+    voteConfirmed: true,
+  });
+
+  if (confirmedOTP) {
+    console.log("❌ Phone number has confirmed vote via OTP");
+    return {
+      canSendOTP: false,
+      reason: "VOTE_CONFIRMED",
+      message:
+        "This phone number has already been used to vote for this project.",
+    };
+  }
+
+  // 3. Check for active (unused and not expired) OTPs
+  const activeOTP = await OTP.findOne({
+    phoneNumber: formattedPhone,
+    projectId,
+    used: false,
+    expiresAt: { $gt: new Date() },
+  }).sort({ createdAt: -1 });
+
+  if (activeOTP) {
+    const expiresIn = Math.floor(
+      (activeOTP.expiresAt.getTime() - Date.now()) / 1000
+    );
+    console.log("⚠️ Active OTP found, expires in:", expiresIn, "seconds");
+
+    return {
+      canSendOTP: false,
+      reason: "ACTIVE_OTP_EXISTS",
+      message: `A verification code was recently sent to your WhatsApp. Please check your messages or wait ${Math.ceil(
+        expiresIn / 60
+      )} minute(s) to request a new code.`,
+      expiresIn,
+      sessionId: activeOTP._id,
+      resendAvailable: expiresIn < 60, // Allow resend if less than 1 minute remaining
+    };
+  }
+
+  // 4. Clean up expired OTPs for this phone/project combination (optional housekeeping)
+  const expiredOTPs = await OTP.find({
+    phoneNumber: formattedPhone,
+    projectId,
+    used: false,
+    expiresAt: { $lt: new Date() },
+  });
+
+  if (expiredOTPs.length > 0) {
+    console.log(`🧹 Found ${expiredOTPs.length} expired OTPs for cleanup`);
+    // Note: We keep expired OTPs as per your requirement, just logging for awareness
+  }
+
+  console.log("✅ Phone validation passed - can send new OTP");
+  return {
+    canSendOTP: true,
+    reason: "VALIDATION_PASSED",
+  };
 }
 
 // Main POST handler
@@ -311,9 +355,22 @@ export async function POST(request: NextRequest) {
     console.log("Formatted Phone:", formattedPhone);
 
     const encryptedPhone = encrypt(formattedPhone);
+    console.log("Phone encrypted for vote checking");
 
     // Check rate limit
-   
+    const rateLimitResult = checkRateLimit(formattedPhone);
+    if (!rateLimitResult.allowed) {
+      console.warn("Rate limit exceeded for phone:", formattedPhone);
+      return NextResponse.json(
+        {
+          error: "Too many requests",
+          message: `Please wait ${rateLimitResult.retryAfter} seconds before requesting another code.`,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
+
     // Connect to database
     await connectDB();
     console.log("Database connected");
@@ -332,95 +389,38 @@ export async function POST(request: NextRequest) {
     }
     console.log("Project found:", project.projectTitle);
 
-    // Check if already voted
-    const existingVote = await Vote.findOne({
-      phoneNumber: encryptedPhone,
-      projectId,
-    });
+    // Comprehensive phone/OTP validation
+    const validationResult = await validatePhoneAndOTPStatus(
+      formattedPhone,
+      encryptedPhone,
+      projectId
+    );
 
-    if (existingVote) {
-      console.warn("User already voted for this project");
+    if (!validationResult.canSendOTP) {
+      const statusCode =
+        validationResult.reason === "ALREADY_VOTED" ||
+        validationResult.reason === "VOTE_CONFIRMED"
+          ? 409
+          : validationResult.reason === "ACTIVE_OTP_EXISTS"
+          ? 400
+          : 400;
+
       return NextResponse.json(
         {
-          error: "Already voted",
-          message:
-            "You have already voted for this project. Each phone number can only vote once.",
+          error: validationResult.reason.toLowerCase().replace(/_/g, " "),
+          message: validationResult.message,
+          ...(validationResult.expiresIn && {
+            expiresIn: validationResult.expiresIn,
+          }),
+          ...(typeof validationResult.sessionId !== "undefined"
+            ? { sessionId: validationResult.sessionId }
+            : {}),
+          ...(validationResult.resendAvailable !== undefined && {
+            resendAvailable: validationResult.resendAvailable,
+          }),
         },
-        { status: 409 }
+        { status: statusCode }
       );
-    }
-
-    // Check for existing OTPs for this phone number
-    const existingOTPs = await OTP.find({
-      phoneNumber: formattedPhone,
-    }).sort({ createdAt: -1 }); // Get most recent first
-
-    let otpStatus = OTPStatus.NOT_FOUND;
-    let activeOTP = null;
-
-    if (existingOTPs.length > 0) {
-      const latestOTP = existingOTPs[0];
-
-      // Check if OTP has been used
-      if (latestOTP.used) {
-        otpStatus = OTPStatus.USED;
-        console.log("OTP already used for this phone number");
-      }
-      // Check if OTP is expired
-      else if (latestOTP.expiresAt < new Date()) {
-        otpStatus = OTPStatus.EXPIRED;
-        console.log("Existing OTP has expired");
-      }
-      // OTP is still active
-      else {
-        otpStatus = OTPStatus.ACTIVE;
-        activeOTP = latestOTP;
-        console.log("Active OTP found, expires at:", latestOTP.expiresAt);
-      }
-    }
-
-    // Handle different OTP statuses
-    switch (otpStatus) {
-      case OTPStatus.USED:
-        return NextResponse.json(
-          {
-            error: "Already verified",
-            message:
-              "This phone number has already been used to verify a vote. Each number can only be used once.",
-          },
-          { status: 409 }
-        );
-
-      case OTPStatus.ACTIVE:
-        if (activeOTP) {
-          const expiresIn = Math.floor(
-            (activeOTP.expiresAt.getTime() - Date.now()) / 1000
-          );
-
-          console.warn(
-            "Existing OTP still valid, expires in:",
-            expiresIn,
-            "seconds"
-          );
-
-          return NextResponse.json(
-            {
-              error: "Code already sent",
-              message: `A verification code was recently sent to your WhatsApp. Please check your messages or wait ${Math.ceil(
-                expiresIn / 60
-              )} minute(s) to request a new code.`,
-              expiresIn,
-              sessionId: activeOTP._id,
-              resendAvailable: expiresIn < 60, // Allow resend if less than 1 minute remaining
-            },
-            { status: 400 }
-          );
-        }
-        break;
-
-      case OTPStatus.EXPIRED:
-        console.log("Previous OTP expired, generating new one");
-        break;
     }
 
     // Generate new OTP
@@ -439,7 +439,7 @@ export async function POST(request: NextRequest) {
 
     // Create OTP record
     const newOTP = new OTP({
-      phoneNumber: formattedPhone,
+      phoneNumber: formattedPhone, // Store plain phone for OTP matching
       code: otpCode,
       projectId,
       expiresAt,
@@ -474,9 +474,7 @@ export async function POST(request: NextRequest) {
             "We couldn't send the verification code to your WhatsApp. Please check if your number is registered with WhatsApp and try again.",
           details:
             process.env.NODE_ENV === "development"
-              ? {
-                  whatsAppError: whatsAppResult.error,
-                }
+              ? { whatsAppError: whatsAppResult.error }
               : undefined,
         },
         { status: 500 }

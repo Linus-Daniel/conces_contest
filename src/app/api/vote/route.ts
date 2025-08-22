@@ -1,60 +1,117 @@
-// api/vote/route.ts - Updated vote confirmation endpoint
+// api/vote/route.ts - Enhanced vote confirmation with proper OTP/phone matching
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
 import OTP from "@/models/OTP";
 import Vote from "@/models/Vote";
+import crypto from "crypto";
+
+// Encryption function (same as in request-otp route)
+function encrypt(text: string): string {
+  const algorithm = "aes-256-gcm";
+  const keyString =
+    process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
+  const key = crypto.createHash("sha256").update(keyString).digest();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  const authTag = cipher.getAuthTag();
+
+  return iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { sessionId, otpCode } = body;
 
+    console.log("\n=== Vote Confirmation Request ===");
+    console.log("Session ID:", sessionId);
+    console.log("OTP Code:", otpCode ? "PROVIDED" : "MISSING");
+    console.log("Timestamp:", new Date().toISOString());
+
     // Validate input
     if (!sessionId || !otpCode) {
+      console.error("Missing required fields");
       return NextResponse.json(
-        { error: "Session ID and OTP code are required" },
+        {
+          error: "Missing information",
+          message: "Session ID and OTP code are required",
+        },
         { status: 400 }
       );
     }
 
     if (!/^\d{6}$/.test(otpCode)) {
+      console.error("Invalid OTP format:", otpCode);
       return NextResponse.json(
-        { error: "Invalid OTP code format" },
+        {
+          error: "Invalid OTP format",
+          message: "OTP code must be 6 digits",
+        },
         { status: 400 }
       );
     }
 
     await connectDB();
+    console.log("Database connected");
 
     // Find the OTP session
     const otpSession = await OTP.findById(sessionId);
 
     if (!otpSession) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 404 });
+      console.error("OTP session not found:", sessionId);
+      return NextResponse.json(
+        {
+          error: "Invalid session",
+          message:
+            "The verification session could not be found. Please request a new code.",
+        },
+        { status: 404 }
+      );
     }
+
+    console.log("OTP Session found for phone:", otpSession.phoneNumber);
+    console.log("Project ID:", otpSession.projectId);
+    console.log("OTP used:", otpSession.used);
+    console.log("Vote confirmed:", otpSession.voteConfirmed);
+    console.log("Expires at:", otpSession.expiresAt);
+    console.log("Current attempts:", otpSession.attempts);
 
     // Check if OTP has expired
     if (new Date() > otpSession.expiresAt) {
+      console.warn("OTP has expired");
       return NextResponse.json(
-        { error: "Verification code has expired. Please request a new one." },
+        {
+          error: "Code expired",
+          message: "Verification code has expired. Please request a new one.",
+        },
         { status: 400 }
       );
     }
 
-    // Check if OTP has already been used
-    if (otpSession.used) {
+    // Check if OTP has already been used for voting
+    if (otpSession.used && otpSession.voteConfirmed) {
+      console.warn("OTP already used for voting");
       return NextResponse.json(
-        { error: "This verification code has already been used" },
+        {
+          error: "Code already used",
+          message:
+            "This verification code has already been used to cast a vote",
+        },
         { status: 400 }
       );
     }
 
     // Check if maximum attempts exceeded
     if (otpSession.attempts >= 3) {
+      console.warn("Maximum attempts exceeded");
       return NextResponse.json(
         {
-          error:
+          error: "Maximum attempts exceeded",
+          message:
             "Maximum verification attempts exceeded. Please request a new code.",
         },
         { status: 400 }
@@ -63,41 +120,85 @@ export async function POST(request: NextRequest) {
 
     // Check if OTP code matches
     if (otpSession.code !== otpCode) {
+      console.warn("Invalid OTP code provided");
+
       // Increment attempts
+      const updatedAttempts = otpSession.attempts + 1;
       await OTP.updateOne({ _id: sessionId }, { $inc: { attempts: 1 } });
 
-      const remainingAttempts = 3 - (otpSession.attempts + 1);
+      const remainingAttempts = 3 - updatedAttempts;
       return NextResponse.json(
         {
           error: "Invalid verification code",
-          remainingAttempts,
           message:
             remainingAttempts > 0
-              ? `${remainingAttempts} attempt(s) remaining`
-              : "No attempts remaining. Please request a new code.",
+              ? `Invalid code. ${remainingAttempts} attempt(s) remaining.`
+              : "Invalid code. No attempts remaining. Please request a new code.",
+          remainingAttempts,
         },
         { status: 400 }
       );
     }
 
+    console.log("✅ OTP code verified successfully");
+
     // Check if project still exists
     const project = await Project.findById(otpSession.projectId);
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      console.error("Project not found:", otpSession.projectId);
+      return NextResponse.json(
+        {
+          error: "Project not found",
+          message: "The voting project no longer exists",
+        },
+        { status: 404 }
+      );
     }
+
+    console.log("Project found:", project.projectTitle);
+
+    // Encrypt phone number for vote storage (consistent with request-otp route)
+    const encryptedPhone = encrypt(otpSession.phoneNumber);
 
     // Double-check: Has this phone number already voted for this project?
     const existingVote = await Vote.findOne({
-      phoneNumber: otpSession.phoneNumber,
+      phoneNumber: encryptedPhone,
       projectId: otpSession.projectId,
     });
 
     if (existingVote) {
+      console.warn("Phone number already voted for this project");
       return NextResponse.json(
-        { error: "You have already voted for this design" },
+        {
+          error: "Already voted",
+          message: "This phone number has already voted for this project",
+        },
         { status: 409 }
       );
     }
+
+    // Additional check: Has this phone number been used for any confirmed vote for this project?
+    const existingConfirmedOTP = await OTP.findOne({
+      phoneNumber: otpSession.phoneNumber,
+      projectId: otpSession.projectId,
+      used: true,
+      voteConfirmed: true,
+      _id: { $ne: otpSession._id }, // Exclude current session
+    });
+
+    if (existingConfirmedOTP) {
+      console.warn("Phone number already used for confirmed vote");
+      return NextResponse.json(
+        {
+          error: "Phone already used",
+          message:
+            "This phone number has already been used to vote for this project",
+        },
+        { status: 409 }
+      );
+    }
+
+    console.log("✅ Phone number validation passed");
 
     // Get request metadata
     const ipAddress =
@@ -105,6 +206,20 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-real-ip") ||
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
+
+    console.log("Creating vote record...");
+
+    // Create vote record first (using encrypted phone number)
+    const newVote = new Vote({
+      phoneNumber: encryptedPhone, // Store encrypted phone number
+      projectId: otpSession.projectId,
+      otpId: otpSession._id,
+      ipAddress,
+      userAgent,
+    });
+
+    await newVote.save();
+    console.log("✅ Vote record created with ID:", newVote._id);
 
     // Mark OTP as used and vote confirmed
     await OTP.updateOne(
@@ -116,17 +231,7 @@ export async function POST(request: NextRequest) {
         },
       }
     );
-
-    // Create vote record
-    const newVote = new Vote({
-      phoneNumber: otpSession.phoneNumber,
-      projectId: otpSession.projectId,
-      otpId: otpSession._id,
-      ipAddress,
-      userAgent,
-    });
-
-    await newVote.save();
+    console.log("✅ OTP marked as used and vote confirmed");
 
     // Increment project vote count
     const updatedProject = await Project.findByIdAndUpdate(
@@ -136,8 +241,9 @@ export async function POST(request: NextRequest) {
     ).populate("candidate", "firstName lastName fullName");
 
     console.log(
-      `🔴 VOTE CONFIRMED: Project ${updatedProject?.projectTitle} now has ${updatedProject?.vote} votes`
+      `🎉 VOTE CONFIRMED: Project "${updatedProject?.projectTitle}" now has ${updatedProject?.vote} votes`
     );
+    console.log("=== Vote Confirmation Completed Successfully ===\n");
 
     return NextResponse.json({
       success: true,
@@ -150,18 +256,29 @@ export async function POST(request: NextRequest) {
       },
       newVoteCount: updatedProject?.vote,
       voteConfirmedAt: new Date(),
+      phoneNumber: otpSession.phoneNumber.replace(
+        /(\+234)(\d{3})(\d{3})(\d{4})/,
+        "$1$2***$4"
+      ),
     });
   } catch (error: any) {
-    console.error("Unexpected error in vote confirmation:", {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    });
+    console.error("=== Unexpected Error in Vote Confirmation ===");
+    console.error("Error:", error.message);
+    console.error("Stack:", error.stack);
+    console.error("Timestamp:", new Date().toISOString());
 
     return NextResponse.json(
       {
-        error: "An unexpected error occurred. Please try again.",
-        message: error.message,
+        error: "Something went wrong",
+        message:
+          "An unexpected error occurred while confirming your vote. Please try again.",
+        details:
+          process.env.NODE_ENV === "development"
+            ? {
+                message: error.message,
+                timestamp: new Date().toISOString(),
+              }
+            : undefined,
       },
       { status: 500 }
     );
