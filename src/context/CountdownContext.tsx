@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useCandidate } from "./authContext";
 
 // Timer Context Types
@@ -241,7 +242,7 @@ export function DynamicContestButton({
           } else {
             setButtonState({
               text: "Register Now",
-              link: "/register",
+              link: "/signup",
               disabled: false,
             });
           }
@@ -268,7 +269,7 @@ export function DynamicContestButton({
         case "voting":
           setButtonState({
             text: "Vote Now",
-            link: "/vote",
+            link: "/voting",
             disabled: false,
           });
           break;
@@ -294,12 +295,22 @@ export function DynamicContestButton({
   return (
     <motion.a
       href={buttonState.link}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+  
+      animate={{
+        boxShadow: [
+          "0 0 8px rgba(0,184,148,0.4)",
+          "0 0 16px rgba(0,43,91,0.6)",
+          "0 0 8px rgba(0,184,148,0.4)",
+        ],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
       whileHover={{ scale: buttonState.disabled ? 1 : 1.05 }}
       whileTap={{ scale: buttonState.disabled ? 1 : 0.95 }}
-      transition={{ duration: 0.2 }}
-      className={`px-6 py-3 rounded-lg font-semibold text-center transition-all ${className} ${
+      className={`bg-gradient-to-r from-conces-green to-conces-blue hover:from-conces-green/90 hover:to-conces-blue/90 text-white px-6 sm:px-6 py-3 sm:py-3 rounded-lg font-bold text-base sm:text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl order-1 ${className} ${
         buttonState.disabled
           ? "bg-gray-400 cursor-not-allowed text-gray-700"
           : "bg-conces-yellow hover:bg-conces-yellow/90 text-conces-blue"
@@ -311,34 +322,35 @@ export function DynamicContestButton({
   );
 }
 
+// Updated CountdownTimer Component using the Timer Context
 export function CountdownTimer() {
   const { timeLeft, contestStatus } = useTimer();
 
   const getDisplayText = () => {
-    const now = new Date();
-    const contestStart = new Date("2025-09-07T00:00:00");
-    const contestEnd = new Date("2025-10-07T23:59:59");
-
     switch (contestStatus) {
       case "register":
+        // Check if we're before contest start or during contest
+        const now = new Date();
+        const contestStart = new Date("2025-09-07T00:00:00");
+
         if (now < contestStart) {
           return {
-            mobile: "Contest Coming Soon...",
-            tablet: "Logo Rebrand Coming Soon...",
-            desktop: "Logo Rebrand Challenge Coming Soon...",
+            mobile: "Entries Open In...",
+            tablet: "Entry Period Starts In...",
+            desktop: "Logo Rebrand Challenge Entries Open In...",
           };
         } else {
           return {
-            mobile: "Contest Ends In...",
+            mobile: "Entry Deadline In...",
             tablet: "Submission Deadline In...",
-            desktop: "Logo Rebrand Challenge Ends In...",
+            desktop: "Logo Rebrand Challenge Entry Deadline In...",
           };
         }
       case "waiting":
-        // Check if we're waiting for voting or finale
+        const nowWaiting = new Date();
         const votingEnd = new Date("2025-11-04T23:59:59");
 
-        if (now > votingEnd) {
+        if (nowWaiting > votingEnd) {
           return {
             mobile: "Grand Finale In...",
             tablet: "Grand Finale In...",
@@ -387,7 +399,7 @@ export function CountdownTimer() {
             >
               {displayText.desktop}
             </motion.h2>
-            <DynamicContestButton />
+      
           </div>
         </div>
       </section>
@@ -433,7 +445,7 @@ export function CountdownTimer() {
               ))}
             </div>
 
-            <DynamicContestButton />
+        
           </div>
         </div>
       </div>

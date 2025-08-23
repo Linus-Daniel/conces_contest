@@ -11,7 +11,7 @@ import { FaMedal, FaTrophy, FaCrown, FaRegGem, FaPray } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import Image from "next/image";
 import { ComponentType } from "react";
-import { CountdownTimer, useTimer } from "@/context/CountdownContext";
+import { CountdownTimer, DynamicContestButton, useTimer } from "@/context/CountdownContext";
 // import CountdownTimer from "./CountDown";
 
 interface FloatingRewardProps {
@@ -196,6 +196,7 @@ export default function HeroSection() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           {/* Left content */}
           <div className="w-full lg:w-1/2 text-center lg:text-left">
+      
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -262,19 +263,7 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 justify-center lg:justify-start"
               >
-                <motion.a
-                  className="bg-gradient-to-r from-conces-green to-conces-blue hover:from-conces-green/90 hover:to-conces-blue/90 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl order-1"
-                  whileHover={{
-                    y: -2,
-                    scale: 1.02,
-                    boxShadow: "0 10px 25px -5px rgba(0,184,148,0.4)",
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  href="/signup"
-                >
-                  <span className="drop-shadow-md">Register Now</span>
-                  <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2 drop-shadow-md" />
-                </motion.a>
+                <DynamicContestButton />
 
                 <motion.a
                   className="border-2 border-conces-gold text-conces-gold hover:bg-conces-blue/50 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-all duration-300 inline-flex items-center justify-center hover:shadow-lg hover:shadow-conces-gold/20 order-2"
@@ -286,7 +275,6 @@ export default function HeroSection() {
                 </motion.a>
               </motion.div>
 
-          
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -301,8 +289,7 @@ export default function HeroSection() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.5 }}
                   >
-                   <CountdownTimer />
-                   
+                    <CountdownTimer />
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -330,6 +317,7 @@ export default function HeroSection() {
                 }}
                 transition={{ duration: 0.3 }}
               >
+            
                 <div className="absolute inset-0 overflow-hidden">
                   {isHoveringPrize && (
                     <motion.div
@@ -434,7 +422,6 @@ export default function HeroSection() {
           </motion.div>
         </div>
       </div>
-
 
       {/* Confetti effect on hover over main prize - desktop only */}
       <AnimatePresence>

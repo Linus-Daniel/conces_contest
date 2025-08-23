@@ -1,5 +1,6 @@
 "use client";
 
+import { DynamicContestButton } from "@/context/CountdownContext";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -228,12 +229,8 @@ function CTASection({
         className="mt-8 inline-block"
       >
         {showButton && (
-          <Link
-            href="/signup"
-            className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-8 py-3 rounded-lg font-bold text-lg inline-flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            Register Now <ArrowRightIcon className="w-5 h-5 ml-2" />
-          </Link>
+                         <DynamicContestButton />
+         
         )}
       </motion.div>
     </div>

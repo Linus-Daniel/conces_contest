@@ -30,9 +30,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
       />
       <CandidateProvider>
         <TimerProvider
-          contestStartDate={new Date("2025-08-05T00:00:00")}
-          contestEndDate={new Date("2025-08-20T23:59:59")}
-          votingStartDate={new Date("2025-08-23T00:00:00")}
+         
         >
         
         <Header />

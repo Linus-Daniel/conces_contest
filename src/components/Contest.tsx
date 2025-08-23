@@ -10,6 +10,7 @@ import {
 import { FaMedal, FaTrophy, FaCrown } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import { ComponentType } from "react";
+import { DynamicContestButton } from "@/context/CountdownContext";
 
 interface FloatingRewardProps {
   icon: ComponentType<{ className?: string }>;
@@ -82,13 +83,8 @@ export default function ContestSection() {
                 transition={{ delay: 0.6 }}
                 viewport={{ once: true }}
               >
-                <Link
-                  href="/signup"
-                  className="bg-gradient-to-r from-conces-green to-conces-blue hover:from-conces-green/90 hover:to-conces-blue/90 text-white px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  Enter the Challenge
-                  <ArrowRightIcon className="w-5 h-5 ml-2" />
-                </Link>
+                               <DynamicContestButton />
+               
               </motion.div>
 
               <motion.div
