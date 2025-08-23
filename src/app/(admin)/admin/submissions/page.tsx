@@ -289,7 +289,7 @@ export default function LogoContestSubmissions() {
                   CONCES Logo Design Contest
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Brand Identity Challenge 2024
+                  Brand Identity Challenge 2025
                 </p>
                 {votingStats && (
                   <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">

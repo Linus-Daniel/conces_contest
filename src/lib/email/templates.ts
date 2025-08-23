@@ -41,7 +41,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                     <tr>
                         <td style="background: linear-gradient(135deg, #002B5B 0%, #00B894 100%); padding: 40px; text-align: center; border-radius: 10px 10px 0 0;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: bold;">CONCES</h1>
-                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Logo Rebrand Challenge 2024</p>
+                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Logo Rebrand Challenge 2025</p>
                         </td>
                     </tr>
                     
@@ -198,7 +198,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                             </table>
                             
                             <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
-                                © 2024 CONCES. All rights reserved.<br>
+                                © 2025 CONCES. All rights reserved.<br>
                                 Conference of Nigerian Engineering Students
                             </p>
                         </td>
@@ -261,7 +261,7 @@ Need help? Contact us at support@conces.org
 Let's go!
 — CONCES Team
 
-© 2024 CONCES. All rights reserved.
+© 2025 CONCES. All rights reserved.
 Conference of Nigerian Engineering Students
 `;
 };

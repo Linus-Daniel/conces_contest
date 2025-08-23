@@ -12,10 +12,15 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { Icon: FaFacebook, href: "#" },
-  { Icon: FaTwitter, href: "#" },
-  { Icon: FaInstagram, href: "#" },
-  { Icon: FaLinkedin, href: "#" },
+  { Icon: FaFacebook, href: "https://www.facebook.com/share/173jPb1P73/" },
+  {
+    Icon: FaTwitter,
+    href: "https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09",
+  },
+  {
+    Icon: FaInstagram,
+    href: "https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==",
+  },
 ];
 
 export default function Footer() {
@@ -33,8 +38,8 @@ export default function Footer() {
           >
             <div className="text-2xl font-bold mb-4">CONCES</div>
             <p className="text-white/70 mb-5 text-sm md:text-base leading-relaxed">
-              The Conference of Nigerian Engineering Students (CONCES) is the
-              unified voice of engineering students across Nigeria.
+              Empowering students through faith-centered education and community
+              support.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => (
@@ -103,16 +108,12 @@ export default function Footer() {
 
         {/* Bottom Section */}
         <div className="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          
-       
-            <Link
-              href="/terms"
-              className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Terms of Service
-            </Link>
-       
-        
+          <Link
+            href="/terms"
+            className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
+          >
+            Terms of Service
+          </Link>
         </div>
       </div>
     </footer>

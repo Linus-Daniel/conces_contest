@@ -19,7 +19,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop",
     vote: 125,
     status: "approved",
-    submittedAt: "2024-08-10T14:30:00Z",
+    submittedAt: "2025-08-10T14:30:00Z",
   },
   {
     _id: "proj_002",
@@ -41,7 +41,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop",
     vote: 98,
     status: "approved",
-    submittedAt: "2024-08-09T16:45:00Z",
+    submittedAt: "2025-08-09T16:45:00Z",
   },
   {
     _id: "proj_003",
@@ -63,7 +63,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop",
     vote: 87,
     status: "approved",
-    submittedAt: "2024-08-08T09:20:00Z",
+    submittedAt: "2025-08-08T09:20:00Z",
   },
   {
     _id: "proj_004",
@@ -83,7 +83,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=400&h=400&fit=crop",
     vote: 73,
     status: "approved",
-    submittedAt: "2024-08-07T11:15:00Z",
+    submittedAt: "2025-08-07T11:15:00Z",
   },
   {
     _id: "proj_005",
@@ -105,7 +105,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=600&fit=crop",
     vote: 92,
     status: "approved",
-    submittedAt: "2024-08-06T13:30:00Z",
+    submittedAt: "2025-08-06T13:30:00Z",
   },
   {
     _id: "proj_006",
@@ -125,7 +125,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1606041011872-596597976b25?w=400&h=400&fit=crop",
     vote: 56,
     status: "approved",
-    submittedAt: "2024-08-05T08:45:00Z",
+    submittedAt: "2025-08-05T08:45:00Z",
   },
   {
     _id: "proj_007",
@@ -147,7 +147,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop",
     vote: 104,
     status: "approved",
-    submittedAt: "2024-08-04T15:20:00Z",
+    submittedAt: "2025-08-04T15:20:00Z",
   },
   {
     _id: "proj_008",
@@ -167,7 +167,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
     vote: 79,
     status: "approved",
-    submittedAt: "2024-08-03T10:30:00Z",
+    submittedAt: "2025-08-03T10:30:00Z",
   },
   {
     _id: "proj_009",
@@ -189,7 +189,7 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1613625373296-8ba2b01ceede?w=800&h=600&fit=crop",
     vote: 115,
     status: "approved",
-    submittedAt: "2024-08-02T12:15:00Z",
+    submittedAt: "2025-08-02T12:15:00Z",
   },
   {
     _id: "proj_010",
@@ -209,6 +209,6 @@ export const mockProjects = [
       "https://images.unsplash.com/photo-1618172193763-c511deb635ca?w=400&h=400&fit=crop",
     vote: 68,
     status: "approved",
-    submittedAt: "2024-08-01T14:45:00Z",
+    submittedAt: "2025-08-01T14:45:00Z",
   },
 ];

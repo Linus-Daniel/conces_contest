@@ -36,7 +36,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
         >
         
         <Header />
-        <main className="flex-1 w-full sm:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 w-full ">{children}</main>
         <Footer />
         </TimerProvider>
       </CandidateProvider>
