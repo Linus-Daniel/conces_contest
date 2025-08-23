@@ -11,7 +11,8 @@ import { FaMedal, FaTrophy, FaCrown, FaRegGem, FaPray } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import Image from "next/image";
 import { ComponentType } from "react";
-import CountdownTimer from "./CountDown";
+import { CountdownTimer, useTimer } from "@/context/CountdownContext";
+// import CountdownTimer from "./CountDown";
 
 interface FloatingRewardProps {
   icon: ComponentType<{ className?: string }>;
@@ -115,7 +116,9 @@ const PrizeCard: React.FC<PrizeCardProps> = ({ prize, delay = 0 }) => {
 export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHoveringPrize, setIsHoveringPrize] = useState(false);
+  const {timeLeft} = useTimer()
 
+  console.log(timeLeft)
   const testimonials: Testimonial[] = [
     {
       quote: "Winning this contest changed my life! The excitement was unreal!",
@@ -299,6 +302,7 @@ export default function HeroSection() {
                     transition={{ duration: 0.5 }}
                   >
                    <CountdownTimer />
+                   
                   </motion.div>
                 </AnimatePresence>
               </motion.div>

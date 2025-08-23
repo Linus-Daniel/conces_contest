@@ -18,7 +18,7 @@ const stats = [
       "Civil Engineering",
       "Chemical Engineering",
       "Petroleum Engineering",
-      "Computer Science",
+      "Computer Engineering",
       "Agricultural Engineering",
       "Metallurgical Engineering",
     ],
@@ -98,7 +98,7 @@ export default function AboutSection() {
           viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-20"
         >
-          <motion.div >
+          <motion.div>
             <span className="inline-flex items-center gap-2 text-conces-blue font-semibold text-sm uppercase tracking-wider mb-4 px-4 py-2 bg-blue-50 rounded-full border border-blue-100">
               <SparklesIcon className="h-4 w-4" />
               Who We Are
@@ -146,9 +146,8 @@ export default function AboutSection() {
                   <div className="flex-shrink-0 w-2 h-2 bg-conces-blue rounded-full mt-3"></div>
                   <p className="text-gray-700 text-lg leading-relaxed">
                     The Conference of Nigerian Christian Engineering Students
-                    (CONCES) serves as the unified voice of engineering and
-                    technology students across Nigeria's institutions of higher
-                    learning.
+                    (CONCES) is the unified voice of engineering and technology
+                    students across Nigeria.
                   </p>
                 </div>
                 <div className="flex items-start gap-4">
@@ -183,7 +182,6 @@ export default function AboutSection() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-
             {/* Feature Cards */}
             <div className="grid gap-5">
               {stats.map((stat, index) => {

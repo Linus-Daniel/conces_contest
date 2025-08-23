@@ -33,16 +33,19 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 // Timer Provider Component
 interface TimerProviderProps {
   children: ReactNode;
-  contestStartDate: Date;
-  contestEndDate: Date;
-  votingStartDate: Date;
+  contestStartDate?: Date;
+  contestEndDate?: Date;
+  votingStartDate?: Date;
+  votingEndDate?: Date;
 }
 
 export function TimerProvider({
   children,
-  contestStartDate = new Date("2025-08-05T00:00:00"),
-  contestEndDate = new Date("2025-08-20T23:59:59"),
-  votingStartDate = new Date("2025-08-23T00:00:00"), // 3 days after contest ends
+  // Fixed the date logic - contest should start before voting
+  contestStartDate = new Date("2025-08-25T00:00:00"), // Contest starts Aug 25
+  contestEndDate = new Date("2025-09-05T23:59:59"), // Contest ends Sep 5
+  votingStartDate = new Date("2025-09-06T00:00:00"), // Voting starts Sep 6 (after contest ends)
+  votingEndDate = new Date("2025-09-15T23:59:59"), // Voting ends Sep 15
 }: TimerProviderProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
@@ -57,59 +60,82 @@ export function TimerProvider({
     const calculateTimeLeft = () => {
       const now = new Date();
 
-      // Determine contest status
+      console.log("Current time:", now);
+      console.log("Contest start:", contestStartDate);
+      console.log("Contest end:", contestEndDate);
+      console.log("Voting start:", votingStartDate);
+      console.log("Voting end:", votingEndDate);
+
+      let targetDate: Date;
+      let newStatus: ContestStatus;
+
+      // Determine which phase we're in and what date to countdown to
       if (now < contestStartDate) {
         // Before contest starts - registration period
-        setContestStatus("register");
-        const difference = contestStartDate.getTime() - now.getTime();
-
-        if (difference > 0) {
-          return {
-            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            ),
-            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((difference % (1000 * 60)) / 1000),
-          };
-        }
+        newStatus = "register";
+        targetDate = contestStartDate;
+        console.log(
+          "Status: Registration period - counting down to contest start"
+        );
       } else if (now >= contestStartDate && now <= contestEndDate) {
         // Contest is currently running - submission period
-        setContestStatus("register");
-        const difference = contestEndDate.getTime() - now.getTime();
-
-        if (difference > 0) {
-          return {
-            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            ),
-            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((difference % (1000 * 60)) / 1000),
-          };
-        }
+        newStatus = "register"; // Keep as register since submissions are open
+        targetDate = contestEndDate;
+        console.log("Status: Contest active - counting down to contest end");
       } else if (now > contestEndDate && now < votingStartDate) {
         // Between contest end and voting start - waiting period
-        setContestStatus("waiting");
-        const difference = votingStartDate.getTime() - now.getTime();
-
-        if (difference > 0) {
-          return {
-            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            ),
-            minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((difference % (1000 * 60)) / 1000),
-          };
-        }
-      } else if (now >= votingStartDate) {
-        // Voting period or contest completely ended
-        // You might want to add a voting end date check here
-        setContestStatus("ended");
+        newStatus = "waiting";
+        targetDate = votingStartDate;
+        console.log("Status: Waiting period - counting down to voting start");
+      } else if (now >= votingStartDate && now <= votingEndDate) {
+        // Voting period is active
+        newStatus = "voting";
+        targetDate = votingEndDate;
+        console.log("Status: Voting active - counting down to voting end");
+      } else {
+        // Contest completely ended
+        newStatus = "ended";
+        targetDate = now; // No countdown needed
+        console.log("Status: Contest ended");
       }
 
-      // Default return for ended contest
+      setContestStatus(newStatus);
+
+      // If contest is ended, return zero values
+      if (newStatus === "ended") {
+        return {
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        };
+      }
+
+      // Calculate time difference
+      const difference = targetDate.getTime() - now.getTime();
+      console.log("Time difference (ms):", difference);
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor(
+          (difference % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        console.log("Calculated time:", { days, hours, minutes, seconds });
+
+        return {
+          days,
+          hours,
+          minutes,
+          seconds,
+        };
+      }
+
+      // If difference is negative or zero, return zeros
       return {
         days: 0,
         hours: 0,
@@ -119,14 +145,18 @@ export function TimerProvider({
     };
 
     // Set initial time
-    setTimeLeft(calculateTimeLeft());
+    const initialTime = calculateTimeLeft();
+    setTimeLeft(initialTime);
+    console.log("Initial time set:", initialTime);
 
+    // Set up interval
     const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const newTime = calculateTimeLeft();
+      setTimeLeft(newTime);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [contestStartDate, contestEndDate, votingStartDate]);
+  }, [contestStartDate, contestEndDate, votingStartDate, votingEndDate]);
 
   const value: TimerContextType = {
     timeLeft,
@@ -254,11 +284,23 @@ export function CountdownTimer() {
   const getDisplayText = () => {
     switch (contestStatus) {
       case "register":
-        return {
-          mobile: "Contest Starts In...",
-          tablet: "Challenge Starts In...",
-          desktop: "Logo Rebrand Challenge Starts In...",
-        };
+        // Check if we're before contest start or during contest
+        const now = new Date();
+        const contestStart = new Date("2025-08-25T00:00:00");
+
+        if (now < contestStart) {
+          return {
+            mobile: "Contest Starts In...",
+            tablet: "Challenge Starts In...",
+            desktop: "Logo Rebrand Challenge Starts In...",
+          };
+        } else {
+          return {
+            mobile: "Contest Ends In...",
+            tablet: "Submission Deadline In...",
+            desktop: "Logo Rebrand Challenge Ends In...",
+          };
+        }
       case "waiting":
         return {
           mobile: "Voting Starts In...",

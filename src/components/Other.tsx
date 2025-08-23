@@ -354,9 +354,7 @@ function PrizesSection({
         <h4 className="text-lg font-bold text-conces-blue mb-2">
         
         </h4>
-        <p className="text-conces-blue font-medium">
-          Each receiving {consolation.amount}
-        </p>
+    
         <p>
           Plus other Amazing prices
           </p>
