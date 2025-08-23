@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useMemo,
 } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -60,134 +61,94 @@ export function TimerProvider({
   const [contestStatus, setContestStatus] = useState<ContestStatus>("register");
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
+    // Convert dates to timestamps once
+    const contestStartTime = contestStartDate.getTime();
+    const contestEndTime = contestEndDate.getTime();
+    const votingStartTime = votingStartDate.getTime();
+    const votingEndTime = votingEndDate.getTime();
+    const finaleTime = finaleDate.getTime();
 
-      console.log("Current time:", now);
-      console.log("Contest start:", contestStartDate);
-      console.log("Contest end:", contestEndDate);
-      console.log("Voting start:", votingStartDate);
-      console.log("Voting end:", votingEndDate);
-      console.log("Grand finale:", finaleDate);
-
-      let targetDate: Date;
+    const updateTimer = () => {
+      const now = Date.now();
+      let targetTime: number;
       let newStatus: ContestStatus;
 
-      // Determine which phase we're in and what date to countdown to
-      if (now < contestStartDate) {
-        // Before contest starts - registration period
+      // Determine phase and target
+      if (now < contestStartTime) {
         newStatus = "register";
-        targetDate = contestStartDate;
-        console.log(
-          "Status: Pre-contest - counting down to entries opening (Sep 7)"
-        );
-      } else if (now >= contestStartDate && now <= contestEndDate) {
-        // Contest is currently running - submission period (Sep 7 - Oct 7)
+        targetTime = contestStartTime;
+      } else if (now >= contestStartTime && now <= contestEndTime) {
         newStatus = "register";
-        targetDate = contestEndDate;
-        console.log(
-          "Status: Entry period active - counting down to submission deadline (Oct 7)"
-        );
-      } else if (now > contestEndDate && now < votingStartDate) {
-        // Between contest end and voting start - waiting period (Oct 8)
+        targetTime = contestEndTime;
+      } else if (now > contestEndTime && now < votingStartTime) {
         newStatus = "waiting";
-        targetDate = votingStartDate;
-        console.log(
-          "Status: Waiting period - counting down to voting start (Oct 8)"
-        );
-      } else if (now >= votingStartDate && now <= votingEndDate) {
-        // Voting period is active (Oct 8 - Nov 4)
+        targetTime = votingStartTime;
+      } else if (now >= votingStartTime && now <= votingEndTime) {
         newStatus = "voting";
-        targetDate = votingEndDate;
-        console.log(
-          "Status: Voting active - counting down to voting end (Nov 4)"
-        );
-      } else if (now > votingEndDate && now < finaleDate) {
-        // Between voting end and finale - waiting for grand finale
+        targetTime = votingEndTime;
+      } else if (now > votingEndTime && now < finaleTime) {
         newStatus = "waiting";
-        targetDate = finaleDate;
-        console.log(
-          "Status: Pre-finale - counting down to grand finale (Nov 7)"
-        );
+        targetTime = finaleTime;
       } else {
-        // After grand finale - contest completely ended
         newStatus = "ended";
-        targetDate = now; // No countdown needed
-        console.log("Status: Contest ended - grand finale completed");
+        targetTime = now;
       }
 
+      // Update status
       setContestStatus(newStatus);
 
-      // If contest is ended, return zero values
-      if (newStatus === "ended" && now >= finaleDate) {
-        return {
+      // Calculate time left
+      if (newStatus === "ended") {
+        setTimeLeft({
           days: 0,
           hours: 0,
           minutes: 0,
           seconds: 0,
-        };
+        });
+      } else {
+        const difference = targetTime - now;
+        if (difference > 0) {
+          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (difference % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+          setTimeLeft({ days, hours, minutes, seconds });
+        } else {
+          setTimeLeft({
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+          });
+        }
       }
-
-      // Calculate time difference
-      const difference = targetDate.getTime() - now.getTime();
-      console.log("Time difference (ms):", difference);
-
-      if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor(
-          (difference % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-        console.log("Calculated time:", { days, hours, minutes, seconds });
-
-        return {
-          days,
-          hours,
-          minutes,
-          seconds,
-        };
-      }
-
-      // If difference is negative or zero, return zeros
-      return {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-      };
     };
 
-    // Set initial time
-    const initialTime = calculateTimeLeft();
-    setTimeLeft(initialTime);
-    console.log("Initial time set:", initialTime);
+    // Initial update
+    updateTimer();
 
     // Set up interval
-    const interval = setInterval(() => {
-      const newTime = calculateTimeLeft();
-      setTimeLeft(newTime);
-    }, 1000);
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [
-    contestStartDate,
-    contestEndDate,
-    votingStartDate,
-    votingEndDate,
-    finaleDate,
-  ]);
+  }, []); // Empty dependency array - dates are props and won't change
 
-  const value: TimerContextType = {
-    timeLeft,
-    contestStatus,
-    isContestActive: contestStatus === "register",
-    isRegistrationOpen: contestStatus === "register",
-    isVotingOpen: contestStatus === "voting",
-  };
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(
+    (): TimerContextType => ({
+      timeLeft,
+      contestStatus,
+      isContestActive: contestStatus === "register",
+      isRegistrationOpen: contestStatus === "register",
+      isVotingOpen: contestStatus === "voting",
+    }),
+    [timeLeft, contestStatus]
+  );
 
   return (
     <TimerContext.Provider value={value}>{children}</TimerContext.Provider>
@@ -211,91 +172,78 @@ interface DynamicContestButtonProps {
 export function DynamicContestButton({
   className = "",
 }: DynamicContestButtonProps) {
-  const { contestStatus, isRegistrationOpen } = useTimer();
+  const { contestStatus } = useTimer();
   const { candidate, isLoading } = useCandidate();
 
-  const [buttonState, setButtonState] = useState({
-    text: "Register Now",
-    link: "/register",
-    disabled: false,
-  });
+  // Simple state calculation without useMemo to avoid dependency issues
+  let buttonState = {
+    text: "Loading...",
+    link: "#",
+    disabled: true,
+  };
 
-  useEffect(() => {
-    const updateButtonState = () => {
-      if (isLoading) {
-        setButtonState({
-          text: "Loading...",
-          link: "#",
-          disabled: true,
-        });
-        return;
-      }
-
-      switch (contestStatus) {
-        case "register":
-          if (candidate) {
-            setButtonState({
-              text: "Submit Entry",
-              link: "/submit",
-              disabled: false,
-            });
-          } else {
-            setButtonState({
-              text: "Register Now",
-              link: "/signup",
-              disabled: false,
-            });
-          }
-          break;
-        case "waiting":
-          // Check if waiting for voting or finale
-          const waitingNow = new Date();
-          const waitingVotingEnd = new Date("2025-11-04T23:59:59");
-
-          if (waitingNow > waitingVotingEnd) {
-            setButtonState({
-              text: "Grand Finale Soon!",
-              link: "/finale",
-              disabled: false,
-            });
-          } else {
-            setButtonState({
-              text: "Contest Ended - Waiting for Voting",
-              link: "#",
-              disabled: true,
-            });
-          }
-          break;
-        case "voting":
-          setButtonState({
-            text: "Vote Now",
-            link: "/voting",
+  if (!isLoading) {
+    switch (contestStatus) {
+      case "register":
+        if (candidate) {
+          buttonState = {
+            text: "Submit Entry",
+            link: "/submit",
             disabled: false,
-          });
-          break;
-        case "ended":
-          setButtonState({
-            text: "Contest Finished - Visit Our Page",
-            link: "/results",
+          };
+        } else {
+          buttonState = {
+            text: "Register Now",
+            link: "/signup",
             disabled: false,
-          });
-          break;
-        default:
-          setButtonState({
-            text: "Learn More",
-            link: "/about",
-            disabled: false,
-          });
-      }
-    };
+          };
+        }
+        break;
+      case "waiting":
+        // Check if waiting for voting or finale
+        const waitingNow = Date.now();
+        const waitingVotingEnd = new Date("2025-11-04T23:59:59").getTime();
 
-    updateButtonState();
-  }, [contestStatus, candidate, isLoading]);
+        if (waitingNow > waitingVotingEnd) {
+          buttonState = {
+            text: "Grand Finale Soon!",
+            link: "/finale",
+            disabled: false,
+          };
+        } else {
+          buttonState = {
+            text: "Contest Ended - Waiting for Voting",
+            link: "#",
+            disabled: true,
+          };
+        }
+        break;
+      case "voting":
+        buttonState = {
+          text: "Vote Now",
+          link: "/voting",
+          disabled: false,
+        };
+        break;
+      case "ended":
+        buttonState = {
+          text: "Contest Finished - Visit Our Page",
+          link: "/results",
+          disabled: false,
+        };
+        break;
+      default:
+        buttonState = {
+          text: "Learn More",
+          link: "/about",
+          disabled: false,
+        };
+    }
+  }
 
   return (
     <motion.a
       href={buttonState.link}
-  
       animate={{
         boxShadow: [
           "0 0 8px rgba(0,184,148,0.4)",
@@ -326,65 +274,66 @@ export function DynamicContestButton({
 export function CountdownTimer() {
   const { timeLeft, contestStatus } = useTimer();
 
-  const getDisplayText = () => {
-    switch (contestStatus) {
-      case "register":
-        // Check if we're before contest start or during contest
-        const now = new Date();
-        const contestStart = new Date("2025-09-07T00:00:00");
-
-        if (now < contestStart) {
-          return {
-            mobile: "Entries Open In...",
-            tablet: "Entry Period Starts In...",
-            desktop: "Logo Rebrand Challenge Entries Open In...",
-          };
-        } else {
-          return {
-            mobile: "Entry Deadline In...",
-            tablet: "Submission Deadline In...",
-            desktop: "Logo Rebrand Challenge Entry Deadline In...",
-          };
-        }
-      case "waiting":
-        const nowWaiting = new Date();
-        const votingEnd = new Date("2025-11-04T23:59:59");
-
-        if (nowWaiting > votingEnd) {
-          return {
-            mobile: "Grand Finale In...",
-            tablet: "Grand Finale In...",
-            desktop: "Grand Finale Event In...",
-          };
-        } else {
-          return {
-            mobile: "Voting Starts In...",
-            tablet: "Voting Begins In...",
-            desktop: "Voting Period Begins In...",
-          };
-        }
-      case "voting":
-        return {
-          mobile: "Voting Ends In...",
-          tablet: "Voting Ends In...",
-          desktop: "Voting Period Ends In...",
-        };
-      case "ended":
-        return {
-          mobile: "Contest Ended",
-          tablet: "Challenge Ended",
-          desktop: "Logo Rebrand Challenge Has Ended",
-        };
-      default:
-        return {
-          mobile: "Contest Info",
-          tablet: "Challenge Info",
-          desktop: "Logo Rebrand Challenge Info",
-        };
-    }
+  // Simple display text calculation without useMemo
+  let displayText = {
+    mobile: "Contest Info",
+    tablet: "Challenge Info",
+    desktop: "Logo Rebrand Challenge Info",
   };
 
-  const displayText = getDisplayText();
+  switch (contestStatus) {
+    case "register":
+      // Check if we're before contest start or during contest
+      const now = Date.now();
+      const contestStart = new Date("2025-09-07T00:00:00").getTime();
+
+      if (now < contestStart) {
+        displayText = {
+          mobile: "Entries Open In...",
+          tablet: "Entry Period Starts In...",
+          desktop: "Logo Rebrand Challenge Entries Open In...",
+        };
+      } else {
+        displayText = {
+          mobile: "Entry Deadline In...",
+          tablet: "Submission Deadline In...",
+          desktop: "Logo Rebrand Challenge Entry Deadline In...",
+        };
+      }
+      break;
+    case "waiting":
+      const nowWaiting = Date.now();
+      const votingEnd = new Date("2025-11-04T23:59:59").getTime();
+
+      if (nowWaiting > votingEnd) {
+        displayText = {
+          mobile: "Grand Finale In...",
+          tablet: "Grand Finale In...",
+          desktop: "Grand Finale Event In...",
+        };
+      } else {
+        displayText = {
+          mobile: "Voting Starts In...",
+          tablet: "Voting Begins In...",
+          desktop: "Voting Period Begins In...",
+        };
+      }
+      break;
+    case "voting":
+      displayText = {
+        mobile: "Voting Ends In...",
+        tablet: "Voting Ends In...",
+        desktop: "Voting Period Ends In...",
+      };
+      break;
+    case "ended":
+      displayText = {
+        mobile: "Contest Ended",
+        tablet: "Challenge Ended",
+        desktop: "Logo Rebrand Challenge Has Ended",
+      };
+      break;
+  }
 
   if (contestStatus === "ended") {
     return (
@@ -399,7 +348,6 @@ export function CountdownTimer() {
             >
               {displayText.desktop}
             </motion.h2>
-      
           </div>
         </div>
       </section>
@@ -444,8 +392,6 @@ export function CountdownTimer() {
                 </motion.div>
               ))}
             </div>
-
-        
           </div>
         </div>
       </div>

@@ -117,8 +117,6 @@ export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHoveringPrize, setIsHoveringPrize] = useState(false);
   const {timeLeft} = useTimer()
-
-  console.log(timeLeft)
   const testimonials: Testimonial[] = [
     {
       quote: "Winning this contest changed my life! The excitement was unreal!",

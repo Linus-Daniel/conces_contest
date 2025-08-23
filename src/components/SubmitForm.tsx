@@ -19,6 +19,7 @@ import Image from "next/image";
 import api from "@/lib/axiosInstance";
 import Confetti from "react-confetti";
 import SubmissionStatusModal from "./SubmissionModal";
+import Link from "next/link";
 
 interface ProjectFormData {
   projectTitle: string;
@@ -514,7 +515,7 @@ export default function SubmitProjectForm() {
         <p className="text-gray-600 mb-6">
           Please verify your code before submitting your design
         </p>
-        <Button onClick={() => router.push("/auth")}>Verify Code</Button>
+        <Button onClick={()=>router.push("/auth")}>Verify Code</Button>
       </div>
     );
   }

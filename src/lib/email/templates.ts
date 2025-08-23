@@ -113,7 +113,7 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                                             <tr>
                                                 <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">1</td>
                                                 <td style="padding-left: 15px; color: #333333; font-size: 15px;">
-                                                    <strong><a href="https://www.brandchallenge.conces.org">View contest pack here for </a> </strong> - Brand guidelines & requirements
+                                                    <strong><a href="https://brandchallenge.conces.org/pack">View contest pack here for </a> </strong> - Brand guidelines & requirements
                                                 </td>
                                             </tr>
                                         </table>

@@ -13,7 +13,6 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER, // Your Gmail address
       pass: process.env.EMAIL_PASSWORD, // Your Gmail App Password (not regular password)
     },
-    // Optional: Add these for better reliability
     pool: true,
     maxConnections: 1,
     rateDelta: 20000,
@@ -43,20 +42,13 @@ export async function sendWelcomeEmail(
       subject: "🎉 You're in! Here's your CONCES Rebrand Challenge Pack",
       text: getWelcomeEmailText(data),
       html: getWelcomeEmailHTML(data),
-      // attachments: [
-      //   {
-      //     filename: "CONCES_Contest_Pack.pdf",
-      //     path: "./public/contest-pack.pdf", // Make sure to add this file
-      //     contentType: "application/pdf",
-      //   },
-      // ],
+     
     };
 
     const info = await transporter.sendMail(mailOptions);
 
     console.log("Email sent successfully:", info.messageId);
 
-    // For development with Gmail, you won't get a preview URL like Ethereal
     if (process.env.NODE_ENV !== "production") {
       console.log("Gmail email sent. Check the recipient inbox.");
     }
@@ -65,7 +57,6 @@ export async function sendWelcomeEmail(
   } catch (error) {
     console.error("Error sending email:", error);
 
-    // More detailed error logging
     if (error instanceof Error) {
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
@@ -75,7 +66,6 @@ export async function sendWelcomeEmail(
   }
 }
 
-// Additional email templates with improved error handling
 export async function sendReminderEmail(
   email: string,
   fullName: string,

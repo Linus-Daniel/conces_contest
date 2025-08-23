@@ -60,7 +60,6 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// Validation function
 function validateEnrollmentData(data: IEnroll): ValidationResult {
   const errors: string[] = [];
   console.log("Validating enrollment data:", data);
@@ -89,11 +88,11 @@ function validateEnrollmentData(data: IEnroll): ValidationResult {
     errors.push("Invalid email format");
   }
 
-  // Phone number validation (Nigerian format)
-  const phoneRegex = /^(\+234|0)[789]\d{9}$/;
-  if (data.phone && !phoneRegex.test(data.phone)) {
+  // UPDATED: Universal phone number validation
+  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+  if (data.phone && !phoneRegex.test(data.phone.replace(/[\s\-\(\)]/g, ""))) {
     errors.push(
-      "Invalid Nigerian phone number format (+234XXXXXXXXXX or 0XXXXXXXXXX)"
+      "Invalid phone number format. Please enter a valid phone number."
     );
   }
 
@@ -109,7 +108,6 @@ function validateEnrollmentData(data: IEnroll): ValidationResult {
   };
 }
 
-// Helper function to get client IP
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");

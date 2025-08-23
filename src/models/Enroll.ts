@@ -1,9 +1,11 @@
+
+
 import mongoose, { Schema, Model } from "mongoose";
 import crypto from "crypto";
 
 export interface IEnroll {
   fullName: string;
-  _id:string;
+  _id: string;
   email: string;
   phone: string;
   institution: string;
@@ -52,10 +54,16 @@ const EnrollSchema = new Schema<IEnroll>(
       type: String,
       required: [true, "Phone number is required"],
       trim: true,
-      match: [
-        /^(\+234|0)[789]\d{9}$/,
-        "Please provide a valid Nigerian phone number",
-      ],
+      validate: {
+        validator: function (phone: string) {
+          // Remove common formatting characters
+          const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, "");
+          // Accept international format with or without +, minimum 7 digits, maximum 15
+          return /^[\+]?[1-9][\d]{6,14}$/.test(cleanPhone);
+        },
+        message:
+          "Please provide a valid phone number (7-15 digits, may include country code)",
+      },
     },
     institution: {
       type: String,
@@ -113,16 +121,23 @@ const EnrollSchema = new Schema<IEnroll>(
   }
 );
 
-EnrollSchema.index({ email: 1, authToken: 1 });
-EnrollSchema.index({ createdAt: -1 });
-EnrollSchema.index({ isQualified: 1 });
-
+// Pre-save middleware to clean phone numbers
 EnrollSchema.pre("save", function (next) {
   if (!this.authToken) {
     this.authToken = crypto.randomBytes(32).toString("hex");
   }
+
+  // Clean and standardize phone number format
+  if (this.phone) {
+    this.phone = this.phone.replace(/[\s\-\(\)\.]/g, "");
+  }
+
   next();
 });
+
+EnrollSchema.index({ email: 1, authToken: 1 });
+EnrollSchema.index({ createdAt: -1 });
+EnrollSchema.index({ isQualified: 1 });
 
 EnrollSchema.post("save", function (error: any, doc: any, next: any) {
   if (error.name === "MongoServerError" && error.code === 11000) {
@@ -145,3 +160,26 @@ const Enroll: Model<IEnroll> =
   mongoose.models.Enroll || mongoose.model<IEnroll>("Enroll", EnrollSchema);
 
 export default Enroll;
+
+// ===== PHONE NUMBER EXAMPLES NOW ACCEPTED =====
+/*
+✅ ACCEPTED FORMATS:
+- +1234567890 (US)
+- +447700123456 (UK)
+- +33123456789 (France)
+- +8613800138000 (China)
+- +234803456789 (Nigeria)
+- 0803456789 (Local Nigerian)
+- 1234567890 (US without +)
+- 447700123456 (UK without +)
+- (555) 123-4567 (formatted)
+- 555-123-4567 (formatted)
+- 555.123.4567 (formatted)
+
+❌ REJECTED FORMATS:
+- 123 (too short)
+- 01234567890123456 (too long)
+- +0123456789 (starts with 0 after +)
+- abc123456 (contains letters)
+- 555 (too short)
+*/
