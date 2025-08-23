@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
   AcademicCapIcon,
   ComputerDesktopIcon,
-  UserGroupIcon,
   HeartIcon,
   SparklesIcon,
   RocketLaunchIcon,
@@ -75,7 +74,7 @@ export default function AboutSection() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.6, ease: ["easeOut"] },
     },
   };
 
@@ -99,7 +98,7 @@ export default function AboutSection() {
           viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-20"
         >
-          <motion.div variants={itemVariants}>
+          <motion.div >
             <span className="inline-flex items-center gap-2 text-conces-blue font-semibold text-sm uppercase tracking-wider mb-4 px-4 py-2 bg-blue-50 rounded-full border border-blue-100">
               <SparklesIcon className="h-4 w-4" />
               Who We Are
