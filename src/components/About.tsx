@@ -146,7 +146,7 @@ export default function AboutSection() {
                   <div className="flex-shrink-0 w-2 h-2 bg-conces-blue rounded-full mt-3"></div>
                   <p className="text-gray-700 text-lg leading-relaxed">
                     The Conference of Nigerian Christian Engineering Students
-                    (CONCES) is the unified voice of engineering and technology
+                    (CONCES) is the unified voice of Christian engineering and technology
                     students across Nigeria.
                   </p>
                 </div>
