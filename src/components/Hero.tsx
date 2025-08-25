@@ -302,7 +302,6 @@ export default function HeroSection() {
             transition={{ duration: 1, delay: 0.3 }}
           >
             <div className="relative">
-              {/* Main prize display */}
               <motion.div
                 className="bg-gradient-to-br from-conces-blue to-conces-blue/90 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-conces-gold relative overflow-hidden"
                 whileHover={{ y: -5, scale: 1.02 }}
