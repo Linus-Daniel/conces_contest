@@ -32,10 +32,10 @@ export default function ContestPack() {
             Key Dates
           </h2>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Sign-up opens: [Date]</li>
-            <li>Submission deadline: [Date] (11:59 pm WAT)</li>
+            <li>Sign-up opens: September 7 2025</li>
+            <li>Submission deadline: October 7 2025 (11:59 pm WAT)</li>
             <li>Finalists announced: [Date]</li>
-            <li>Public voting: [Start Date]–[End Date] (1 vote per person)</li>
+            <li>Public voting:  –[End Date] (1 vote per person)</li>
             <li>Grand Finale (live): [Date & Time]</li>
           </ul>
           <p className="mt-2 text-sm text-primary-500">

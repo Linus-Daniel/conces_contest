@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -9,14 +9,16 @@ import { Button } from "./ui/button";
 import api from "@/lib/axiosInstance";
 import { useCandidate } from "@/context/authContext";
 import ImageUpload from "./ImageUpload";
-import { FaUpload, FaTimes } from "react-icons/fa";
+import { FaUpload, FaTimes, FaCheckCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { AxiosError } from "axios";
 import Link from "next/link";
+import Confetti from "react-confetti";
+import { useWindowSize } from "react-use";
 
-// Define validation schema with Zod
+
 const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
@@ -39,6 +41,9 @@ export default function SignUpForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({ avatar: "" });
+  const [showSuccessModal, setShowSuccessModal] = useState(true);
+  const [token, setToken] = useState("");
+  const { width, height } = useWindowSize();
 
   const {
     register,
@@ -68,13 +73,14 @@ export default function SignUpForm() {
 
       const response = await api.post("/enroll", { data: submissionData });
 
-      toast.success(
-        "Registration successful! You can now submit your project.",
-        {
-          duration: 5000,
-        }
-      );
-      setTimeout(() => router.push("/submit"), 2000);
+      // Generate a random 6-digit token (in a real app, this would come from the API)
+      const generatedToken = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+      setToken(generatedToken);
+
+      // Show success modal instead of redirecting
+      setShowSuccessModal(true);
     } catch (error) {
       if (error instanceof AxiosError) {
         console.error("Registration failed:", error);
@@ -114,6 +120,11 @@ export default function SignUpForm() {
     });
   };
 
+  const handleDone = () => {
+    setShowSuccessModal(false);
+    router.push("/");
+  };
+
   if (candidate) {
     return (
       <div className="text-center p-4 sm:p-8">
@@ -135,7 +146,42 @@ export default function SignUpForm() {
 
   return (
     <>
-
+      {showSuccessModal && (
+        <>
+          <Confetti
+            width={width}
+            height={height}
+            recycle={false}
+            numberOfPieces={200}
+          />
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-lg p-6 max-w-md w-full"
+            >
+              <div className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <FaCheckCircle className="text-green-500 text-3xl" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Registration Complete!
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  An email containing your 6-digit token{" "}
+                  <span className="font-mono font-bold">{token}</span>,
+                  submission link, and contest pack has been sent to your email.
+                </p>
+                <Button onClick={handleDone} className="w-full">
+                  Done
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -147,15 +193,15 @@ export default function SignUpForm() {
           Join the Rebrand Challenge
         </h1>
         <p className="text-gray-600 mb-6 text-sm sm:text-base">
-          Create your account to submit your design and compete for ₦1,000,000
-          in prizes
+          Create your account to submit your design and compete for over
+          ₦1,000,000 in prizes
         </p>
 
         <form
           onSubmit={handleSubmit(
             onSubmit, // success callback
             (errors) => {
-              console.log("❌ Validation errors:", errors)
+              console.log("❌ Validation errors:", errors);
             }
           )}
           className="space-y-4 sm:space-y-6"
@@ -259,8 +305,8 @@ export default function SignUpForm() {
             </h3>
             <ul className="text-xs sm:text-sm  text-gray-600 space-y-1">
               <li>
-                • Must be a registered engineering or technology student in a Nigerian
-                institution
+                • Must be a registered engineering or technology student in a
+                Nigerian institution
               </li>
               <li>• Original designs only - no plagiarism</li>
               <li>• Maximum of 1 submissions per participant</li>
@@ -274,7 +320,7 @@ export default function SignUpForm() {
               {...register("agreeToTerms")}
               className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label className="text-xs sm:text-sm text-gray-700">
+            <label className="text-xs flex gap-1 sm:text-sm text-gray-700">
               I agree to the{" "}
               <Link
                 href="/terms"
@@ -282,13 +328,7 @@ export default function SignUpForm() {
               >
                 Terms and Conditions
               </Link>{" "}
-              and{" "}
-              <p
-          
-                className="text-conces-green font-medium hover:underline"
-              >
-                Competition Rules
-              </p>
+              and <p className=" font-medium ">Competition Rules above</p>
             </label>
           </div>
           {errors.agreeToTerms && (
