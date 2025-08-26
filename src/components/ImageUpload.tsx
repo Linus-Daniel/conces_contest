@@ -33,6 +33,8 @@ export default function ImageUpload({
         folder: folder || "uploads",
         sources: ["local", "url", "camera"],
         multiple: true,
+        clientAllowedFormats: ["jpg", "jpeg", "png",  "webp"], // ✅ only images allowed
+        resourceType: "image", // ✅ enforce image uploads
       }}
       onSuccess={(result: any) => {
         if (result?.event === "queues-start") {
@@ -41,7 +43,7 @@ export default function ImageUpload({
 
         if (result?.event === "success") {
           setIsUploading(false);
-          console.log("UPLOAD SUCCESS INFO:", result.info); // ✅ log result.info
+          console.log("UPLOAD SUCCESS INFO:", result.info);
           if (result.info) {
             onSuccess(result.info);
           }
@@ -56,9 +58,9 @@ export default function ImageUpload({
         <button
           type="button"
           aria-label="Upload image"
-          onClick={() => options?.open?.()} // ✅ safer access
+          onClick={() => options?.open?.()}
           disabled={isUploading}
-          className={`relative px-4 py-2 ${className}  bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50`}
+          className={`relative px-4 py-2 ${className} bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50`}
         >
           {isUploading ? "Uploading..." : children}
         </button>

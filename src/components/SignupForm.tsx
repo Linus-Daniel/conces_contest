@@ -87,7 +87,7 @@ export default function SignUpForm() {
 
         // Safely access response data
         const message =
-          error.response?.data?.error ||
+          error.response?.data?.details ||
           error.message ||
           "Something went wrong";
 
