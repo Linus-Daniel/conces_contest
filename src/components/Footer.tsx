@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter, FaYoutube } from "react-icons/fa";
 const footerLinks = {
   quickLinks: [
     { label: "Home", href: "/" },
@@ -20,6 +20,10 @@ const socialLinks = [
   {
     Icon: FaInstagram,
     href: "https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==",
+  },
+  {
+    Icon: FaYoutube,
+    href: "https://youtube.com/@concesofficial",
   },
 ];
 
