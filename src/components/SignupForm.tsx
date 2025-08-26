@@ -170,8 +170,9 @@ export default function SignUpForm() {
                   Registration Complete!
                 </h2>
                 <p className="text-gray-600 mb-4">
-                  An email containing your 6-digit token{" "}
-                  <span className="font-mono font-bold">{token}</span>,
+                  An email containing your 8-digit token,
+                  {/* <span className="font-mono font-bold">{token}</span>, */}
+                  
                   submission link, and contest pack has been sent to your email.
                 </p>
                 <Button onClick={handleDone} className="w-full">

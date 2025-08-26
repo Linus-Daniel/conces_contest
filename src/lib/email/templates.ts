@@ -9,11 +9,12 @@ export interface EmailTemplateData {
 export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
   const contestDeadline = new Date();
   contestDeadline.setDate(contestDeadline.getDate() + 30);
-  const formattedDeadline = contestDeadline.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedDeadline = "October 7 2025"
+//    contestDeadline.toLocaleDateString("en-US", {
+//      month: "long",
+//      day: "numeric",
+//      year: "numeric",
+//    });
 
   return `
 <!DOCTYPE html>
