@@ -18,7 +18,6 @@ import Link from "next/link";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
-
 const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
@@ -172,7 +171,6 @@ export default function SignUpForm() {
                 <p className="text-gray-600 mb-4">
                   An email containing your 8-digit token,
                   {/* <span className="font-mono font-bold">{token}</span>, */}
-                  
                   submission link, and contest pack has been sent to your email.
                 </p>
                 <Button onClick={handleDone} className="w-full">

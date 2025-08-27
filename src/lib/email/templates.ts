@@ -9,12 +9,12 @@ export interface EmailTemplateData {
 export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
   const contestDeadline = new Date();
   contestDeadline.setDate(contestDeadline.getDate() + 30);
-  const formattedDeadline = "October 7 2025"
-//    contestDeadline.toLocaleDateString("en-US", {
-//      month: "long",
-//      day: "numeric",
-//      year: "numeric",
-//    });
+  const formattedDeadline = "October 7 2025";
+  //    contestDeadline.toLocaleDateString("en-US", {
+  //      month: "long",
+  //      day: "numeric",
+  //      year: "numeric",
+  //    });
 
   return `
 <!DOCTYPE html>
@@ -177,30 +177,43 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                     <tr>
                         <td style="background-color: #f8f9fa; padding: 30px 40px; text-align: center; border-radius: 0 0 10px 10px;">
                             <p style="color: #666666; font-size: 14px; margin: 0 0 10px 0;">
-                                Need help? Contact us at <a href="mailto:support@conces.org" style="color: #00B894; text-decoration: none;">support@conces.org</a>
+                                Need help? Contact us at <a href="mailto:goodnews@conces.org" style="color: #00B894; text-decoration: none;">goodnews@conces.org</a>
                             </p>
                             
                             <!-- Social Links -->
                             <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
                                 <tr>
                                     <td style="padding: 0 10px;">
-                                        <a href="#" style="color: #002B5B; text-decoration: none; font-size: 20px;">f</a>
+                                        <a  
+                                         target="_blank"
+                  rel="noopener noreferrer"
+                                        href="https://www.facebook.com/share/173jPb1P73/" style="color: #002B5B; text-decoration: none; font-size: 20px;">f</a>
                                     </td>
                                     <td style="padding: 0 10px;">
-                                        <a href="#" style="color: #002B5B; text-decoration: none; font-size: 20px;">𝕏</a>
+                                        <a 
+                                         target="_blank"
+                  rel="noopener noreferrer"
+                                        href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09"
+                                        style="color: #002B5B; text-decoration: none; font-size: 20px;">𝕏</a>
                                     </td>
                                     <td style="padding: 0 10px;">
-                                        <a href="#" style="color: #002B5B; text-decoration: none; font-size: 20px;">in</a>
+                                        <a 
+                                         target="_blank"
+                  rel="noopener noreferrer"
+                                        href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==" style="color: #002B5B; text-decoration: none; font-size: 20px;">in</a>
                                     </td>
                                     <td style="padding: 0 10px;">
-                                        <a href="#" style="color: #002B5B; text-decoration: none; font-size: 20px;">ig</a>
+                                        <a 
+                                         target="_blank"
+                  rel="noopener noreferrer"
+                                        href="https://youtube.com/@concesofficial" style="color: #002B5B; text-decoration: none; font-size: 20px;">YT</a>
                                     </td>
                                 </tr>
                             </table>
                             
                             <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
                                 © 2025 CONCES. All rights reserved.<br>
-                                Conference of Nigerian Engineering Students
+                                Conference of Nigerian Christain Engineering Students
                             </p>
                         </td>
                     </tr>
@@ -257,7 +270,7 @@ PRO TIPS FOR SUCCESS:
 
 To submit you design when ready visit: https://brandchallenge.conces.org/submit and insert your token
 
-Need help? Contact us at support@conces.org
+Need help? Contact us at goodnews@conces.org
 
 Let's go!
 — CONCES Team

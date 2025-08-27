@@ -114,8 +114,7 @@ const DisclaimerModal = ({
                   <ul className="space-y-2 mt-4">
                     <li>
                       <strong>Transfer of Ownership:</strong> All submitted
-                      designs become the exclusive property of CONCES (Council
-                      for the Regulation of Engineering in Nigeria) upon
+                      designs become the exclusive property of CONCES (Conference Of Nigerian Christian Enginneering Students) upon
                       submission, regardless of whether your design is selected
                       as the winner.
                     </li>
@@ -493,14 +492,14 @@ export default function SubmitProjectForm() {
               </span>
             </div>
           </div>
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <Button
               onClick={() => router.push("/dashboard")}
               className="w-full"
             >
               Go to Dashboard
             </Button>
-          </div>
+          </div> */}
         </motion.div>
       </div>
     );
