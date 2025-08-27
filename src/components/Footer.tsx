@@ -50,6 +50,8 @@ export default function Footer() {
                 <Link
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/70 hover:text-white transition-colors p-2 rounded-full bg-white/10 hover:bg-white/20"
                 >
                   <social.Icon
@@ -74,6 +76,8 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
                     className="text-white/70 hover:text-white transition-colors text-sm md:text-base block py-1"
                   >
                     {link.label}
@@ -115,6 +119,7 @@ export default function Footer() {
           <Link
             href="/terms"
             target="_blank"
+            rel="noopener noreferrer"
         
             className="text-white/70 hover:text-white transition-colors text-sm md:text-base"
           >
