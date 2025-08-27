@@ -1,27 +1,49 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AcademicCapIcon,
   ComputerDesktopIcon,
   HeartIcon,
   SparklesIcon,
   RocketLaunchIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/24/outline";
+import { useState } from "react";
 
 const stats = [
   {
     label: "Engineering Disciplines",
-    value: [
-      "Mechanical Engineering",
-      "Electrical Engineering",
-      "Civil Engineering",
-      "Chemical Engineering",
-      "Petroleum Engineering",
-      "Computer Engineering",
-      "Agricultural Engineering",
-      "Metallurgical Engineering",
-    ],
+   value: [
+  "Mechanical Engineering",
+  "Electrical Engineering",
+  "Civil Engineering",
+  "Chemical Engineering",
+  "Petroleum Engineering",
+  "Computer Engineering",
+  "Agricultural Engineering",
+  "Metallurgical Engineering",
+  "Aerospace Engineering",
+  "Biomedical Engineering",
+  "Environmental Engineering",
+  "Industrial Engineering",
+  "Materials Engineering",
+  "Nuclear Engineering",
+  "Software Engineering",
+  "Systems Engineering",
+  "Mechatronics Engineering",
+  "Automotive Engineering",
+  "Robotics Engineering",
+  "Marine Engineering",
+  "Mining Engineering",
+  "Structural Engineering",
+  "Telecommunications Engineering",
+  "Geotechnical Engineering",
+  "Power Engineering",
+  "Data Engineering",
+],
+
     icon: AcademicCapIcon,
     gradient: "from-blue-500 to-cyan-500",
     bgGradient: "from-blue-50 to-cyan-50",
@@ -58,6 +80,7 @@ const stats = [
 ];
 
 export default function AboutSection() {
+  const [showAllDisciplines, setShowAllDisciplines] = useState(false);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -146,8 +169,8 @@ export default function AboutSection() {
                   <div className="flex-shrink-0 w-2 h-2 bg-conces-blue rounded-full mt-3"></div>
                   <p className="text-gray-700 text-lg leading-relaxed">
                     The Conference of Nigerian Christian Engineering Students
-                    (CONCES) is the unified voice of Christian engineering and technology
-                    students across Nigeria.
+                    (CONCES) is the unified voice of Christian engineering and
+                    technology students across Nigeria.
                   </p>
                 </div>
                 <div className="flex items-start gap-4">
@@ -186,6 +209,15 @@ export default function AboutSection() {
             <div className="grid gap-5">
               {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
+
+                // For Engineering Disciplines, show only 10 items initially
+                const displayItems =
+                  stat.label === "Engineering Disciplines"
+                    ? showAllDisciplines
+                      ? stat.value
+                      : stat.value.slice(0, 10)
+                    : stat.value;
+
                 return (
                   <motion.div
                     key={stat.label}
@@ -212,7 +244,7 @@ export default function AboutSection() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {stat.value.map((item, itemIndex) => (
+                        {displayItems.map((item, itemIndex) => (
                           <span
                             key={itemIndex}
                             className="inline-block px-3 py-1 bg-white/60 text-gray-700 text-sm font-medium rounded-full border border-white/40 hover:bg-white/80 transition-colors"
@@ -221,6 +253,31 @@ export default function AboutSection() {
                           </span>
                         ))}
                       </div>
+
+                      {/* Show More/Less button for Engineering Disciplines */}
+                      {stat.label === "Engineering Disciplines" &&
+                        stat.value.length > 10 && (
+                          <div className="mt-4 text-center">
+                            <button
+                              onClick={() =>
+                                setShowAllDisciplines(!showAllDisciplines)
+                              }
+                              className="inline-flex items-center gap-1 text-conces-blue text-sm font-medium hover:text-blue-700 transition-colors"
+                            >
+                              {showAllDisciplines ? (
+                                <>
+                                  <ChevronUpIcon className="h-4 w-4" />
+                                  Show Less
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDownIcon className="h-4 w-4" />
+                                  See More ({stat.value.length - 10} more)
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
                     </div>
                   </motion.div>
                 );
