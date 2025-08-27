@@ -3,12 +3,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bars3Icon, XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  UserIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/outline";
 import { useCandidate } from "@/context/authContext";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { candidate } = useCandidate();
+  const { candidate, logout } = useCandidate();
 
   // Close mobile menu when clicking outside or on link
   const closeMobileMenu = () => {
@@ -40,12 +45,15 @@ export default function Header() {
     };
   }, [isMobileMenuOpen]);
 
+  // Handle logout function
+  const handleLogout = () => {
+    logout();
+    closeMobileMenu();
+  };
+
   return (
     <>
-      <header
-        
-        className="sticky top-0 w-full z-50 transition-all duration-300 bg-conces-blue shadow-lg"
-      >
+      <header className="sticky top-0 w-full z-50 transition-all duration-300 bg-conces-blue shadow-lg">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
@@ -78,7 +86,7 @@ export default function Header() {
               >
                 Challenge
               </Link>
-             
+
               {candidate ? (
                 <div className="flex items-center space-x-3">
                   {/* User Avatar and Name */}
@@ -101,6 +109,16 @@ export default function Header() {
                       {candidate.fullName.split(" ")[0]}
                     </span>
                   </Link>
+
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-1 text-white/70 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
+                    title="Logout"
+                  >
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    <span className="text-sm font-medium">Logout</span>
+                  </button>
                 </div>
               ) : (
                 <Link
@@ -213,20 +231,28 @@ export default function Header() {
                     >
                       Challenge
                     </Link>
-                    
                   </div>
                 </nav>
 
-                {/* CTA Button */}
-                <div className="p-4 border-t border-white/10">
+                {/* CTA Button and Logout */}
+                <div className="p-4 border-t border-white/10 space-y-3">
                   {candidate ? (
-                    <Link
-                      href="/submit"
-                      onClick={closeMobileMenu}
-                      className="block w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold text-center hover:bg-conces-green/90 transition-colors duration-200"
-                    >
-                      Go to Submissions
-                    </Link>
+                    <>
+                      <Link
+                        href="/submit"
+                        onClick={closeMobileMenu}
+                        className="block w-full bg-conces-green text-white py-3 px-6 rounded-lg font-semibold text-center hover:bg-conces-green/90 transition-colors duration-200"
+                      >
+                        Go to Submissions
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center w-full text-white/70 hover:text-white transition-colors duration-200 py-3 px-6 hover:bg-white/10 rounded-lg"
+                      >
+                        <ArrowRightOnRectangleIcon className="w-5 h-5 mr-2" />
+                        <span className="font-medium">Logout</span>
+                      </button>
+                    </>
                   ) : (
                     <Link
                       href="/signup"
