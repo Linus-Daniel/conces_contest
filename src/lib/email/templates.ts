@@ -181,36 +181,48 @@ export const getWelcomeEmailHTML = (data: EmailTemplateData): string => {
                             </p>
                             
                             <!-- Social Links -->
-                            <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
-                                <tr>
-                                    <td style="padding: 0 10px;">
-                                        <a  
-                                         target="_blank"
-                  rel="noopener noreferrer"
-                                        href="https://www.facebook.com/share/173jPb1P73/" style="color: #002B5B; text-decoration: none; font-size: 20px;">f</a>
-                                    </td>
-                                    <td style="padding: 0 10px;">
-                                        <a 
-                                         target="_blank"
-                  rel="noopener noreferrer"
-                                        href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09"
-                                        style="color: #002B5B; text-decoration: none; font-size: 20px;">𝕏</a>
-                                    </td>
-                                    <td style="padding: 0 10px;">
-                                        <a 
-                                         target="_blank"
-                  rel="noopener noreferrer"
-                                        href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==" style="color: #002B5B; text-decoration: none; font-size: 20px;">in</a>
-                                    </td>
-                                    <td style="padding: 0 10px;">
-                                        <a 
-                                         target="_blank"
-                  rel="noopener noreferrer"
-                                        href="https://youtube.com/@concesofficial" style="color: #002B5B; text-decoration: none; font-size: 20px;">YT</a>
-                                    </td>
-                                </tr>
-                            </table>
-                            
+                            <!-- Social Links -->
+<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
+  <tr>
+    <td style="padding: 0 10px;">
+      <a  
+        target="_blank" rel="noopener noreferrer"
+        href="https://www.facebook.com/share/173jPb1P73/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+          <path d="M22.675 0h-21.35C.597 0 0 .598 0 1.333v21.333C0 23.402.597 24 1.325 24H12.82V14.708h-3.13V11.08h3.13V8.414c0-3.1 1.893-4.788 4.657-4.788 1.325 0 2.466.099 2.797.143v3.243l-1.918.001c-1.504 0-1.795.715-1.795 1.764v2.303h3.587l-.467 3.628h-3.12V24h6.116c.728 0 1.325-.598 1.325-1.334V1.333C24 .598 23.403 0 22.675 0z"/>
+        </svg>
+      </a>
+    </td>
+    <td style="padding: 0 10px;">
+      <a  
+        target="_blank" rel="noopener noreferrer"
+        href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.197-6.803-5.94 6.803H1.726l7.72-8.85L1.25 2.25h7.59l4.713 6.231L18.244 2.25zm-1.16 17.52h1.833L7.084 4.63H5.117l11.967 15.14z"/>
+        </svg>
+      </a>
+    </td>
+    <td style="padding: 0 10px;">
+      <a  
+        target="_blank" rel="noopener noreferrer"
+        href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.348 3.608 1.322.975.975 1.26 2.242 1.322 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.347 2.633-1.322 3.608-.975.975-2.242 1.26-3.608 1.322-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.347-3.608-1.322-.975-.975-1.26-2.242-1.322-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.347-2.633 1.322-3.608.975-.975 2.242-1.26 3.608-1.322C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.17 0-3.548.012-4.795.07-1.042.048-1.61.218-1.982.417-.5.27-.855.594-1.225 1.225-.199.372-.369.94-.417 1.982-.058 1.247-.07 1.625-.07 4.795s.012 3.548.07 4.795c.048 1.042.218 1.61.417 1.982.37.63.725.955 1.225 1.225.372.199.94.369 1.982.417 1.247.058 1.625.07 4.795.07s3.548-.012 4.795-.07c1.042-.048 1.61-.218 1.982-.417.5-.27.855-.594 1.225-1.225.199-.372.369-.94.417-1.982.058-1.247.07-1.625.07-4.795s-.012-3.548-.07-4.795c-.048-1.042-.218-1.61-.417-1.982-.37-.63-.725-.955-1.225-1.225-.372-.199-.94-.369-1.982-.417-1.247-.058-1.625-.07-4.795-.07zm0 3.945a5.892 5.892 0 1 1 0 11.784 5.892 5.892 0 0 1 0-11.784zm0 1.837a4.055 4.055 0 1 0 0 8.11 4.055 4.055 0 0 0 0-8.11zm6.406-3.394a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z"/>
+        </svg>
+      </a>
+    </td>
+    <td style="padding: 0 10px;">
+      <a  
+        target="_blank" rel="noopener noreferrer"
+        href="https://youtube.com/@concesofficial">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+          <path d="M23.498 6.186a2.97 2.97 0 0 0-2.09-2.103C19.413 3.5 12 3.5 12 3.5s-7.413 0-9.408.583a2.97 2.97 0 0 0-2.09 2.103C0 8.184 0 12 0 12s0 3.816.502 5.814a2.97 2.97 0 0 0 2.09 2.103C4.587 20.5 12 20.5 12 20.5s7.413 0 9.408-.583a2.97 2.97 0 0 0 2.09-2.103C24 15.816 24 12 24 12s0-3.816-.502-5.814zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/>
+        </svg>
+      </a>
+    </td>
+  </tr>
+</table>
+
                             <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
                                 © 2025 CONCES. All rights reserved.<br>
                                 Conference of Nigerian Christain Engineering Students
