@@ -30,6 +30,7 @@ export default function ImageUpload({
     <CldUploadWidget
       uploadPreset={uploadPreset}
       options={{
+        showCompletedButton:false,
         folder: folder || "uploads",
 show
         sources: ["local", "url", "camera"],
