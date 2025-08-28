@@ -32,7 +32,6 @@ export default function ImageUpload({
       options={{
         showCompletedButton:false,
         folder: folder || "uploads",
-show
         sources: ["local", "url", "camera"],
         multiple: true,
         clientAllowedFormats: ["jpg", "jpeg", "png",  "webp"], // ✅ only images allowed
