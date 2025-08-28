@@ -282,8 +282,8 @@ export default function SubmitProjectForm() {
     checkExistingSubmission();
   }, [candidate?._id]);
 
-  const handlePrimaryFileUpload = (result: any) => {
-    setPrimaryFileUrl(result.secure_url);
+  const handlePrimaryFileUpload = (url:string) => {
+    setPrimaryFileUrl(url);
     setUploadError("");
     toast.success("Primary logo uploaded successfully!", {
       icon: "🎨",
@@ -295,8 +295,8 @@ export default function SubmitProjectForm() {
     });
   };
 
-  const handleMockupUpload = (result: any) => {
-    setMockupUrl(result.secure_url);
+  const handleMockupUpload = (url:string) => {
+    setMockupUrl(url);
     toast.success("Mockup uploaded successfully!", {
       icon: "📸",
       style: {
@@ -810,8 +810,8 @@ export default function SubmitProjectForm() {
                                 </div>
                               </div>
                               <ImageUpload
-                                onSuccess={handlePrimaryFileUpload}
-                                folder="conces-logos"
+                                onSuccess={(info)=>handlePrimaryFileUpload(info.secure_url)}
+                                folder="conces-logos/"
                                 className="w-full justify-center bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                               >
                                 <span className="flex items-center justify-center">
@@ -889,8 +889,8 @@ export default function SubmitProjectForm() {
                               </div>
                             </div>
                             <ImageUpload
-                              onSuccess={handleMockupUpload}
-                              folder="conces-mockups"
+                              onSuccess={(info)=>handleMockupUpload(info.secure_url)}
+                              folder="conces-mockups/"
                               className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                             >
                               <span className="flex items-center justify-center">
