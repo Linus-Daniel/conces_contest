@@ -35,8 +35,8 @@ export default function ContestPack() {
             <li>Sign-up opens: September 7 2025</li>
             <li>Submission deadline: October 7 2025 (11:59 pm WAT)</li>
             <li>Finalists announced: [Date]</li>
-            <li>Public voting:  –[End Date] (1 vote per person)</li>
-            <li>Grand Finale (live): [Date & Time]</li>
+            <li>Public voting:  October 8 2025 – November 4 2025</li>
+            <li>Grand Finale (live): November 7</li>
           </ul>
           <p className="mt-2 text-sm text-primary-500">
             All dates are subject to change and all changes will be communicated
