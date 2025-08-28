@@ -114,7 +114,6 @@ export async function POST(request: NextRequest) {
     console.log("Latest OTP:", {
       id: latestOTP._id,
       createdAt: latestOTP.createdAt,
-      expiresAt: latestOTP.expiresAt,
       used: latestOTP.used,
       attempts: latestOTP.attempts,
     });
@@ -132,23 +131,9 @@ export async function POST(request: NextRequest) {
 
     // Check if OTP is expired
     const now = new Date();
-    if (latestOTP.expiresAt < now) {
-      console.log("OTP has expired");
-      return NextResponse.json({
-        success: true,
-        hasActiveOTP: false,
-        status: "EXPIRED",
-        message: "Your verification code has expired",
-        expiresIn: 0,
-        sessionId: (latestOTP._id as { toString: () => string }).toString(),
-      });
-    }
 
-    // OTP is active and valid
-    const expiresIn = Math.floor(
-      (latestOTP.expiresAt.getTime() - now.getTime()) / 1000
-    );
-    console.log("Active OTP found, expires in:", expiresIn, "seconds");
+
+ 
 
     return NextResponse.json({
       success: true,
@@ -156,7 +141,6 @@ export async function POST(request: NextRequest) {
       status: "ACTIVE",
       message: "An active verification code was found",
       sessionId: (latestOTP._id as { toString: () => string }).toString(),
-      expiresIn,
       phoneNumber: formattedPhone.replace(/(\d{4})\d{4}(\d{2})/, "$1****$2"), // Mask phone number
     });
   } catch (error: any) {
@@ -222,19 +206,8 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     let status: "ACTIVE" | "EXPIRED" | "USED" = "ACTIVE";
     let message = "Verification code is active";
-    let expiresIn = Math.floor(
-      (otp.expiresAt.getTime() - now.getTime()) / 1000
-    );
+   
 
-    if (otp.used) {
-      status = "USED";
-      message = "Verification code has been used";
-      expiresIn = 0;
-    } else if (otp.expiresAt < now) {
-      status = "EXPIRED";
-      message = "Verification code has expired";
-      expiresIn = 0;
-    }
 
     console.log("OTP Status:", status);
 
@@ -243,7 +216,6 @@ export async function GET(request: NextRequest) {
       hasActiveOTP: status === "ACTIVE",
       status,
       message,
-      expiresIn: expiresIn > 0 ? expiresIn : 0,
       sessionId: (otp._id as { toString: () => string }).toString(),
       phoneNumber: otp.phoneNumber.replace(/(\d{4})\d{4}(\d{2})/, "$1****$2"), // Mask phone number
     });

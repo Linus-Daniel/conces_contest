@@ -1,4 +1,4 @@
-// api/vote/request-otp/route.ts - Enhanced with proper phone/OTP validation
+// api/vote/request-otp/route.ts - Modified for no expiry, one-time use only
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
@@ -196,48 +196,20 @@ function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Rate limiting store
+// Rate limiting store (optional - can be removed if not needed)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
-function checkRateLimit(phoneNumber: string): {
-  allowed: boolean;
-  retryAfter?: number;
-} {
-  const now = Date.now();
-  const windowSize = 120000; // 2 minutes
-  const maxAttempts = 1;
 
-  const entry = rateLimitStore.get(phoneNumber);
-
-  if (!entry || entry.resetTime < now) {
-    rateLimitStore.set(phoneNumber, {
-      count: 1,
-      resetTime: now + windowSize,
-    });
-    return { allowed: true };
-  }
-
-  if (entry.count >= maxAttempts) {
-    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-    return { allowed: false, retryAfter };
-  }
-
-  entry.count++;
-  return { allowed: true };
-}
-
-// Enhanced phone/OTP validation function
+// Enhanced phone/OTP validation function - MODIFIED for no expiry, one-time use
 async function validatePhoneAndOTPStatus(
   formattedPhone: string,
   encryptedPhone: string,
-  projectId: string
 ) {
   console.log("=== Starting Phone/OTP Validation ===");
 
   // 1. Check if this phone number has already voted for this project
   const existingVote = await Vote.findOne({
     phoneNumber: encryptedPhone,
-    projectId,
   });
 
   if (existingVote) {
@@ -246,14 +218,13 @@ async function validatePhoneAndOTPStatus(
       canSendOTP: false,
       reason: "ALREADY_VOTED",
       message:
-        "This phone number has already voted for this project. Each phone number can only vote once.",
+        "This phone number has already voted.",
     };
   }
 
   // 2. Check if this phone number has any confirmed votes (used OTP that resulted in vote)
   const confirmedOTP = await OTP.findOne({
     phoneNumber: formattedPhone,
-    projectId,
     used: true,
     voteConfirmed: true,
   });
@@ -264,47 +235,35 @@ async function validatePhoneAndOTPStatus(
       canSendOTP: false,
       reason: "VOTE_CONFIRMED",
       message:
-        "This phone number has already been used to vote for this project.",
+        "This phone number has already been used to vote for this project and cannot request another OTP.",
     };
   }
 
-  // 3. Check for active (unused and not expired) OTPs
-  const activeOTP = await OTP.findOne({
+  // 3. Check for ANY existing OTP (used or unused) for this phone/project combination
+  // Since we don't want to allow multiple OTPs for the same phone number
+  const existingOTP = await OTP.findOne({
     phoneNumber: formattedPhone,
-    projectId,
-    used: false,
-    expiresAt: { $gt: new Date() },
   }).sort({ createdAt: -1 });
 
-  if (activeOTP) {
-    const expiresIn = Math.floor(
-      (activeOTP.expiresAt.getTime() - Date.now()) / 1000
-    );
-    console.log("⚠️ Active OTP found, expires in:", expiresIn, "seconds");
-
-    return {
-      canSendOTP: false,
-      reason: "ACTIVE_OTP_EXISTS",
-      message: `A verification code was recently sent to your WhatsApp. Please check your messages or wait ${Math.ceil(
-        expiresIn / 60
-      )} minute(s) to request a new code.`,
-      expiresIn,
-      sessionId: activeOTP._id,
-      resendAvailable: expiresIn < 60, // Allow resend if less than 1 minute remaining
-    };
-  }
-
-  // 4. Clean up expired OTPs for this phone/project combination (optional housekeeping)
-  const expiredOTPs = await OTP.find({
-    phoneNumber: formattedPhone,
-    projectId,
-    used: false,
-    expiresAt: { $lt: new Date() },
-  });
-
-  if (expiredOTPs.length > 0) {
-    console.log(`🧹 Found ${expiredOTPs.length} expired OTPs for cleanup`);
-    // Note: We keep expired OTPs as per your requirement, just logging for awareness
+  if (existingOTP) {
+    if (existingOTP.used) {
+      console.log("❌ Phone number already has a used OTP");
+      return {
+        canSendOTP: false,
+        reason: "OTP_ALREADY_USED",
+        message:
+          "This phone number has already used an OTP for this project and cannot request another one.",
+      };
+    } else {
+      console.log("⚠️ Phone number already has an unused OTP");
+      return {
+        canSendOTP: false,
+        reason: "UNUSED_OTP_EXISTS",
+        message:
+          "An unused verification code already exists for this phone number. Please use the existing code or contact support if you need assistance.",
+        sessionId: existingOTP._id,
+      };
+    }
   }
 
   console.log("✅ Phone validation passed - can send new OTP");
@@ -357,19 +316,6 @@ export async function POST(request: NextRequest) {
     const encryptedPhone = encrypt(formattedPhone);
     console.log("Phone encrypted for vote checking");
 
-    // Check rate limit
-    const rateLimitResult = checkRateLimit(formattedPhone);
-    if (!rateLimitResult.allowed) {
-      console.warn("Rate limit exceeded for phone:", formattedPhone);
-      return NextResponse.json(
-        {
-          error: "Too many requests",
-          message: `Please wait ${rateLimitResult.retryAfter} seconds before requesting another code.`,
-          retryAfter: rateLimitResult.retryAfter,
-        },
-        { status: 429 }
-      );
-    }
 
     // Connect to database
     await connectDB();
@@ -393,31 +339,24 @@ export async function POST(request: NextRequest) {
     const validationResult = await validatePhoneAndOTPStatus(
       formattedPhone,
       encryptedPhone,
-      projectId
+
     );
 
     if (!validationResult.canSendOTP) {
       const statusCode =
         validationResult.reason === "ALREADY_VOTED" ||
-        validationResult.reason === "VOTE_CONFIRMED"
+        validationResult.reason === "VOTE_CONFIRMED" ||
+        validationResult.reason === "OTP_ALREADY_USED"
           ? 409
-          : validationResult.reason === "ACTIVE_OTP_EXISTS"
-          ? 400
           : 400;
 
       return NextResponse.json(
         {
           error: validationResult.reason.toLowerCase().replace(/_/g, " "),
           message: validationResult.message,
-          ...(validationResult.expiresIn && {
-            expiresIn: validationResult.expiresIn,
-          }),
           ...(typeof validationResult.sessionId !== "undefined"
             ? { sessionId: validationResult.sessionId }
             : {}),
-          ...(validationResult.resendAvailable !== undefined && {
-            resendAvailable: validationResult.resendAvailable,
-          }),
         },
         { status: statusCode }
       );
@@ -425,10 +364,9 @@ export async function POST(request: NextRequest) {
 
     // Generate new OTP
     const otpCode = generateOTP();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    // NO EXPIRY - Remove expiresAt or set to far future
 
     console.log("Generated OTP:", otpCode);
-    console.log("Expires at:", expiresAt.toISOString());
 
     // Get request metadata
     const ipAddress =
@@ -437,12 +375,10 @@ export async function POST(request: NextRequest) {
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // Create OTP record
+    // Create OTP record - NO EXPIRY
     const newOTP = new OTP({
       phoneNumber: formattedPhone, // Store plain phone for OTP matching
       code: otpCode,
-      projectId,
-      expiresAt,
       used: false,
       voteConfirmed: false,
       attempts: 0,
@@ -492,12 +428,13 @@ export async function POST(request: NextRequest) {
 
     const response: any = {
       success: true,
-      message: "Verification code sent to your WhatsApp",
+      message:
+        "Verification code sent to your WhatsApp. This code does not expire.",
       sessionId: newOTP._id,
-      expiresIn: 300, // 5 minutes in seconds
       phoneNumber: maskedPhone,
       projectTitle: project.projectTitle,
       messageId: whatsAppResult.messageId,
+      noExpiry: true, // Indicate that this OTP doesn't expire
     };
 
     // Add debug info in development

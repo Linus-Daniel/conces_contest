@@ -1,4 +1,4 @@
-// api/vote/route.ts - Enhanced vote confirmation with proper OTP/phone matching
+// api/vote/route.ts - Modified for no expiry, one-time use validation
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
@@ -59,10 +59,11 @@ export async function POST(request: NextRequest) {
     console.log("Database connected");
 
     // Find the OTP session
-    const otpSession = await OTP.findById(sessionId);
+    const otp = await OTP.findById(sessionId);
+    console.log("OTP lookup completed");
 
-    if (!otpSession) {
-      console.error("OTP session not found:", sessionId);
+    if (!otp) {
+      console.error("OTP session not found:", { sessionId });
       return NextResponse.json(
         {
           error: "Invalid session",
@@ -73,57 +74,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("OTP Session found for phone:", otpSession.phoneNumber);
-    console.log("Project ID:", otpSession.projectId);
-    console.log("OTP used:", otpSession.used);
-    console.log("Vote confirmed:", otpSession.voteConfirmed);
-    console.log("Expires at:", otpSession.expiresAt);
-    console.log("Current attempts:", otpSession.attempts);
+    console.log("OTP Session found for phone:", otp.phoneNumber);
+    console.log("Project ID:", otp.projectId);
+    console.log("OTP used:", otp.used);
+    console.log("Vote confirmed:", otp.voteConfirmed);
+    console.log("Current attempts:", otp.attempts);
 
-    // Check if OTP has expired
-    if (new Date() > otpSession.expiresAt) {
-      console.warn("OTP has expired");
-      return NextResponse.json(
-        {
-          error: "Code expired",
-          message: "Verification code has expired. Please request a new one.",
-        },
-        { status: 400 }
-      );
-    }
+    // REMOVED: No expiry check since OTPs don't expire
+    // The original expiry check has been removed
 
     // Check if OTP has already been used for voting
-    if (otpSession.used && otpSession.voteConfirmed) {
+    if (otp.used && otp.voteConfirmed) {
       console.warn("OTP already used for voting");
       return NextResponse.json(
         {
           error: "Code already used",
           message:
-            "This verification code has already been used to cast a vote",
+            "This verification code has already been used to cast a vote and cannot be used again.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if OTP has been marked as used (even without vote confirmation)
+    if (otp.used) {
+      console.warn("OTP already marked as used");
+      return NextResponse.json(
+        {
+          error: "Code already used",
+          message:
+            "This verification code has already been used and cannot be used again.",
         },
         { status: 400 }
       );
     }
 
     // Check if maximum attempts exceeded
-    if (otpSession.attempts >= 3) {
+    if (otp.attempts >= 3) {
       console.warn("Maximum attempts exceeded");
       return NextResponse.json(
         {
           error: "Maximum attempts exceeded",
           message:
-            "Maximum verification attempts exceeded. Please request a new code.",
+            "Maximum verification attempts exceeded. This code is now invalid.",
         },
         { status: 400 }
       );
     }
 
     // Check if OTP code matches
-    if (otpSession.code !== otpCode) {
+    if (otp.code !== otpCode) {
       console.warn("Invalid OTP code provided");
 
       // Increment attempts
-      const updatedAttempts = otpSession.attempts + 1;
+      const updatedAttempts = otp.attempts + 1;
       await OTP.updateOne({ _id: sessionId }, { $inc: { attempts: 1 } });
 
       const remainingAttempts = 3 - updatedAttempts;
@@ -133,7 +137,7 @@ export async function POST(request: NextRequest) {
           message:
             remainingAttempts > 0
               ? `Invalid code. ${remainingAttempts} attempt(s) remaining.`
-              : "Invalid code. No attempts remaining. Please request a new code.",
+              : "Invalid code. Maximum attempts exceeded. This code is now invalid.",
           remainingAttempts,
         },
         { status: 400 }
@@ -143,9 +147,9 @@ export async function POST(request: NextRequest) {
     console.log("✅ OTP code verified successfully");
 
     // Check if project still exists
-    const project = await Project.findById(otpSession.projectId);
+    const project = await Project.findById(otp.projectId);
     if (!project) {
-      console.error("Project not found:", otpSession.projectId);
+      console.error("Project not found:", otp.projectId);
       return NextResponse.json(
         {
           error: "Project not found",
@@ -158,12 +162,12 @@ export async function POST(request: NextRequest) {
     console.log("Project found:", project.projectTitle);
 
     // Encrypt phone number for vote storage (consistent with request-otp route)
-    const encryptedPhone = encrypt(otpSession.phoneNumber);
+    const encryptedPhone = encrypt(otp.phoneNumber);
 
     // Double-check: Has this phone number already voted for this project?
     const existingVote = await Vote.findOne({
       phoneNumber: encryptedPhone,
-      projectId: otpSession.projectId,
+      projectId: otp.projectId,
     });
 
     if (existingVote) {
@@ -179,11 +183,11 @@ export async function POST(request: NextRequest) {
 
     // Additional check: Has this phone number been used for any confirmed vote for this project?
     const existingConfirmedOTP = await OTP.findOne({
-      phoneNumber: otpSession.phoneNumber,
-      projectId: otpSession.projectId,
+      phoneNumber: otp.phoneNumber,
+      projectId: otp.projectId,
       used: true,
       voteConfirmed: true,
-      _id: { $ne: otpSession._id }, // Exclude current session
+      _id: { $ne: otp._id }, // Exclude current session
     });
 
     if (existingConfirmedOTP) {
@@ -212,8 +216,8 @@ export async function POST(request: NextRequest) {
     // Create vote record first (using encrypted phone number)
     const newVote = new Vote({
       phoneNumber: encryptedPhone, // Store encrypted phone number
-      projectId: otpSession.projectId,
-      otpId: otpSession._id,
+      projectId: otp.projectId,
+      otpId: otp._id,
       ipAddress,
       userAgent,
     });
@@ -235,7 +239,7 @@ export async function POST(request: NextRequest) {
 
     // Increment project vote count
     const updatedProject = await Project.findByIdAndUpdate(
-      otpSession.projectId,
+      otp.projectId,
       { $inc: { vote: 1 } },
       { new: true }
     ).populate("candidate", "firstName lastName fullName");
@@ -247,7 +251,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Vote confirmed successfully!",
+      message:
+        "Vote confirmed successfully! Your OTP has been used and is no longer valid.",
       project: {
         id: updatedProject?._id,
         title: updatedProject?.projectTitle,
@@ -256,7 +261,7 @@ export async function POST(request: NextRequest) {
       },
       newVoteCount: updatedProject?.vote,
       voteConfirmedAt: new Date(),
-      phoneNumber: otpSession.phoneNumber.replace(
+      phoneNumber: otp.phoneNumber.replace(
         /(\+234)(\d{3})(\d{3})(\d{4})/,
         "$1$2***$4"
       ),

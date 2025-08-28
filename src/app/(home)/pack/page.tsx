@@ -32,15 +32,15 @@ export default function ContestPack() {
             Key Dates
           </h2>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Sign-up opens: September 7 2025</li>
-            <li>Submission deadline: October 7 2025 (11:59 pm WAT)</li>
-            <li>Finalists announced: [Date]</li>
-            <li>Public voting:  October 8 2025 – November 4 2025</li>
-            <li>Grand Finale (live): November 7</li>
+            <li>Sign-up opens: September 7th 2025</li>
+            <li>Submission deadline: October 7th 2025 (11:59 pm WAT)</li>
+            <li>Finalists announced: October 20th 2025</li>
+            <li>Public voting:  October 8 2025 – November 4th 2025</li>
+            <li>Grand Finale (Live): November 7th</li>
           </ul>
           <p className="mt-2 text-sm text-primary-500">
             All dates are subject to change and all changes will be communicated
-            on the public website.
+            on our social media platforms.
           </p>
         </section>
 
@@ -52,7 +52,7 @@ export default function ContestPack() {
           <ul className="list-disc pl-5 space-y-1">
             <li>
               Open to current students of engineering or technology faculties in
-              Nigerian higher institutions (universities, polytechnics).
+              Nigerian higher institutions.
             </li>
             <li>One entry per participant.</li>
             <li>Use your real details. We may verify with your institution.</li>
@@ -144,7 +144,7 @@ export default function ContestPack() {
           <ul className="list-disc pl-5 space-y-1">
             <li>Only finalists appear in the Voting Suite.</li>
             <li>The voting window lasts 4 weeks.</li>
-            <li>Limit: 1 vote per email per day.</li>
+            <li>Limit: 1 vote per person</li>
             <li>
               Anti-fraud checks: suspicious or automated voting may be removed.
             </li>
@@ -177,12 +177,16 @@ export default function ContestPack() {
             Finalist Presentation Guide
           </h2>
           <ul className="list-disc pl-5 space-y-1">
+            <li>
+              There will be a video presenstation by all Finalist.
+              </li>
             <li>Video length: 60–90 seconds (max 90 seconds).</li>
             <li>Content outline: intro, idea, why it fits, real use.</li>
             <li>
               Recording tips: quiet room, good lighting, speak clearly,
               landscape 1080p MP4.
             </li>
+            <li>File size (500mb max)</li>
             <li>File naming: lastname_firstname_school_CONCES_pitch.mp4</li>
           </ul>
         </section>

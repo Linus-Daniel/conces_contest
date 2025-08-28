@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+
 const footerLinks = {
   quickLinks: [
     { label: "Home", href: "/" },
@@ -14,7 +16,7 @@ const footerLinks = {
 const socialLinks = [
   { Icon: FaFacebook, href: "https://www.facebook.com/share/173jPb1P73/" },
   {
-    Icon: FaTwitter,
+    Icon: FaXTwitter,
     href: "https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09",
   },
   {

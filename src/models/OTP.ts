@@ -1,18 +1,17 @@
-// models/OTP.ts - Enhanced OTP model
+// models/OTP.ts - Modified OTP model with no expiry
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IOTP extends Document {
   phoneNumber: string;
   code: string;
-  projectId: string;
-  expiresAt: Date;
   used: boolean;
-  voteConfirmed: boolean; // New field to track if vote was actually cast
+  voteConfirmed: boolean; // Track if vote was actually cast
   attempts: number;
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
   updatedAt: Date;
+  // Removed expiresAt field since OTPs don't expire
 }
 
 const OTPSchema = new Schema<IOTP>(
@@ -25,18 +24,9 @@ const OTPSchema = new Schema<IOTP>(
     code: {
       type: String,
       required: true,
+      index: true, // Added index for faster lookups
     },
-    projectId: {
-      type: String,
-      required: true,
-      ref: "Project",
-      index: true,
-    },
-    expiresAt: {
-      type: Date,
-      required: true,
-      default: () => new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
-    },
+    // Removed expiresAt field - OTPs don't expire
     used: {
       type: Boolean,
       default: false,
@@ -65,10 +55,15 @@ const OTPSchema = new Schema<IOTP>(
 );
 
 // Compound indexes for efficient queries
-OTPSchema.index({ phoneNumber: 1, projectId: 1 });
+OTPSchema.index({ phoneNumber: 1});
 OTPSchema.index({ phoneNumber: 1, used: 1, voteConfirmed: 1 });
-OTPSchema.index({ phoneNumber: 1, expiresAt: 1 });
-OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+OTPSchema.index({ code: 1, used: 1 }); // For OTP code verification
+
+// Ensure one OTP per phone number per project (strict one-time rule)
+OTPSchema.index({ phoneNumber: 1 }, { unique: true });
+
+// Removed TTL index since OTPs don't expire
+// OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const OTP: Model<IOTP> =
   mongoose.models.OTP || mongoose.model<IOTP>("OTP", OTPSchema);

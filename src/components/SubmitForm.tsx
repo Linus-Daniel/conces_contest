@@ -512,8 +512,7 @@ export default function SubmitProjectForm() {
           Verify Your Token
         </h1>
         <p className="text-gray-600 mb-6">
-          Please Enter the six digit code sent to your email to access the
-          submission form.
+          Please Enter the 8 (eight) digit code sent to your email when you registered to access the submission form.
         </p>
         <Button onClick={()=>router.push("/auth")}>Verify Code</Button>
       </div>

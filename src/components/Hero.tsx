@@ -236,7 +236,7 @@ export default function HeroSection() {
               >
                 Join the <span className="text-conces-gold">CONCES</span>
                 <span className="block bg-gradient-to-r from-conces-gold to-conces-green bg-clip-text text-transparent">
-                  Rebrand Challenge!
+                  Logo Rebrand Challenge!
                 </span>
               </motion.h1>
 

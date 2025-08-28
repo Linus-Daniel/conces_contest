@@ -40,7 +40,7 @@ const CONTEST_DATA = {
   mainCTA: {
     title: "Redesign the Future of CONCES — Win ₦500,000",
     subtitle:
-      "Open to all engineering and tech students across Nigeria. Showcase your creativity. Lead the transformation.",
+      "Open to all Engineering and Technology students across Nigeria. Showcase your creativity. Lead the transformation.",
   },
   steps: [
     {
