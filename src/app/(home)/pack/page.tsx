@@ -1,6 +1,6 @@
 export default function ContestPack() {
   return (
-    <div className="bg- text-background min-h-screen px-4 py-6 md:px-12">
+    <div className=" min-h-screen px-4 py-6 md:px-12">
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-2xl md:text-4xl font-bold text-conces-blue">
