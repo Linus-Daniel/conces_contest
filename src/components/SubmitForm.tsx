@@ -26,6 +26,7 @@ import api from "@/lib/axiosInstance";
 import Confetti from "react-confetti";
 import SubmissionStatusModal from "./SubmissionModal";
 import Link from "next/link";
+import { FaUpload } from "react-icons/fa";
 
 interface ProjectFormData {
   projectTitle: string;
@@ -394,6 +395,11 @@ export default function SubmitProjectForm() {
     setShowDisclaimerModal(false);
     setPendingFormData(null);
   };
+
+    const handleImageUpload = (url: string) => {
+      setPrimaryFileUrl(url);
+      toast.success("Profile photo uploaded successfully!");
+    };
 
   const saveDraft = async () => {
     const formData = {
@@ -800,7 +806,7 @@ export default function SubmitProjectForm() {
                         <span className="text-sm font-normal text-gray-500 sm:ml-2">(AI, SVG, PNG, or PDF)</span>
                       </label>
 
-                      {!primaryFileUrl ? (
+                      {
                         <div className="relative">
                           <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group-hover:scale-[1.01]">
                             <div className="text-center">
@@ -837,7 +843,7 @@ export default function SubmitProjectForm() {
                             </motion.div>
                           )}
                         </div>
-                      ) : (
+} {primaryFileUrl && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -952,28 +958,17 @@ export default function SubmitProjectForm() {
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center">
-                        <ArrowPathIcon className="h-4 h-4 sm:h-5 sm:w-5 mr-2 animate-spin" />
+                        <ArrowPathIcon className="h-4 sm:h-5 sm:w-5 mr-2 animate-spin" />
                         Processing...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center">
-                        <CheckCircleIcon className="h-4 h-4 sm:h-5 sm:w-5 mr-2" />
+                        <CheckCircleIcon className="h-4  sm:h-5 sm:w-5 mr-2" />
                         Submit Final Design
                       </span>
                     )}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting}
-                    onClick={saveDraft}
-                    className="w-full sm:flex-1 h-12 sm:h-14 text-base sm:text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 order-2 sm:order-2"
-                  >
-                    <span className="flex items-center justify-center">
-                      <DocumentIcon className="h-4 h-4 sm:h-5 sm:w-5 mr-2" />
-                      Save as Draft
-                    </span>
-                  </Button>
+                  
                 </motion.div>
               </form>
             </div>
@@ -1042,6 +1037,7 @@ export default function SubmitProjectForm() {
                   </ul>
                 </div>
               </div>
+           
 
               {/* Additional Tips */}
               <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
