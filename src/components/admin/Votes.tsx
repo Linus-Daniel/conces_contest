@@ -384,9 +384,9 @@ export default function VoteManagement() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -444,7 +444,7 @@ export default function VoteManagement() {
                         : "Disqualified"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => {
                         const newCount = prompt(
@@ -467,7 +467,7 @@ export default function VoteManagement() {
                         "Adjust Votes"
                       )}
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

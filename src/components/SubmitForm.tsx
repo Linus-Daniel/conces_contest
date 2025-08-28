@@ -394,12 +394,12 @@ export default function SubmitProjectForm() {
   const closeDisclaimerModal = () => {
     setShowDisclaimerModal(false);
     setPendingFormData(null);
-  };
+  }
 
     const handleImageUpload = (url: string) => {
       setPrimaryFileUrl(url);
       toast.success("Profile photo uploaded successfully!");
-    };
+    }
 
   const saveDraft = async () => {
     const formData = {
@@ -492,7 +492,7 @@ export default function SubmitProjectForm() {
 
   if (submissionComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-teal-50 p-3 sm:p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-teal-50 sm:p-4">
         <Confetti
           width={typeof window !== "undefined" ? window.innerWidth : 0}
           height={typeof window !== "undefined" ? window.innerHeight : 0}
@@ -627,7 +627,7 @@ export default function SubmitProjectForm() {
         isSubmitting={isSubmitting}
       />
 
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+      <div className="container  sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -635,9 +635,9 @@ export default function SubmitProjectForm() {
           className="max-w-5xl mx-auto"
         >
           {/* Main Form Container */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-2xl sm:rounded-3xl  sm:shadow-sm overflow-hidden border border-gray-100">
             {/* Header Section */}
-            <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+            <div className="relative bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
               <div className="absolute inset-0 bg-black/10" />
               <div className="relative">
                 <motion.div
@@ -818,6 +818,7 @@ export default function SubmitProjectForm() {
                               <ImageUpload
                                 onSuccess={(info)=>handlePrimaryFileUpload(info.secure_url)}
                                 folder="conces-logos/"
+                                allowMultiple={true}
                                 className="w-full justify-center bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                               >
                                 <span className="flex items-center justify-center">
@@ -897,6 +898,7 @@ export default function SubmitProjectForm() {
                             <ImageUpload
                               onSuccess={(info)=>handleMockupUpload(info.secure_url)}
                               folder="conces-mockups/"
+                              allowMultiple={true}
                               className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                             >
                               <span className="flex items-center justify-center">
