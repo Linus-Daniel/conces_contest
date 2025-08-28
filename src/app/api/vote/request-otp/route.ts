@@ -204,6 +204,7 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 async function validatePhoneAndOTPStatus(
   formattedPhone: string,
   encryptedPhone: string,
+  projectId: string
 ) {
   console.log("=== Starting Phone/OTP Validation ===");
 
@@ -218,13 +219,14 @@ async function validatePhoneAndOTPStatus(
       canSendOTP: false,
       reason: "ALREADY_VOTED",
       message:
-        "This phone number has already voted.",
+        "This phone number has already voted for this project. Each phone number can only vote once.",
     };
   }
 
   // 2. Check if this phone number has any confirmed votes (used OTP that resulted in vote)
   const confirmedOTP = await OTP.findOne({
     phoneNumber: formattedPhone,
+    projectId,
     used: true,
     voteConfirmed: true,
   });
@@ -252,7 +254,7 @@ async function validatePhoneAndOTPStatus(
         canSendOTP: false,
         reason: "OTP_ALREADY_USED",
         message:
-          "This phone number has already used an OTP for this project and cannot request another one.",
+          "This phone number has been used, cannot request another one OTP.",
       };
     } else {
       console.log("⚠️ Phone number already has an unused OTP");
@@ -339,7 +341,7 @@ export async function POST(request: NextRequest) {
     const validationResult = await validatePhoneAndOTPStatus(
       formattedPhone,
       encryptedPhone,
-
+      projectId
     );
 
     if (!validationResult.canSendOTP) {
@@ -379,6 +381,7 @@ export async function POST(request: NextRequest) {
     const newOTP = new OTP({
       phoneNumber: formattedPhone, // Store plain phone for OTP matching
       code: otpCode,
+      projectId,
       used: false,
       voteConfirmed: false,
       attempts: 0,

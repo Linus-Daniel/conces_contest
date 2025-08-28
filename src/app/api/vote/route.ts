@@ -145,8 +145,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("✅ OTP code verified successfully");
-
-    // Check if project still exists
+    
     const project = await Project.findById(otp.projectId);
     if (!project) {
       console.error("Project not found:", otp.projectId);
