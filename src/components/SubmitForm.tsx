@@ -402,6 +402,7 @@ export default function SubmitProjectForm() {
     }
   };
 
+  // ✅ Loading state while checking existing submission
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
@@ -417,6 +418,7 @@ export default function SubmitProjectForm() {
     );
   }
 
+  // ✅ Show status modal if user has already submitted
   if (showStatusModal && existingProject) {
     return (
       <>

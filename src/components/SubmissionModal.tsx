@@ -251,7 +251,7 @@ export default function SubmissionStatusModal({
             Close
           </Button>
 
-          {/* Only show view submission button if not draft */}
+          {/* Only show view submission button if not draft
           {project.status !== "draft" && (
             <Button
               variant="outline"
@@ -264,7 +264,7 @@ export default function SubmissionStatusModal({
               <EyeIcon className="h-4 w-4 mr-2" />
               View Submission
             </Button>
-          )}
+          )} */}
         </div>
       </motion.div>
     </div>
