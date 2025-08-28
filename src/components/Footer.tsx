@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaTwitter, FaYoutube } from "react-icons/fa";
 const footerLinks = {
   quickLinks: [
     { label: "Home", href: "/" },
@@ -24,6 +24,14 @@ const socialLinks = [
   {
     Icon: FaYoutube,
     href: "https://youtube.com/@concesofficial",
+  },
+  {
+    Icon: FaTiktok,
+    href: "https://www.tiktok.com/@concesofficial?_t=ZS-8zDzAKrmNYj&_r=1",
+  },
+  {
+    Icon: FaLinkedin,
+    href: "https://www.linkedin.com/in/concesofficial?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
   },
 ];
 
