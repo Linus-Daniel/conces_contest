@@ -31,12 +31,13 @@ export default function ImageUpload({
       uploadPreset={uploadPreset}
       options={{
         folder: folder || "uploads",
+show
         sources: ["local", "url", "camera"],
         multiple: true,
         clientAllowedFormats: ["jpg", "jpeg", "png",  "webp"], // ✅ only images allowed
         resourceType: "image", // ✅ enforce image uploads
       }}
-      onSuccess={(result: any) => {
+      onSuccess={(result: any,{widget}) => {
         if (result?.event === "queues-start") {
           setIsUploading(true);
         }
@@ -44,6 +45,7 @@ export default function ImageUpload({
         if (result?.event === "success") {
           setIsUploading(false);
           console.log("UPLOAD SUCCESS INFO:", result.info);
+widget.close()
           if (result.info) {
             onSuccess(result.info);
           }
