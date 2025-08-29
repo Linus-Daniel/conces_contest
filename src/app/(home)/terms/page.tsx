@@ -40,7 +40,7 @@ const TermsAndConditions = () => {
     },
     {
       title: "Eligibility",
-      content: `• Open only to current students of engineering or technology faculties in Nigerian higher institutions (universities, polytechnics, colleges of technology).
+      content: `•Open only to current students of engineering or technology faculties in Nigerian higher institutions (universities, polytechnics, colleges of technology). You must be a student as at September 7, 2025 when the contest open..
 • Geographic limitation: Nigeria.
 • Age: If you are under 18, a parent/guardian must consent (see Section 15).
 • Ineligible parties: CONCES directors, officers, employees, judges, and their immediate family/household members are not eligible to enter.
