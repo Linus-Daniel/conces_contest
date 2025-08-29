@@ -7,8 +7,8 @@ export interface IProject extends Document {
   designConcept: string;
   colorPalette: string;
   inspiration: string;
-  primaryFileUrl: string[];
-  mockupUrl?: string[];
+  primaryFileUrls: string[];
+  mockupUrls?: string[];
   status: "draft" | "submitted" | "reviewed" | "selected" | "rejected";
   submittedAt: Date;
   updatedAt?: Date;
@@ -49,14 +49,14 @@ const ProjectSchema = new Schema<IProject>(
       required: [true, "Inspiration is required"],
       maxlength: [2000, "Inspiration cannot exceed 2000 characters"],
     },
-    primaryFileUrl: [
+    primaryFileUrls: [
       {
         type: String,
         required: true,
       },
     ], // Changed to array
 
-    mockupUrl: [
+    mockupUrls: [
       {
         type: String,
       },

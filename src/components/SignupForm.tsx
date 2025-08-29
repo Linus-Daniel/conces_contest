@@ -208,7 +208,8 @@ export default function SignUpForm() {
         >
           <div>
             <label className="block text-sm font-medium mb-1">
-              Profile Photo (Please use a proffessional picture) <span className="text-red-500">*</span>
+              Profile Photo (Please use a proffessional picture){" "}
+              <span className="text-red-500">*</span>
             </label>
             <div className="space-y-3 sm:space-y-4">
               <ImageUpload

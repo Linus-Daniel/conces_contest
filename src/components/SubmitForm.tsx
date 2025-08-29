@@ -91,7 +91,9 @@ const DisclaimerModal = ({
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                       Submission Terms
                     </h2>
-                    <p className="text-gray-500 mt-1">Please review before submitting</p>
+                    <p className="text-gray-500 mt-1">
+                      Please review before submitting
+                    </p>
                   </div>
                 </div>
                 <button
@@ -112,7 +114,8 @@ const DisclaimerModal = ({
                   Important Notice
                 </h3>
                 <p className="text-orange-800">
-                  Please read and understand the following terms before submitting your design.
+                  Please read and understand the following terms before
+                  submitting your design.
                 </p>
               </div>
 
@@ -133,24 +136,35 @@ const DisclaimerModal = ({
                     {[
                       {
                         title: "Transfer of Ownership",
-                        content: "All submitted designs become the exclusive property of CONCES (Conference Of Nigerian Christian Engineering Students) upon submission, regardless of whether your design is selected as the winner.",
+                        content:
+                          "All submitted designs become the exclusive property of CONCES (Conference Of Nigerian Christian Engineering Students) upon submission, regardless of whether your design is selected as the winner.",
                       },
                       {
                         title: "Usage Rights",
-                        content: "CONCES reserves the right to use, modify, reproduce, and distribute any submitted design for official branding, marketing materials, publications, and promotional activities.",
+                        content:
+                          "CONCES reserves the right to use, modify, reproduce, and distribute any submitted design for official branding, marketing materials, publications, and promotional activities.",
                       },
                       {
                         title: "Originality",
-                        content: "You confirm that your submission is original work created by you and does not infringe upon any third-party intellectual property rights.",
+                        content:
+                          "You confirm that your submission is original work created by you and does not infringe upon any third-party intellectual property rights.",
                       },
                       {
                         title: "No Compensation Claims",
-                        content: "You waive any future claims to compensation beyond the contest prizes for the use of your submitted design(s).",
-                      }
+                        content:
+                          "You waive any future claims to compensation beyond the contest prizes for the use of your submitted design(s).",
+                      },
                     ].map((item, index) => (
-                      <div key={index} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                        <h4 className="font-semibold text-gray-900 mb-2">{item.title}</h4>
-                        <p className="text-gray-600 text-sm leading-relaxed">{item.content}</p>
+                      <div
+                        key={index}
+                        className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow"
+                      >
+                        <h4 className="font-semibold text-gray-900 mb-2">
+                          {item.title}
+                        </h4>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {item.content}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -159,9 +173,12 @@ const DisclaimerModal = ({
                     <div className="flex items-start">
                       <InformationCircleIcon className="w-6 h-6 text-blue-500 mt-1 mr-3 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-blue-900 mb-2">Contest Participation</h4>
+                        <h4 className="font-semibold text-blue-900 mb-2">
+                          Contest Participation
+                        </h4>
                         <p className="text-blue-800">
-                          By participating in this contest, you agree to be bound by all contest rules and these submission terms.
+                          By participating in this contest, you agree to be
+                          bound by all contest rules and these submission terms.
                         </p>
                       </div>
                     </div>
@@ -171,7 +188,7 @@ const DisclaimerModal = ({
 
               {/* Enhanced Agreement Checkbox */}
               <div className="border-t border-gray-200 pt-8">
-                <motion.label 
+                <motion.label
                   className="flex items-start space-x-4 cursor-pointer group p-4 rounded-xl hover:bg-gray-50 transition-colors"
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
@@ -192,7 +209,8 @@ const DisclaimerModal = ({
                       I agree to the submission terms and disclaimer
                     </span>
                     <p className="text-gray-600 mt-2 leading-relaxed">
-                      I understand that my design will become the property of CONCES and can be used as necessary for official purposes.
+                      I understand that my design will become the property of
+                      CONCES and can be used as necessary for official purposes.
                     </p>
                   </div>
                 </motion.label>
@@ -237,15 +255,16 @@ const DisclaimerModal = ({
 export default function SubmitProjectForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [primaryFileUrl, setPrimaryFileUrl] = useState<string>("");
-  const [mockupUrl, setMockupUrl] = useState<string>("");
+  const [primaryFileUrls, setPrimaryFileUrls] = useState<string[]>([]);
+  const [mockupUrls, setMockupUrls] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string>("");
   const [submissionComplete, setSubmissionComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [existingProject, setExistingProject] = useState<any>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<ProjectFormData | null>(null);
+  const [pendingFormData, setPendingFormData] =
+    useState<ProjectFormData | null>(null);
   const { candidate } = useCandidate();
 
   const {
@@ -283,8 +302,11 @@ export default function SubmitProjectForm() {
     checkExistingSubmission();
   }, [candidate?._id]);
 
-  const handlePrimaryFileUpload = (url:string) => {
-    setPrimaryFileUrl(url);
+
+
+
+  const handlePrimaryFileUpload = (url: string) => {
+    setPrimaryFileUrls((prev) => [...prev, url]);
     setUploadError("");
     toast.success("Primary logo uploaded successfully!", {
       icon: "🎨",
@@ -296,8 +318,8 @@ export default function SubmitProjectForm() {
     });
   };
 
-  const handleMockupUpload = (url:string) => {
-    setMockupUrl(url);
+  const handleMockupUpload = (url: string) => {
+    setMockupUrls((prev) => [...prev, url]);
     toast.success("Mockup uploaded successfully!", {
       icon: "📸",
       style: {
@@ -308,20 +330,20 @@ export default function SubmitProjectForm() {
     });
   };
 
-  const removePrimaryFile = () => {
-    setPrimaryFileUrl("");
+  const removePrimaryFile = (index: number) => {
+    setPrimaryFileUrls((prev) => prev.filter((_, i) => i !== index));
     toast("Primary logo removed", { icon: "🗑️" });
   };
 
-  const removeMockup = () => {
-    setMockupUrl("");
+  const removeMockup = (index: number) => {
+    setMockupUrls((prev) => prev.filter((_, i) => i !== index));
     toast("Mockup removed", { icon: "🗑️" });
   };
 
   const onSubmit = async (data: ProjectFormData) => {
-    if (!primaryFileUrl) {
-      setUploadError("Please upload a primary logo file");
-      toast.error("Please upload a primary logo file");
+    if (primaryFileUrls.length === 0) {
+      setUploadError("Please upload at least one primary logo file");
+      toast.error("Please upload at least one primary logo file");
       return;
     }
 
@@ -345,8 +367,8 @@ export default function SubmitProjectForm() {
       const response = await api.post("/projects", {
         candidate: candidate?._id || candidate?._id,
         ...pendingFormData,
-        primaryFileUrl,
-        mockupUrl,
+        primaryFileUrls,
+        mockupUrls,
       });
 
       const result = response.data;
@@ -366,8 +388,8 @@ export default function SubmitProjectForm() {
       setShowDisclaimerModal(false);
       setPendingFormData(null);
       reset();
-      setPrimaryFileUrl("");
-      setMockupUrl("");
+      setPrimaryFileUrls([]);
+      setMockupUrls([]);
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.dismiss();
@@ -394,12 +416,7 @@ export default function SubmitProjectForm() {
   const closeDisclaimerModal = () => {
     setShowDisclaimerModal(false);
     setPendingFormData(null);
-  }
-
-    const handleImageUpload = (url: string) => {
-      setPrimaryFileUrl(url);
-      toast.success("Profile photo uploaded successfully!");
-    }
+  };
 
   const saveDraft = async () => {
     const formData = {
@@ -422,8 +439,8 @@ export default function SubmitProjectForm() {
       const response = await api.post("/projects", {
         candidate: candidate?._id || candidate?._id,
         ...formData,
-        primaryFileUrl: primaryFileUrl || "",
-        mockupUrl,
+        primaryFileUrls: primaryFileUrls || [],
+        mockupUrls,
         status: "draft",
       });
 
@@ -458,8 +475,12 @@ export default function SubmitProjectForm() {
               <ArrowPathIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-spin" />
             </div>
           </div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Checking Status</h3>
-          <p className="text-sm sm:text-base text-gray-600">Verifying your submission status...</p>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+            Checking Status
+          </h3>
+          <p className="text-sm sm:text-base text-gray-600">
+            Verifying your submission status...
+          </p>
         </motion.div>
       </div>
     );
@@ -498,7 +519,7 @@ export default function SubmitProjectForm() {
           height={typeof window !== "undefined" ? window.innerHeight : 0}
           recycle={false}
           numberOfPieces={500}
-          colors={['#10B981', '#06B6D4', '#8B5CF6', '#F59E0B', '#EF4444']}
+          colors={["#10B981", "#06B6D4", "#8B5CF6", "#F59E0B", "#EF4444"]}
         />
         <motion.div
           initial={{ scale: 0.8, opacity: 0, y: 50 }}
@@ -519,7 +540,7 @@ export default function SubmitProjectForm() {
               </div>
             </div>
           </motion.div>
-          
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -528,17 +549,18 @@ export default function SubmitProjectForm() {
           >
             Submission Complete! 🎉
           </motion.h1>
-          
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed px-2"
           >
-            Thank you for your creative contribution to the CONCES rebranding challenge. 
-            Our judges will carefully review all submissions and announce the winners soon.
+            Thank you for your creative contribution to the CONCES rebranding
+            challenge. Our judges will carefully review all submissions and
+            announce the winners soon.
           </motion.p>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -593,9 +615,10 @@ export default function SubmitProjectForm() {
             Verification Required
           </h1>
           <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-            Please enter the six-digit code sent to your email to access the submission form.
+            Please enter the six-digit code sent to your email to access the
+            submission form.
           </p>
-          <Button 
+          <Button
             onClick={() => router.push("/auth")}
             className="w-full h-12 sm:h-14 text-base sm:text-lg bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
           >
@@ -627,7 +650,7 @@ export default function SubmitProjectForm() {
         isSubmitting={isSubmitting}
       />
 
-      <div className="container  sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+      <div className="container sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -635,7 +658,7 @@ export default function SubmitProjectForm() {
           className="max-w-5xl mx-auto"
         >
           {/* Main Form Container */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl  sm:shadow-sm overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-2xl sm:rounded-3xl sm:shadow-sm overflow-hidden border border-gray-100">
             {/* Header Section */}
             <div className="relative bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
               <div className="absolute inset-0 bg-black/10" />
@@ -666,10 +689,13 @@ export default function SubmitProjectForm() {
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-white font-semibold mb-2 text-sm sm:text-base">Submission Guidelines</h3>
+                      <h3 className="text-white font-semibold mb-2 text-sm sm:text-base">
+                        Submission Guidelines
+                      </h3>
                       <p className="text-indigo-100 leading-relaxed text-sm sm:text-base">
-                        Upload your logo design in high resolution (AI, SVG, PNG, or PDF format). 
-                        You can also add a mockup to showcase your design in action.
+                        Upload your logo design in high resolution (AI, SVG,
+                        PNG, or PDF format). You can also add a mockup to
+                        showcase your design in action.
                       </p>
                     </div>
                   </div>
@@ -678,7 +704,10 @@ export default function SubmitProjectForm() {
             </div>
 
             <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8 lg:space-y-10">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-6 sm:space-y-8 lg:space-y-10"
+              >
                 {/* Project Details Section */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -692,10 +721,14 @@ export default function SubmitProjectForm() {
                         <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Project Details</h2>
+                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                          Project Details
+                        </h2>
                       </div>
                     </div>
-                    <p className="text-sm sm:text-base text-gray-600 sm:ml-0">Tell us about your creative vision</p>
+                    <p className="text-sm sm:text-base text-gray-600 sm:ml-0">
+                      Tell us about your creative vision
+                    </p>
                   </div>
 
                   <div className="space-y-6 sm:space-y-8">
@@ -715,21 +748,24 @@ export default function SubmitProjectForm() {
                       {
                         name: "designConcept",
                         label: "Design Concept",
-                        placeholder: "Explain your design concept and what it represents...",
+                        placeholder:
+                          "Explain your design concept and what it represents...",
                         icon: PaintBrushIcon,
                         rows: 4,
                       },
                       {
                         name: "colorPalette",
                         label: "Color Palette Explanation",
-                        placeholder: "Explain your color choices and their significance...",
+                        placeholder:
+                          "Explain your color choices and their significance...",
                         icon: EyeIcon,
                         rows: 3,
                       },
                       {
                         name: "inspiration",
                         label: "Inspiration & Story",
-                        placeholder: "What inspired your design? Tell us the story behind it...",
+                        placeholder:
+                          "What inspired your design? Tell us the story behind it...",
                         icon: LightBulbIcon,
                         rows: 4,
                       },
@@ -754,9 +790,10 @@ export default function SubmitProjectForm() {
                             className={`w-full px-3 sm:px-4 py-3 sm:py-4 border-2 rounded-xl text-base sm:text-lg placeholder-gray-400 
                               focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 
                               transition-all duration-200 resize-none leading-relaxed
-                              ${errors[field.name as keyof ProjectFormData] 
-                                ? "border-red-300 bg-red-50" 
-                                : "border-gray-200 hover:border-gray-300"
+                              ${
+                                errors[field.name as keyof ProjectFormData]
+                                  ? "border-red-300 bg-red-50"
+                                  : "border-gray-200 hover:border-gray-300"
                               }`}
                             placeholder={field.placeholder}
                           />
@@ -767,7 +804,12 @@ export default function SubmitProjectForm() {
                               className="text-red-500 text-sm mt-2 sm:mt-3 flex items-center"
                             >
                               <ExclamationTriangleIcon className="w-4 h-4 mr-1 flex-shrink-0" />
-                              <span>{errors[field.name as keyof ProjectFormData]?.message}</span>
+                              <span>
+                                {
+                                  errors[field.name as keyof ProjectFormData]
+                                    ?.message
+                                }
+                              </span>
                             </motion.p>
                           )}
                         </div>
@@ -789,10 +831,14 @@ export default function SubmitProjectForm() {
                         <CloudArrowUpIcon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">File Uploads</h2>
+                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                          File Uploads
+                        </h2>
                       </div>
                     </div>
-                    <p className="text-sm sm:text-base text-gray-600 sm:ml-0">Share your design files with us</p>
+                    <p className="text-sm sm:text-base text-gray-600 sm:ml-0">
+                      Share your design files with us
+                    </p>
                   </div>
 
                   <div className="space-y-6 sm:space-y-8">
@@ -801,12 +847,14 @@ export default function SubmitProjectForm() {
                       <label className="flex flex-col sm:flex-row sm:items-center text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
                         <div className="flex items-center mb-2 sm:mb-0">
                           <DocumentIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-green-600 flex-shrink-0" />
-                          <span>Primary Logo File *</span>
+                          <span>Primary Logo Files *</span>
                         </div>
-                        <span className="text-sm font-normal text-gray-500 sm:ml-2">(AI, SVG, PNG, or PDF)</span>
+                        <span className="text-sm font-normal text-gray-500 sm:ml-2">
+                          (AI, SVG, PNG, or PDF)
+                        </span>
                       </label>
 
-                      {
+                      {primaryFileUrls.length === 0 ? (
                         <div className="relative">
                           <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group-hover:scale-[1.01]">
                             <div className="text-center">
@@ -816,18 +864,21 @@ export default function SubmitProjectForm() {
                                 </div>
                               </div>
                               <ImageUpload
-                                onSuccess={(info)=>handlePrimaryFileUpload(info.secure_url)}
+                                onSuccess={(info) =>
+                                  handlePrimaryFileUpload(info.secure_url)
+                                }
                                 folder="conces-logos/"
                                 allowMultiple={true}
                                 className="w-full justify-center bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                               >
                                 <span className="flex items-center justify-center">
                                   <CloudArrowUpIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                  Upload Primary Logo
+                                  Upload Primary Logos
                                 </span>
                               </ImageUpload>
                               <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
-                                Drag and drop or click to upload • Max 10MB
+                                Drag and drop or click to upload • Max 10MB per
+                                file
                               </p>
                             </div>
                           </div>
@@ -844,36 +895,62 @@ export default function SubmitProjectForm() {
                             </motion.div>
                           )}
                         </div>
-} {primaryFileUrl && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200 rounded-xl sm:rounded-2xl p-4 sm:p-6"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-0">
-                              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-white shadow-md flex-shrink-0">
-                                <Image
-                                  src={primaryFileUrl}
-                                  alt="Primary logo"
-                                  fill
-                                  className="object-contain p-2"
-                                />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-green-800 text-sm sm:text-base">Primary Logo Uploaded</p>
-                                <p className="text-sm text-green-600">Ready for submission</p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={removePrimaryFile}
-                              className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
-                            >
-                              <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                            </button>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {primaryFileUrls.map((url, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200 rounded-xl sm:rounded-2xl p-4"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                  <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
+                                      <Image
+                                        src={url}
+                                        alt={`Primary logo ${index + 1}`}
+                                        fill
+                                        className="object-contain p-2"
+                                      />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="font-semibold text-green-800 text-sm">
+                                        Logo {index + 1}
+                                      </p>
+                                      <p className="text-xs text-green-600 truncate">
+                                        Uploaded successfully
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removePrimaryFile(index)}
+                                    className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
+                                  >
+                                    <XMarkIcon className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </motion.div>
+                            ))}
                           </div>
-                        </motion.div>
+
+                          {/* Add more button */}
+                          <ImageUpload
+                            onSuccess={(info) =>
+                              handlePrimaryFileUpload(info.secure_url)
+                            }
+                            folder="conces-logos/"
+                            allowMultiple={true}
+                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                          >
+                            <span className="flex items-center justify-center">
+                              <CloudArrowUpIcon className="w-4 h-4 mr-2" />
+                              Add More Logos
+                            </span>
+                          </ImageUpload>
+                        </div>
                       )}
                     </div>
 
@@ -882,12 +959,14 @@ export default function SubmitProjectForm() {
                       <label className="flex flex-col sm:flex-row sm:items-center text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
                         <div className="flex items-center mb-2 sm:mb-0">
                           <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-blue-600 flex-shrink-0" />
-                          <span>Mockup</span>
+                          <span>Mockups</span>
                         </div>
-                        <span className="text-sm font-normal text-gray-500 sm:ml-2">(Optional - Show your logo in action)</span>
+                        <span className="text-sm font-normal text-gray-500 sm:ml-2">
+                          (Optional - Show your logo in action)
+                        </span>
                       </label>
 
-                      {!mockupUrl ? (
+                      {mockupUrls.length === 0 ? (
                         <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group-hover:scale-[1.01]">
                           <div className="text-center">
                             <div className="mb-4 sm:mb-6">
@@ -896,14 +975,16 @@ export default function SubmitProjectForm() {
                               </div>
                             </div>
                             <ImageUpload
-                              onSuccess={(info)=>handleMockupUpload(info.secure_url)}
+                              onSuccess={(info) =>
+                                handleMockupUpload(info.secure_url)
+                              }
                               folder="conces-mockups/"
                               allowMultiple={true}
                               className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                             >
                               <span className="flex items-center justify-center">
                                 <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                Upload Mockup
+                                Upload Mockups
                               </span>
                             </ImageUpload>
                             <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
@@ -912,35 +993,61 @@ export default function SubmitProjectForm() {
                           </div>
                         </div>
                       ) : (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl sm:rounded-2xl p-4 sm:p-6"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-0">
-                              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-white shadow-md flex-shrink-0">
-                                <Image
-                                  src={mockupUrl}
-                                  alt="Mockup"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-blue-800 text-sm sm:text-base">Mockup Uploaded</p>
-                                <p className="text-sm text-blue-600">Great addition to your submission!</p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={removeMockup}
-                              className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
-                            >
-                              <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                            </button>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {mockupUrls.map((url, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl sm:rounded-2xl p-4"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                  <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
+                                      <Image
+                                        src={url}
+                                        alt={`Mockup ${index + 1}`}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="font-semibold text-blue-800 text-sm">
+                                        Mockup {index + 1}
+                                      </p>
+                                      <p className="text-xs text-blue-600 truncate">
+                                        Uploaded successfully
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeMockup(index)}
+                                    className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
+                                  >
+                                    <XMarkIcon className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </motion.div>
+                            ))}
                           </div>
-                        </motion.div>
+
+                          {/* Add more button */}
+                          <ImageUpload
+                            onSuccess={(info) =>
+                              handleMockupUpload(info.secure_url)
+                            }
+                            folder="conces-mockups/"
+                            allowMultiple={true}
+                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                          >
+                            <span className="flex items-center justify-center">
+                              <EyeIcon className="w-4 h-4 mr-2" />
+                              Add More Mockups
+                            </span>
+                          </ImageUpload>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -965,12 +1072,11 @@ export default function SubmitProjectForm() {
                       </span>
                     ) : (
                       <span className="flex items-center justify-center">
-                        <CheckCircleIcon className="h-4  sm:h-5 sm:w-5 mr-2" />
+                        <CheckCircleIcon className="h-4 sm:h-5 sm:w-5 mr-2" />
                         Submit Final Design
                       </span>
                     )}
                   </Button>
-                  
                 </motion.div>
               </form>
             </div>
@@ -988,7 +1094,9 @@ export default function SubmitProjectForm() {
                 <InformationCircleIcon className="w-7 h-7 mr-3 text-blue-600" />
                 Submission Guidelines
               </h2>
-              <p className="text-gray-600 mt-2">Make sure your submission meets our requirements</p>
+              <p className="text-gray-600 mt-2">
+                Make sure your submission meets our requirements
+              </p>
             </div>
 
             <div className="p-8">
@@ -999,16 +1107,21 @@ export default function SubmitProjectForm() {
                     <div className="bg-blue-500 rounded-xl p-2 mr-3">
                       <DocumentIcon className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-blue-900">File Requirements</h3>
+                    <h3 className="text-xl font-bold text-blue-900">
+                      File Requirements
+                    </h3>
                   </div>
                   <ul className="space-y-3">
                     {[
                       "Vector format (AI or SVG) preferred",
                       "High resolution PNG (min 2000px width)",
                       "Maximum file size: 10MB per file",
-                      "Clear, scalable design that works at any size"
+                      "Clear, scalable design that works at any size",
                     ].map((item, index) => (
-                      <li key={index} className="flex items-start text-blue-800">
+                      <li
+                        key={index}
+                        className="flex items-start text-blue-800"
+                      >
                         <CheckCircleIcon className="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
                         <span>{item}</span>
                       </li>
@@ -1022,16 +1135,21 @@ export default function SubmitProjectForm() {
                     <div className="bg-purple-500 rounded-xl p-2 mr-3">
                       <PaintBrushIcon className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-purple-900">Design Standards</h3>
+                    <h3 className="text-xl font-bold text-purple-900">
+                      Design Standards
+                    </h3>
                   </div>
                   <ul className="space-y-3">
                     {[
                       "Original work only - no plagiarism",
                       "Works on light and dark backgrounds",
                       "Represents Nigerian engineering excellence",
-                      "Professional and timeless design approach"
+                      "Professional and timeless design approach",
                     ].map((item, index) => (
-                      <li key={index} className="flex items-start text-purple-800">
+                      <li
+                        key={index}
+                        className="flex items-start text-purple-800"
+                      >
                         <SparklesIcon className="w-5 h-5 text-purple-500 mr-3 mt-0.5 flex-shrink-0" />
                         <span>{item}</span>
                       </li>
@@ -1039,7 +1157,6 @@ export default function SubmitProjectForm() {
                   </ul>
                 </div>
               </div>
-           
 
               {/* Additional Tips */}
               <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
@@ -1048,10 +1165,14 @@ export default function SubmitProjectForm() {
                     <LightBulbIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-yellow-900 mb-3">Pro Tips for Success</h3>
+                    <h3 className="text-xl font-bold text-yellow-900 mb-3">
+                      Pro Tips for Success
+                    </h3>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="font-semibold text-yellow-800 mb-2">Design Approach</h4>
+                        <h4 className="font-semibold text-yellow-800 mb-2">
+                          Design Approach
+                        </h4>
                         <ul className="text-sm text-yellow-700 space-y-1">
                           <li>• Keep it simple and memorable</li>
                           <li>• Consider cultural significance</li>
@@ -1059,7 +1180,9 @@ export default function SubmitProjectForm() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-yellow-800 mb-2">Submission Tips</h4>
+                        <h4 className="font-semibold text-yellow-800 mb-2">
+                          Submission Tips
+                        </h4>
                         <ul className="text-sm text-yellow-700 space-y-1">
                           <li>• Write compelling descriptions</li>
                           <li>• Explain your color choices</li>

@@ -45,7 +45,7 @@ interface TimerProviderProps {
 export function TimerProvider({
   children,
   // LIVE COMPETITION TIMELINE:
-  contestStartDate = new Date("2025-09-07T00:00:00"), // Entries: September 7
+  contestStartDate = new Date("2025-09-08T00:00:00"), // Entries: September 7
   contestEndDate = new Date("2025-10-07T23:59:59"), // Entries end: October 7
   votingStartDate = new Date("2025-10-08T00:00:00"), // Voting: October 8
   votingEndDate = new Date("2025-11-04T23:59:59"), // Voting ends: November 4

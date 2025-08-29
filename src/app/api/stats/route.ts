@@ -26,6 +26,8 @@ interface ProjectStats {
   averageVote: number;
   withMockup: number;
   withFeedback: number;
+  totalPrimaryFiles: number;
+  totalMockupFiles: number;
 }
 
 interface EngagementStats {
@@ -62,6 +64,47 @@ interface ApiResponse {
   error?: string;
 }
 
+// Helper function to safely check if an array has valid content
+function hasValidFiles(files: any): boolean {
+  if (!files) return false;
+  if (Array.isArray(files)) {
+    return (
+      files.length > 0 &&
+      files.some(
+        (file) =>
+          file &&
+          (typeof file === "string"
+            ? file.trim() !== ""
+            : file.url && file.url.trim() !== "")
+      )
+    );
+  }
+  // Handle legacy single file format
+  if (typeof files === "string") {
+    return files.trim() !== "";
+  }
+  return false;
+}
+
+// Helper function to count total files in arrays
+function countFiles(files: any): number {
+  if (!files) return 0;
+  if (Array.isArray(files)) {
+    return files.filter(
+      (file) =>
+        file &&
+        (typeof file === "string"
+          ? file.trim() !== ""
+          : file.url && file.url.trim() !== "")
+    ).length;
+  }
+  // Handle legacy single file format
+  if (typeof files === "string" && files.trim() !== "") {
+    return 1;
+  }
+  return 0;
+}
+
 export async function GET(
   req: NextRequest
 ): Promise<NextResponse<ApiResponse>> {
@@ -82,6 +125,23 @@ export async function GET(
       );
     }
 
+    // Calculate total files across all projects
+    const totalPrimaryFiles = projects.reduce((sum, project) => {
+      return (
+        sum + countFiles(project.primaryFileUrls)
+      );
+    }, 0);
+
+    const totalMockupFiles = projects.reduce((sum, project) => {
+      return sum + countFiles(project.mockupUrls);
+    }, 0);
+
+    // Calculate projects with mockups (supporting both old and new formats)
+    const projectsWithMockup = projects.filter(
+      (project) =>
+        hasValidFiles(project.mockupUrls) 
+    ).length;
+
     // Calculate detailed statistics
     const stats: StatsResponse = {
       // Contestant Statistics
@@ -92,7 +152,7 @@ export async function GET(
         contestPackSent: contestants.filter((c) => c.contestPack?.sent === true)
           .length,
         contestPackPending: contestants.filter(
-          (c) => c.contestPack?.sent === false
+          (c) => c.contestPack?.sent === false || !c.contestPack?.sent
         ).length,
       },
 
@@ -110,15 +170,18 @@ export async function GET(
         totalSubmissions: projects.filter((p) => p.status !== "draft").length,
         averageVote:
           projects.length > 0
-            ? projects.reduce((sum, p) => sum + (p.vote || 0), 0) /
-              projects.length
+            ? Math.round(
+                (projects.reduce((sum, p) => sum + (p.vote || 0), 0) /
+                  projects.length) *
+                  100
+              ) / 100 // Round to 2 decimal places
             : 0,
-        withMockup: projects.filter(
-          (p) => p.mockupUrl && p.mockupUrl.trim() !== ""
-        ).length,
+        withMockup: projectsWithMockup,
         withFeedback: projects.filter(
           (p) => p.feedback && p.feedback.trim() !== ""
         ).length,
+        totalPrimaryFiles,
+        totalMockupFiles,
       },
 
       // Engagement Statistics
@@ -130,7 +193,7 @@ export async function GET(
                   contestants.length) *
                 100
               ).toFixed(2)
-            : "0",
+            : "0.00",
         qualificationRate:
           contestants.length > 0
             ? (
@@ -138,7 +201,7 @@ export async function GET(
                   contestants.length) *
                 100
               ).toFixed(2)
-            : "0",
+            : "0.00",
         completionRate:
           projects.length > 0
             ? (
@@ -151,22 +214,23 @@ export async function GET(
                   projects.length) *
                 100
               ).toFixed(2)
-            : "0",
+            : "0.00",
       },
 
       // Recent Activity (last 7 days)
       recentActivity: {
-        newContestants: contestants.filter(
-          (c) =>
-            new Date(c.createdAt) >
-            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        ).length,
-        newSubmissions: projects.filter(
-          (p) =>
-            p.submittedAt &&
-            new Date(p.submittedAt) >
-              new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        ).length,
+        newContestants: contestants.filter((c) => {
+          if (!c.createdAt) return false;
+          const createdDate = new Date(c.createdAt);
+          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          return createdDate > sevenDaysAgo;
+        }).length,
+        newSubmissions: projects.filter((p) => {
+          if (!p.submittedAt && !p.updatedAt) return false;
+          const submissionDate = new Date(p.submittedAt || p.updatedAt);
+          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          return submissionDate > sevenDaysAgo && p.status !== "draft";
+        }).length,
       },
 
       // Summary for quick overview
@@ -188,7 +252,7 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    console.log("Error fetching stats:", error);
+    console.error("Error fetching stats:", error);
     return NextResponse.json<ApiResponse>(
       {
         message: "An unexpected error occurred while fetching stats",
