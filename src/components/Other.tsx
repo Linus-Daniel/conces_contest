@@ -78,7 +78,7 @@ const CONTEST_DATA = {
     {
       place: "Grand Prize",
       amount: "₦500,000",
-      bonus: "National Recognition + Trophy",
+      bonus: "National Recognition",
       gradient: "from-conces-gold to-yellow-600",
       icon: FaCrown,
     },

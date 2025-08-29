@@ -461,6 +461,8 @@ export default function SubmitProjectForm() {
     }
   };
 
+  console.log(primaryFileUrls, "Currently uploaded file Urls")
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
@@ -615,7 +617,7 @@ export default function SubmitProjectForm() {
             Verification Required
           </h1>
           <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-            Please enter the six-digit code sent to your email to access the
+            Please enter the  Eight (8) -digit code sent to your email to access the
             submission form.
           </p>
           <Button
