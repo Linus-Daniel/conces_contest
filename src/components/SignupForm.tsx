@@ -9,7 +9,7 @@ import { Button } from "./ui/button";
 import api from "@/lib/axiosInstance";
 import { useCandidate } from "@/context/authContext";
 import ImageUpload from "./ImageUpload";
-import { FaUpload, FaTimes, FaCheckCircle } from "react-icons/fa";
+import { FaUpload, FaTimes, FaCheckCircle, FaClock } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,6 +36,12 @@ interface FormData {
   avatar: string;
 }
 
+// Target date - September 7th of current year
+const getTargetDate = () => {
+  const currentYear = new Date().getFullYear();
+  return new Date(currentYear, 8, 7); // Month is 0-indexed (8 = September)
+};
+
 export default function SignUpForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +49,8 @@ export default function SignUpForm() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [token, setToken] = useState("");
   const { width, height } = useWindowSize();
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   const {
     register,
@@ -53,6 +61,54 @@ export default function SignUpForm() {
   });
 
   const { candidate } = useCandidate();
+
+  // Calculate time remaining until September 7th
+  function calculateTimeLeft() {
+    const targetDate = getTargetDate();
+    const now = new Date();
+    const difference = targetDate.getTime() - now.getTime();
+
+    if (difference <= 0) {
+      return {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        expired: true,
+      };
+    }
+
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor(
+        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      ),
+      minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((difference % (1000 * 60)) / 1000),
+      expired: false,
+    };
+  }
+
+  useEffect(() => {
+    // Check if registration should be open
+    const targetDate = getTargetDate();
+    const now = new Date();
+    setIsRegistrationOpen(now >= targetDate);
+
+    // Set up countdown timer if registration isn't open yet
+    if (!isRegistrationOpen) {
+      const timer = setTimeout(() => {
+        setTimeLeft(calculateTimeLeft());
+
+        // Check if we've reached the target date
+        if (now >= targetDate) {
+          setIsRegistrationOpen(true);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [timeLeft, isRegistrationOpen]);
 
   const onSubmit = async (data: SignUpFormData) => {
     // Validate avatar upload
@@ -124,6 +180,94 @@ export default function SignUpForm() {
     router.push("/");
   };
 
+  // If registration is not yet open, show countdown
+  if (!isRegistrationOpen) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="bg-blue-100 p-4 rounded-full">
+              <FaClock className="text-blue-500 text-3xl" />
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Registration Opens Soon
+          </h1>
+
+          <p className="text-gray-600 mb-6">
+            The Rebrand Challenge registration will open on September 7th. Check
+            back then to join the competition and compete for over ₦1,000,000 in
+            prizes!
+          </p>
+
+          <div className="bg-blue-50 rounded-lg p-4 mb-6">
+            <h2 className="text-sm font-medium text-blue-800 mb-3">
+              COUNTDOWN TO REGISTRATION
+            </h2>
+
+            <div className="flex justify-center space-x-4">
+              <div className="text-center">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <span className="text-2xl font-bold text-blue-700">
+                    {timeLeft.days}
+                  </span>
+                </div>
+                <span className="text-xs text-blue-600 mt-1 block">Days</span>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <span className="text-2xl font-bold text-blue-700">
+                    {timeLeft.hours}
+                  </span>
+                </div>
+                <span className="text-xs text-blue-600 mt-1 block">Hours</span>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <span className="text-2xl font-bold text-blue-700">
+                    {timeLeft.minutes}
+                  </span>
+                </div>
+                <span className="text-xs text-blue-600 mt-1 block">
+                  Minutes
+                </span>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <span className="text-2xl font-bold text-blue-700">
+                    {timeLeft.seconds}
+                  </span>
+                </div>
+                <span className="text-xs text-blue-600 mt-1 block">
+                  Seconds
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-left mb-6">
+            <p className="text-sm text-yellow-700">
+              <strong>Note:</strong> In the meantime, make sure you have all
+              your materials ready. You'll need a professional photo and your
+              institution information to complete registration.
+            </p>
+          </div>
+
+          <Button onClick={() => router.push("/")}>Return to Home</Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (candidate) {
     return (
       <div className="text-center p-4 sm:p-8">
@@ -188,6 +332,13 @@ export default function SignUpForm() {
         transition={{ duration: 0.5 }}
         className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-4xl mx-auto"
       >
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+          <p className="text-green-700 text-sm">
+            <strong>Registration is now open!</strong> Submit your entry before
+            the deadline to compete for over ₦1,000,000 in prizes.
+          </p>
+        </div>
+
         <h1 className="text-2xl sm:text-3xl font-bold text-conces-blue mb-2">
           Join the Rebrand Challenge
         </h1>
