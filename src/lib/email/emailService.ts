@@ -8,10 +8,10 @@ import {
 // Create reusable transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail", // Use 'gmail' service instead of host: "gmail"
+    service: "gmail", 
     auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_PASSWORD, // Your Gmail App Password (not regular password)
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
     },
     pool: true,
     maxConnections: 1,
