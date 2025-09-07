@@ -11,7 +11,8 @@ import { FaMedal, FaTrophy, FaCrown, FaRegGem, FaPray } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import Image from "next/image";
 import { ComponentType } from "react";
-import { CountdownTimer, DynamicContestButton, useTimer } from "@/context/CountdownContext";
+import {  DynamicContestButton, useTimer } from "@/context/CountdownContext";
+import CountdownTimer from "./CountDown";
 // import CountdownTimer from "./CountDown";
 
 interface FloatingRewardProps {

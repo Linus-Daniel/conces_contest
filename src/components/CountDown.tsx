@@ -21,8 +21,9 @@ export default function CountdownTimer() {
   >("upcoming");
 
   useEffect(() => {
-    const contestStartDate = new Date("2025-08-05T00:00:00");
-    const contestEndDate = new Date("2025-08-20T23:59:59");
+    const contestStartDate = new Date("2025-09-10T00:00:00");
+    const contestEndDate = new Date("2025-10-07T23:59:59");
+
 
     const calculateTimeLeft = () => {
       const now = new Date();
