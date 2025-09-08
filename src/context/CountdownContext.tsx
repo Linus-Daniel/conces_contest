@@ -87,7 +87,7 @@ export function TimerProvider({
       } else if (now >= contestStartTime && now <= contestEndTime) {
         newStatus = "register";
         targetTime = contestEndTime;
-        currentPhase = "Contest is live! Submit your entries now.";
+        currentPhase = "Contest is live! Register and  Submit your Logos now.";
         nextPhase = "Entry submissions will close";
       } else if (now > contestEndTime && now < votingStartTime) {
         newStatus = "waiting";
@@ -220,9 +220,9 @@ export function CountdownTimer() {
         };
       } else {
         displayText = {
-          mobile: "Entry Deadline",
-          tablet: "Submission Deadline",
-          desktop: "Logo Rebrand Challenge Entry Deadline",
+          mobile: "Challenge Closes in",
+          tablet: "Challenge Ends In",
+          desktop: "Challenge Ends in",
         };
       }
       break;
