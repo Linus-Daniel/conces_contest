@@ -103,7 +103,7 @@ export default function ImageUpload({
             );
           } else {
             setUploadProgress("Upload complete!");
-            widget.close();
+            widget.close(); // Auto close for single
           }
         }
 
@@ -114,21 +114,16 @@ export default function ImageUpload({
           );
         }
 
-        // Handle all uploads complete
+        // ✅ Handle all uploads complete
         if (result?.event === "queues-end") {
           setIsUploading(false);
-          setUploadProgress("");
+          setUploadProgress("Upload complete!");
 
-          if (allowMultiple) {
-            // Keep widget open for multiple uploads, but show completion
-            setTimeout(() => {
-              setUploadProgress("Ready for more uploads");
-            }, 1000);
-
-            setTimeout(() => {
-              setUploadProgress("");
-            }, 3000);
-          }
+          // Auto-close even for multiple uploads
+          setTimeout(() => {
+            widget.close();
+            setUploadProgress("");
+          }, 1000);
         }
 
         // Handle errors

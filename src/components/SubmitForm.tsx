@@ -351,6 +351,10 @@ export default function SubmitProjectForm() {
     setShowDisclaimerModal(true);
   };
 
+  console.log(primaryFileUrls.length)
+  console.log(mockupUrls.length);
+
+
   const proceedWithSubmission = async () => {
     if (!pendingFormData) return;
 
@@ -856,104 +860,89 @@ export default function SubmitProjectForm() {
                         </span>
                       </label>
 
-                      {primaryFileUrls.length === 0 ? (
-                        <div className="relative">
-                          <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group-hover:scale-[1.01]">
-                            <div className="text-center">
-                              <div className="mb-4 sm:mb-6">
-                                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                  <CloudArrowUpIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-                                </div>
+                      <div className="relative">
+                        <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-green-400 hover:bg-green-50/50 transition-all duration-300 group-hover:scale-[1.01]">
+                          <div className="text-center">
+                            <div className="mb-4 sm:mb-6">
+                              <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <CloudArrowUpIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                               </div>
-                              <ImageUpload
-                                onSuccess={(info) =>
-                                  handlePrimaryFileUpload(info.secure_url)
-                                }
-                                folder="conces-logos/"
-                                allowMultiple={true}
-                                className="w-full justify-center bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
-                              >
-                                <span className="flex items-center justify-center">
-                                  <CloudArrowUpIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                  Upload Primary Logos
-                                </span>
-                              </ImageUpload>
-                              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
-                                Drag and drop or click to upload • Max 10MB per
-                                file
-                              </p>
                             </div>
-                          </div>
-                          {uploadError && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl"
+                            <ImageUpload
+                              onSuccess={(info) =>
+                                handlePrimaryFileUpload(info.secure_url)
+                              }
+                              folder="conces-logos/"
+                              allowMultiple={true}
+                              className="w-full justify-center bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                             >
-                              <p className="text-red-600 text-sm flex items-center">
-                                <ExclamationTriangleIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-                                <span>{uploadError}</span>
-                              </p>
-                            </motion.div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {primaryFileUrls.map((url, index) => (
-                              <motion.div
-                                key={index}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200 rounded-xl sm:rounded-2xl p-4"
-                              >
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                  <div className="flex items-center space-x-3 mb-3 sm:mb-0">
-                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
-                                      <Image
-                                        src={url}
-                                        alt={`Primary logo ${index + 1}`}
-                                        fill
-                                        className="object-contain p-2"
-                                      />
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="font-semibold text-green-800 text-sm">
-                                        Logo {index + 1}
-                                      </p>
-                                      <p className="text-xs text-green-600 truncate">
-                                        Uploaded successfully
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removePrimaryFile(index)}
-                                    className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
-                                  >
-                                    <XMarkIcon className="w-5 h-5" />
-                                  </button>
-                                </div>
-                              </motion.div>
-                            ))}
+                              <span className="flex items-center justify-center">
+                                <CloudArrowUpIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                {primaryFileUrls.length > 0
+                                  ? "Add More Logos"
+                                  : "Upload Logos"}
+                              </span>
+                            </ImageUpload>
+                            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
+                              Drag and drop or click to upload • Max 10MB per
+                              file
+                            </p>
                           </div>
-
-                          {/* Add more button */}
-                          <ImageUpload
-                            onSuccess={(info) =>
-                              handlePrimaryFileUpload(info.secure_url)
-                            }
-                            folder="conces-logos/"
-                            allowMultiple={true}
-                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                          >
-                            <span className="flex items-center justify-center">
-                              <CloudArrowUpIcon className="w-4 h-4 mr-2" />
-                              Add More Logos
-                            </span>
-                          </ImageUpload>
                         </div>
-                      )}
+                        {uploadError && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl"
+                          >
+                            <p className="text-red-600 text-sm flex items-center">
+                              <ExclamationTriangleIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                              <span>{uploadError}</span>
+                            </p>
+                          </motion.div>
+                        )}
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {primaryFileUrls.map((url, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200 rounded-xl sm:rounded-2xl p-4"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+                                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
+                                    <Image
+                                      src={url}
+                                      alt={`Primary logo ${index + 1}`}
+                                      fill
+                                      className="object-contain p-2"
+                                    />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-green-800 text-sm">
+                                      Logo {index + 1}
+                                    </p>
+                                    <p className="text-xs text-green-600 truncate">
+                                      Uploaded successfully
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removePrimaryFile(index)}
+                                  className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
+                                >
+                                  <XMarkIcon className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Mockup Upload */}
@@ -968,89 +957,74 @@ export default function SubmitProjectForm() {
                         </span>
                       </label>
 
-                      {mockupUrls.length === 0 ? (
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group-hover:scale-[1.01]">
-                          <div className="text-center">
-                            <div className="mb-4 sm:mb-6">
-                              <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                <EyeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-                              </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-300 group-hover:scale-[1.01]">
+                        <div className="text-center">
+                          <div className="mb-4 sm:mb-6">
+                            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                              <EyeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                             </div>
-                            <ImageUpload
-                              onSuccess={(info) =>
-                                handleMockupUpload(info.secure_url)
-                              }
-                              folder="conces-mockups/"
-                              allowMultiple={true}
-                              className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
-                            >
-                              <span className="flex items-center justify-center">
-                                <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                Upload Mockups
-                              </span>
-                            </ImageUpload>
-                            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
-                              Show your logo in real-world contexts • Optional
-                            </p>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {mockupUrls.map((url, index) => (
-                              <motion.div
-                                key={index}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl sm:rounded-2xl p-4"
-                              >
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                  <div className="flex items-center space-x-3 mb-3 sm:mb-0">
-                                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
-                                      <Image
-                                        src={url}
-                                        alt={`Mockup ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                      />
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="font-semibold text-blue-800 text-sm">
-                                        Mockup {index + 1}
-                                      </p>
-                                      <p className="text-xs text-blue-600 truncate">
-                                        Uploaded successfully
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeMockup(index)}
-                                    className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
-                                  >
-                                    <XMarkIcon className="w-5 h-5" />
-                                  </button>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
-
-                          {/* Add more button */}
                           <ImageUpload
                             onSuccess={(info) =>
                               handleMockupUpload(info.secure_url)
                             }
                             folder="conces-mockups/"
                             allowMultiple={true}
-                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 text-sm sm:text-base"
                           >
                             <span className="flex items-center justify-center">
-                              <EyeIcon className="w-4 h-4 mr-2" />
-                              Add More Mockups
+                              <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                              {mockupUrls.length > 0
+                                ? "Add More Mockups"
+                                : "Upload Mockups"}
                             </span>
                           </ImageUpload>
+                          <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
+                            Show your logo in real-world contexts • Optional
+                          </p>
                         </div>
-                      )}
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {mockupUrls.map((url, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl sm:rounded-2xl p-4"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+                                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-md flex-shrink-0">
+                                    <Image
+                                      src={url}
+                                      alt={`Mockup ${index + 1}`}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-blue-800 text-sm">
+                                      Mockup {index + 1}
+                                    </p>
+                                    <p className="text-xs text-blue-600 truncate">
+                                      Uploaded successfully
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeMockup(index)}
+                                  className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all duration-200 self-end sm:self-center"
+                                >
+                                  <XMarkIcon className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
