@@ -1,22 +1,33 @@
+"use client";
+
 import ContestManagement from "@/components/admin/Contest";
 import UserManagement from "@/components/admin/Contestants";
 import api from "@/lib/axiosInstance";
 import { IEnroll } from "@/models/Enroll";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const getContestants = async (): Promise<IEnroll[] | undefined> => {
-  try {
-    const response = await api.get("/contestants");
-    console.log(response.data);
-    return response.data.data as IEnroll[];
-  } catch (error) {
-    console.error("Error fetching contestants:", error);
-    return undefined;
-  }
-};
+const Page = () => {
+  const [contestants, setContestants] = useState<IEnroll[] | undefined>(
+    undefined
+  );
+  const [loading, setLoading] = useState(true);
 
-async function Page() {
-  const contestants = await getContestants();
+  const getContestants = async () => {
+    try {
+      const response = await api.get("/contestants");
+      setContestants(response.data.data as IEnroll[]);
+    } catch (error) {
+      console.error("Error fetching contestants:", error);
+      setContestants(undefined);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getContestants();
+  }, []);
+  console.log(contestants?.length);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -39,7 +50,11 @@ async function Page() {
               </h2>
             </div>
             <div className="p-2">
-              {contestants ? (
+              {loading ? (
+                <div className="text-center py-8 text-gray-500">
+                  Loading contestants...
+                </div>
+              ) : contestants ? (
                 <UserManagement contestants={contestants} />
               ) : (
                 <div className="text-center py-8">
@@ -66,12 +81,12 @@ async function Page() {
             </div>
           </div>
 
-          {/* Contest Section */}
-          
+          {/* Future Contest Management Section */}
+          {/* <ContestManagement /> */}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Page;
