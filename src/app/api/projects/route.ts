@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       colorPalette,
       inspiration,
       primaryFileUrls,
-      mockupUrl,
+      mockupUrls,
     } = await request.json();
 
     if (!candidate) {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       colorPalette,
       inspiration,
       primaryFileUrls,
-      mockupUrl,
+      mockupUrls,
       status: "submitted",
       submittedAt: new Date(),
     });
