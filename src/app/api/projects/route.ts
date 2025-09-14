@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       designConcept,
       colorPalette,
       inspiration,
-      primaryFileUrl,
+      primaryFileUrls,
       mockupUrl,
     } = await request.json();
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!primaryFileUrl) {
+    if (!primaryFileUrls) {
       return NextResponse.json(
         { error: "Primary logo file is required" },
         { status: 400 }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       designConcept,
       colorPalette,
       inspiration,
-      primaryFileUrl,
+      primaryFileUrls,
       mockupUrl,
       status: "submitted",
       submittedAt: new Date(),
