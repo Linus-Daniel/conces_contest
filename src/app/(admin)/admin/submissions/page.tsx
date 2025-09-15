@@ -25,10 +25,11 @@ interface ProjectSubmission {
   designConcept: string;
   colorPalette: string;
   inspiration: string;
-  primaryFileUrl: string;
-  mockupUrl?: string;
+  primaryFileUrls: string[]; // Updated to array
+  mockupUrls?: string[]; // Updated to array
   status: "draft" | "submitted" | "reviewed" | "selected" | "rejected";
   submittedAt: string;
+  createdAt: string; // Added missing field
   updatedAt?: string;
   vote?: number;
   feedback?: string;
@@ -38,7 +39,7 @@ interface ProjectSubmission {
     schoolName: string;
     department: string;
     email: string;
-    avatar: string | null;
+    avatar?: string | null;
     isQualified: boolean;
     matricNumber: string;
     phone: string;
@@ -72,6 +73,22 @@ export default function LogoContestSubmissions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [votingLoading, setVotingLoading] = useState<string | null>(null);
+
+  console.log(submissions);
+
+  // Helper function to get primary image URL
+  const getPrimaryImageUrl = (submission: ProjectSubmission) => {
+    return submission.primaryFileUrls && submission.primaryFileUrls.length > 0
+      ? submission.primaryFileUrls[0]
+      : null;
+  };
+
+  // Helper function to get mockup URL
+  const getMockupUrl = (submission: ProjectSubmission) => {
+    return submission.mockupUrls && submission.mockupUrls.length > 0
+      ? submission.mockupUrls[0]
+      : null;
+  };
 
   // Fetch submissions from API
   useEffect(() => {
@@ -399,283 +416,311 @@ export default function LogoContestSubmissions() {
         ) : viewMode === "grid" ? (
           // Grid View
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSubmissions.map((submission) => (
-              <div
-                key={submission._id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                onClick={() => setSelectedSubmission(submission)}
-              >
-                {/* Image */}
-                <div className="relative h-48 bg-gray-100">
-                  <Image
-                    src={submission.primaryFileUrl}
-                    alt={submission.projectTitle}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 right-2 flex space-x-1">
-                    {getStatusIcon(submission.status)}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLike(submission._id);
-                      }}
-                      className="p-1 bg-white rounded-full shadow-sm hover:bg-gray-50"
-                    >
-                      {favorites.includes(submission._id) ? (
-                        <HeartIconSolid className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <HeartIcon className="w-4 h-4 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                  <div className="absolute bottom-2 left-2">
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                        submission.status
-                      )}`}
-                    >
-                      {submission.status}
-                    </span>
-                  </div>
-                </div>
+            {filteredSubmissions.map((submission) => {
+              const primaryImageUrl = getPrimaryImageUrl(submission);
 
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    {submission.projectTitle}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {submission.designConcept}
-                  </p>
-
-                  {/* Designer Info */}
-                  <div className="flex items-center mb-3">
-                    {submission.candidate.avatar ? (
+              return (
+                <div
+                  key={submission._id}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                  onClick={() => setSelectedSubmission(submission)}
+                >
+                  {/* Image */}
+                  <div className="relative h-48 bg-gray-100">
+                    {primaryImageUrl ? (
                       <Image
-                        src={submission.candidate.avatar}
-                        alt={submission.candidate.fullName}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
+                        src={primaryImageUrl}
+                        alt={submission.projectTitle}
+                        fill
+                        className="object-cover"
                       />
                     ) : (
-                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-xs text-gray-600">
-                          {submission.candidate.fullName.charAt(0)}
-                        </span>
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <span>No Image</span>
                       </div>
                     )}
-                    <div className="ml-2 flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {submission.candidate.fullName}
-                      </p>
-                      <div className="flex items-center">
-                        <span
-                          className={`text-xs px-1 py-0.5 rounded ${getDepartmentColor(
-                            submission.candidate.department
-                          )}`}
-                        >
-                          {submission.candidate.department}
-                        </span>
-                        {submission.candidate.isQualified && (
-                          <CheckCircleIcon className="w-3 h-3 text-green-500 ml-1" />
+                    <div className="absolute top-2 right-2 flex space-x-1">
+                      {getStatusIcon(submission.status)}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLike(submission._id);
+                        }}
+                        className="p-1 bg-white rounded-full shadow-sm hover:bg-gray-50"
+                      >
+                        {favorites.includes(submission._id) ? (
+                          <HeartIconSolid className="w-4 h-4 text-red-500" />
+                        ) : (
+                          <HeartIcon className="w-4 h-4 text-gray-400" />
                         )}
-                      </div>
+                      </button>
+                    </div>
+                    <div className="absolute bottom-2 left-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                          submission.status
+                        )}`}
+                      >
+                        {submission.status}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleVote(submission._id, "up");
-                          }}
-                          disabled={votingLoading === submission._id}
-                          className="p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50 group"
-                          title="Vote for this design"
-                        >
-                          {votingLoading === submission._id ? (
-                            <ArrowPathIcon className="w-4 h-4 text-gray-400 animate-spin" />
-                          ) : (
-                            <HeartIcon className="w-4 h-4 text-red-500 group-hover:fill-red-500 transition-all" />
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {submission.projectTitle}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {submission.designConcept}
+                    </p>
+
+                    {/* Designer Info */}
+                    <div className="flex items-center mb-3">
+                      {submission.candidate.avatar ? (
+                        <Image
+                          src={submission.candidate.avatar}
+                          alt={submission.candidate.fullName}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-gray-600">
+                            {submission.candidate.fullName.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="ml-2 flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {submission.candidate.fullName}
+                        </p>
+                        <div className="flex items-center">
+                          <span
+                            className={`text-xs px-1 py-0.5 rounded ${getDepartmentColor(
+                              submission.candidate.department
+                            )}`}
+                          >
+                            {submission.candidate.department}
+                          </span>
+                          {submission.candidate.isQualified && (
+                            <CheckCircleIcon className="w-3 h-3 text-green-500 ml-1" />
                           )}
-                        </button>
-                        <span
-                          className={`font-medium ${
-                            votingLoading === submission._id
-                              ? "opacity-50"
-                              : "text-gray-900"
-                          }`}
-                        >
-                          {submission.vote || 0}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-xs">
-                          {formatDate(submission.submittedAt)}
-                        </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* School */}
-                  <div className="mt-3">
-                    <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                      {submission.candidate.schoolName}
-                    </span>
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVote(submission._id, "up");
+                            }}
+                            disabled={votingLoading === submission._id}
+                            className="p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50 group"
+                            title="Vote for this design"
+                          >
+                            {votingLoading === submission._id ? (
+                              <ArrowPathIcon className="w-4 h-4 text-gray-400 animate-spin" />
+                            ) : (
+                              <HeartIcon className="w-4 h-4 text-red-500 group-hover:fill-red-500 transition-all" />
+                            )}
+                          </button>
+                          <span
+                            className={`font-medium ${
+                              votingLoading === submission._id
+                                ? "opacity-50"
+                                : "text-gray-900"
+                            }`}
+                          >
+                            {submission.vote || 0}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs">
+                            {formatDate(submission.submittedAt)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* School */}
+                    <div className="mt-3">
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                        {submission.candidate.schoolName}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           // List View
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="divide-y divide-gray-200">
-              {filteredSubmissions.map((submission) => (
-                <div
-                  key={submission._id}
-                  className="p-6 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => setSelectedSubmission(submission)}
-                >
-                  <div className="flex items-start space-x-4">
-                    {/* Image */}
-                    <div className="relative w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <Image
-                        src={submission.primaryFileUrl}
-                        alt={submission.projectTitle}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+              {filteredSubmissions.map((submission) => {
+                const primaryImageUrl = getPrimaryImageUrl(submission);
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {submission.projectTitle}
-                            </h3>
-                            {getStatusIcon(submission.status)}
-                            <span
-                              className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                                submission.status
-                              )}`}
-                            >
-                              {submission.status}
-                            </span>
+                return (
+                  <div
+                    key={submission._id}
+                    className="p-6 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedSubmission(submission)}
+                  >
+                    <div className="flex items-start space-x-4">
+                      {/* Image */}
+                      <div className="relative w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        {primaryImageUrl ? (
+                          <Image
+                            src={primaryImageUrl}
+                            alt={submission.projectTitle}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <span>No Image</span>
                           </div>
-
-                          <p className="text-gray-600 mb-2">
-                            {submission.designConcept}
-                          </p>
-
-                          {/* Designer Info */}
-                          <div className="flex items-center mb-2">
-                            {submission.candidate.avatar ? (
-                              <Image
-                                src={submission.candidate.avatar}
-                                alt={submission.candidate.fullName}
-                                width={20}
-                                height={20}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
-                                <span className="text-xs text-gray-600">
-                                  {submission.candidate.fullName.charAt(0)}
-                                </span>
-                              </div>
-                            )}
-                            <span className="ml-2 text-sm font-medium text-gray-900">
-                              {submission.candidate.fullName}
-                            </span>
-                            <span
-                              className={`ml-2 text-xs px-2 py-1 rounded ${getDepartmentColor(
-                                submission.candidate.department
-                              )}`}
-                            >
-                              {submission.candidate.department}
-                            </span>
-                            <span className="ml-2 text-xs text-gray-500">
-                              {submission.candidate.schoolName}
-                            </span>
-                            {submission.candidate.isQualified && (
-                              <CheckCircleIcon className="w-4 h-4 text-green-500 ml-2" />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-2 ml-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLike(submission._id);
-                            }}
-                            className="p-2 text-gray-400 hover:text-red-500"
-                          >
-                            {favorites.includes(submission._id) ? (
-                              <HeartIconSolid className="w-5 h-5 text-red-500" />
-                            ) : (
-                              <HeartIcon className="w-5 h-5" />
-                            )}
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-600">
-                            <CloudArrowDownIcon className="w-5 h-5" />
-                          </button>
-                        </div>
+                        )}
                       </div>
 
-                      {/* Stats */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6 text-sm text-gray-500">
-                          <div className="flex items-center space-x-1">
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {submission.projectTitle}
+                              </h3>
+                              {getStatusIcon(submission.status)}
+                              <span
+                                className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                                  submission.status
+                                )}`}
+                              >
+                                {submission.status}
+                              </span>
+                            </div>
+
+                            <p className="text-gray-600 mb-2">
+                              {submission.designConcept}
+                            </p>
+
+                            {/* Designer Info */}
+                            <div className="flex items-center mb-2">
+                              {submission.candidate.avatar ? (
+                                <Image
+                                  src={submission.candidate.avatar}
+                                  alt={submission.candidate.fullName}
+                                  width={20}
+                                  height={20}
+                                  className="rounded-full"
+                                />
+                              ) : (
+                                <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
+                                  <span className="text-xs text-gray-600">
+                                    {submission.candidate.fullName.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                              <span className="ml-2 text-sm font-medium text-gray-900">
+                                {submission.candidate.fullName}
+                              </span>
+                              <span
+                                className={`ml-2 text-xs px-2 py-1 rounded ${getDepartmentColor(
+                                  submission.candidate.department
+                                )}`}
+                              >
+                                {submission.candidate.department}
+                              </span>
+                              <span className="ml-2 text-xs text-gray-500">
+                                {submission.candidate.schoolName}
+                              </span>
+                              {submission.candidate.isQualified && (
+                                <CheckCircleIcon className="w-4 h-4 text-green-500 ml-2" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center space-x-2 ml-4">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleVote(submission._id, "up");
+                                handleLike(submission._id);
                               }}
-                              disabled={votingLoading === submission._id}
-                              className="p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50 group"
-                              title="Vote for this design"
+                              className="p-2 text-gray-400 hover:text-red-500"
                             >
-                              {votingLoading === submission._id ? (
-                                <ArrowPathIcon className="w-4 h-4 text-gray-400 animate-spin" />
+                              {favorites.includes(submission._id) ? (
+                                <HeartIconSolid className="w-5 h-5 text-red-500" />
                               ) : (
-                                <HeartIcon className="w-4 h-4 text-red-500 group-hover:fill-red-500 transition-all" />
+                                <HeartIcon className="w-5 h-5" />
                               )}
                             </button>
-                            <span
-                              className={`font-medium ${
-                                votingLoading === submission._id
-                                  ? "opacity-50"
-                                  : "text-gray-900"
-                              }`}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (primaryImageUrl) {
+                                  window.open(primaryImageUrl, "_blank");
+                                }
+                              }}
+                              className="p-2 text-gray-400 hover:text-gray-600"
                             >
-                              {submission.vote || 0} votes
-                            </span>
+                              <CloudArrowDownIcon className="w-5 h-5" />
+                            </button>
                           </div>
-                          <div>
-                            Submitted: {formatDate(submission.submittedAt)}
-                          </div>
-                          {submission.feedback && (
-                            <div className="flex items-center">
-                              <ChatBubbleLeftEllipsisIcon className="w-4 h-4 mr-1" />
-                              Has feedback
+                        </div>
+
+                        {/* Stats */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-6 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleVote(submission._id, "up");
+                                }}
+                                disabled={votingLoading === submission._id}
+                                className="p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50 group"
+                                title="Vote for this design"
+                              >
+                                {votingLoading === submission._id ? (
+                                  <ArrowPathIcon className="w-4 h-4 text-gray-400 animate-spin" />
+                                ) : (
+                                  <HeartIcon className="w-4 h-4 text-red-500 group-hover:fill-red-500 transition-all" />
+                                )}
+                              </button>
+                              <span
+                                className={`font-medium ${
+                                  votingLoading === submission._id
+                                    ? "opacity-50"
+                                    : "text-gray-900"
+                                }`}
+                              >
+                                {submission.vote || 0} votes
+                              </span>
                             </div>
-                          )}
+                            <div>
+                              Submitted: {formatDate(submission.submittedAt)}
+                            </div>
+                            {submission.feedback && (
+                              <div className="flex items-center">
+                                <ChatBubbleLeftEllipsisIcon className="w-4 h-4 mr-1" />
+                                Has feedback
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -714,26 +759,75 @@ export default function LogoContestSubmissions() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Images */}
                 <div>
+                  {/* Primary Image */}
                   <div className="relative h-80 bg-gray-100 rounded-lg overflow-hidden mb-4">
-                    <Image
-                      src={selectedSubmission.primaryFileUrl}
-                      alt={selectedSubmission.projectTitle}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-
-                  {/* Mockup */}
-                  {selectedSubmission.mockupUrl && (
-                    <div className="relative h-40 bg-gray-100 rounded-lg overflow-hidden">
+                    {getPrimaryImageUrl(selectedSubmission) ? (
                       <Image
-                        src={selectedSubmission.mockupUrl}
-                        alt="Mockup"
+                        src={getPrimaryImageUrl(selectedSubmission)!}
+                        alt={selectedSubmission.projectTitle}
                         fill
                         className="object-cover"
                       />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <span>No Primary Image</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mockups */}
+                  {selectedSubmission.mockupUrls &&
+                    selectedSubmission.mockupUrls.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Mockups
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4">
+                          {selectedSubmission.mockupUrls.map(
+                            (mockupUrl, index) => (
+                              <div
+                                key={index}
+                                className="relative h-40 bg-gray-100 rounded-lg overflow-hidden"
+                              >
+                                <Image
+                                  src={mockupUrl}
+                                  alt={`Mockup ${index + 1}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Additional Primary Images */}
+                  {selectedSubmission.primaryFileUrls &&
+                    selectedSubmission.primaryFileUrls.length > 1 && (
+                      <div className="mt-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Additional Images
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {selectedSubmission.primaryFileUrls
+                            .slice(1)
+                            .map((url, index) => (
+                              <div
+                                key={index}
+                                className="relative h-32 bg-gray-100 rounded-lg overflow-hidden"
+                              >
+                                <Image
+                                  src={url}
+                                  alt={`Additional image ${index + 2}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
 
                 {/* Details */}
@@ -896,9 +990,13 @@ export default function LogoContestSubmissions() {
                         : "Like"}
                     </button>
                     <button
-                      onClick={() =>
-                        window.open(selectedSubmission.primaryFileUrl, "_blank")
-                      }
+                      onClick={() => {
+                        const primaryUrl =
+                          getPrimaryImageUrl(selectedSubmission);
+                        if (primaryUrl) {
+                          window.open(primaryUrl, "_blank");
+                        }
+                      }}
                       className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
                       <CloudArrowDownIcon className="w-4 h-4 mr-2" />
