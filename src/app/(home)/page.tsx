@@ -6,7 +6,9 @@ import Contests from "@/components/Other";
 import UniversitiesSection from "@/components/Universities";
 
 
-export default function HomePage() {
+export default async function HomePage() {
+
+
   return (
     <>
       <HeroSection />
@@ -16,5 +18,5 @@ export default function HomePage() {
       <ContestSection />
       <Contests />
     </>
-  )
+  );
 }

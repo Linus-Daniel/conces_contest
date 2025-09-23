@@ -2,24 +2,42 @@ import nodemailer from "nodemailer";
 import {
   getWelcomeEmailHTML,
   getWelcomeEmailText,
+  getMotivationalEmailHTML,
+  getMotivationalEmailText,
   EmailTemplateData,
+  MotivationalEmailData,
 } from "./templates";
+
+// Types for bulk email operations
+interface BulkEmailResult {
+  success: boolean;
+  sent: number;
+  failed: number;
+  errors: Array<{ email: string; error: string }>;
+}
+
+interface BulkEmailData {
+  recipients: MotivationalEmailData[];
+  batchSize?: number;
+  delayBetweenBatches?: number; // milliseconds
+}
 
 // Create reusable transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail", 
+    service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
     pool: true,
-    maxConnections: 1,
+    maxConnections: 5, // Increased for bulk sending
     rateDelta: 20000,
-    rateLimit: 5,
+    rateLimit: 14, // Gmail's rate limit (around 14 emails per second)
   });
 };
 
+// Single welcome email function
 export async function sendWelcomeEmail(
   data: EmailTemplateData
 ): Promise<boolean> {
@@ -42,7 +60,6 @@ export async function sendWelcomeEmail(
       subject: "🎉 You're in! Here's your CONCES Rebrand Challenge Pack",
       text: getWelcomeEmailText(data),
       html: getWelcomeEmailHTML(data),
-     
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -66,6 +83,185 @@ export async function sendWelcomeEmail(
   }
 }
 
+// Single motivational email function
+export async function sendMotivationalEmail(
+  data: MotivationalEmailData
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter();
+
+    // Verify connection
+    await transporter.verify();
+
+    const mailOptions = {
+      from: {
+        name: "CONCES Rebrand Challenge",
+        address:
+          process.env.EMAIL_USER ||
+          process.env.SMTP_FROM ||
+          "noreply@conces.org",
+      },
+      to: data.email,
+      subject: "500 Reasons to Bring Your Best 🎯",
+      text: getMotivationalEmailText(data),
+      html: getMotivationalEmailHTML(data),
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Motivational email sent successfully:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending motivational email:", error);
+    return false;
+  }
+}
+
+// Bulk motivational email function
+export async function sendBulkMotivationalEmails(
+  bulkData: BulkEmailData
+): Promise<BulkEmailResult> {
+  const { recipients, batchSize = 10, delayBetweenBatches = 2000 } = bulkData;
+  const result: BulkEmailResult = {
+    success: true,
+    sent: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  console.log(`Starting bulk email send to ${recipients.length} recipients`);
+  console.log(
+    `Batch size: ${batchSize}, Delay between batches: ${delayBetweenBatches}ms`
+  );
+
+  try {
+    const transporter = createTransporter();
+
+    // Verify connection before starting bulk send
+    await transporter.verify();
+    console.log("SMTP connection verified for bulk sending");
+
+    // Process recipients in batches
+    for (let i = 0; i < recipients.length; i += batchSize) {
+      const batch = recipients.slice(i, i + batchSize);
+      console.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+          recipients.length / batchSize
+        )}`
+      );
+
+      // Send emails concurrently within batch
+      const batchPromises = batch.map(async (recipient) => {
+        try {
+          const mailOptions = {
+            from: {
+              name: "CONCES Rebrand Challenge",
+              address:
+                process.env.EMAIL_USER ||
+                process.env.SMTP_FROM ||
+                "noreply@conces.org",
+            },
+            to: recipient.email,
+            subject: "500 Reasons to Bring Your Best 🎯",
+            text: getMotivationalEmailText(recipient),
+            html: getMotivationalEmailHTML(recipient),
+          };
+
+          const info = await transporter.sendMail(mailOptions);
+          console.log(`✅ Email sent to ${recipient.email}: ${info.messageId}`);
+          return { success: true, email: recipient.email };
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(
+            `❌ Failed to send email to ${recipient.email}:`,
+            errorMessage
+          );
+          return {
+            success: false,
+            email: recipient.email,
+            error: errorMessage,
+          };
+        }
+      });
+
+      // Wait for all emails in this batch to complete
+      const batchResults = await Promise.allSettled(batchPromises);
+
+      // Process results
+      batchResults.forEach((batchResult) => {
+        if (batchResult.status === "fulfilled") {
+          if (batchResult.value.success) {
+            result.sent++;
+          } else {
+            result.failed++;
+            result.errors.push({
+              email: batchResult.value.email,
+              error: batchResult.value.error || "Unknown error",
+            });
+          }
+        } else {
+          result.failed++;
+          result.errors.push({
+            email: "unknown",
+            error: batchResult.reason,
+          });
+        }
+      });
+
+      // Add delay between batches (except for the last batch)
+      if (i + batchSize < recipients.length) {
+        console.log(`Waiting ${delayBetweenBatches}ms before next batch...`);
+        await new Promise((resolve) =>
+          setTimeout(resolve, delayBetweenBatches)
+        );
+      }
+    }
+
+    // Close the transporter
+    transporter.close();
+
+    console.log(
+      `Bulk email completed: ${result.sent} sent, ${result.failed} failed`
+    );
+
+    if (result.failed > 0) {
+      result.success = false;
+      console.log("Failed emails:", result.errors);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Critical error in bulk email sending:", error);
+    result.success = false;
+    result.errors.push({
+      email: "bulk_process",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    return result;
+  }
+}
+
+// Utility function to send bulk emails from array of email addresses and names
+export async function sendBulkMotivationalEmailsSimple(
+  emailList: Array<{ email: string; firstName: string }>,
+  options?: {
+    batchSize?: number;
+    delayBetweenBatches?: number;
+  }
+): Promise<BulkEmailResult> {
+  const recipients: MotivationalEmailData[] = emailList.map((item) => ({
+    email: item.email,
+    firstName: item.firstName,
+  }));
+
+  return sendBulkMotivationalEmails({
+    recipients,
+    batchSize: options?.batchSize,
+    delayBetweenBatches: options?.delayBetweenBatches,
+  });
+}
+
+// Existing functions...
 export async function sendReminderEmail(
   email: string,
   fullName: string,
@@ -118,4 +314,33 @@ export async function testEmailConnection(): Promise<boolean> {
     console.error("❌ Email connection test failed:", error);
     return false;
   }
+}
+
+// Progress tracking for bulk emails
+export function createBulkEmailProgress() {
+  let progress = {
+    total: 0,
+    sent: 0,
+    failed: 0,
+    currentBatch: 0,
+    totalBatches: 0,
+    isRunning: false,
+  };
+
+  return {
+    getProgress: () => ({ ...progress }),
+    updateProgress: (update: Partial<typeof progress>) => {
+      progress = { ...progress, ...update };
+    },
+    reset: () => {
+      progress = {
+        total: 0,
+        sent: 0,
+        failed: 0,
+        currentBatch: 0,
+        totalBatches: 0,
+        isRunning: false,
+      };
+    },
+  };
 }
