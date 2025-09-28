@@ -261,8 +261,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// 🔹 PATCH — Update Project
+// 🔹 PATCH — Update Project (Updated with proper qualification logic)
 export async function PATCH(request: NextRequest) {
   try {
     await connectDB();
@@ -289,6 +288,20 @@ export async function PATCH(request: NextRequest) {
 
     if (!updatedProject) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // ✅ Update candidate qualification based on project status
+    if (updatedProject.candidate?._id) {
+      const candidateId = updatedProject.candidate._id;
+      
+      if (updatedProject.status === "selected") {
+        // If project is selected, candidate should be qualified
+        await Enroll.findByIdAndUpdate(candidateId, { isQualified: true });
+      } else if (updatedProject.status === "rejected") {
+        // If project is rejected, candidate should not be qualified
+        await Enroll.findByIdAndUpdate(candidateId, { isQualified: false });
+      }
+      // For other statuses (draft, submitted, reviewed), we don't change qualification
     }
 
     return NextResponse.json(
