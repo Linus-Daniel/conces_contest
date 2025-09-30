@@ -160,26 +160,3 @@ const Enroll: Model<IEnroll> =
   mongoose.models.Enroll || mongoose.model<IEnroll>("Enroll", EnrollSchema);
 
 export default Enroll;
-
-// ===== PHONE NUMBER EXAMPLES NOW ACCEPTED =====
-/*
-✅ ACCEPTED FORMATS:
-- +1234567890 (US)
-- +447700123456 (UK)
-- +33123456789 (France)
-- +8613800138000 (China)
-- +234803456789 (Nigeria)
-- 0803456789 (Local Nigerian)
-- 1234567890 (US without +)
-- 447700123456 (UK without +)
-- (555) 123-4567 (formatted)
-- 555-123-4567 (formatted)
-- 555.123.4567 (formatted)
-
-❌ REJECTED FORMATS:
-- 123 (too short)
-- 01234567890123456 (too long)
-- +0123456789 (starts with 0 after +)
-- abc123456 (contains letters)
-- 555 (too short)
-*/

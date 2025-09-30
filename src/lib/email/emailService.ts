@@ -6,6 +6,9 @@ import {
   getMotivationalEmailText,
   EmailTemplateData,
   MotivationalEmailData,
+  LastCallEmailData,
+  getLastCallEmailText,
+  getLastCallEmailHTML,
 } from "./templates";
 
 // Types for bulk email operations
@@ -343,4 +346,158 @@ export function createBulkEmailProgress() {
       };
     },
   };
+}
+
+export async function sendLastCallEmail(
+  data: LastCallEmailData
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: {
+        name: "CONCES Rebrand Challenge",
+        address: process.env.EMAIL_USER || "noreply@conces.org",
+      },
+      to: data.email,
+      subject: "⏰ Last Call: Submit Your Entry — Contest Ends in 7 Days!",
+      text: getLastCallEmailText(data),
+      html: getLastCallEmailHTML(data),
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Last call email sent to ${data.email}: ${info.messageId}`);
+
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to send last call email to ${data.email}:`, error);
+    return false;
+  }
+}
+
+// Bulk send to qualified enrollees
+export async function sendLastCallEmailsToQualified(
+  options: {
+    batchSize?: number;
+    delayBetweenBatches?: number;
+  } = {}
+): Promise<{
+  success: boolean;
+  totalSent: number;
+  totalFailed: number;
+  errors: Array<{ email: string; error: string }>;
+}> {
+  const { batchSize = 15, delayBetweenBatches = 2000 } = options;
+
+  const result = {
+    success: true,
+    totalSent: 0,
+    totalFailed: 0,
+    errors: [] as Array<{ email: string; error: string }>,
+  };
+
+  try {
+    // Import Enroll model
+    const { default: Enroll } = await import("@/models/Enroll");
+    const { connectDB } = await import("@/lib/mongodb");
+
+    await connectDB();
+
+    // Get all qualified enrollees
+    const enrollees = await Enroll.find({ isQualified: true })
+      .select("fullName email")
+      .lean();
+
+    console.log(
+      `📧 Starting last call emails to ${enrollees.length} qualified candidates`
+    );
+
+    if (enrollees.length === 0) {
+      console.log("No qualified enrollees found");
+      return result;
+    }
+
+    // Process in batches
+    for (let i = 0; i < enrollees.length; i += batchSize) {
+      const batch = enrollees.slice(i, i + batchSize);
+      console.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+          enrollees.length / batchSize
+        )}`
+      );
+
+      const batchPromises = batch.map(async (enrollee) => {
+        try {
+          const firstName = enrollee.fullName.split(" ")[0];
+
+          const emailSent = await sendLastCallEmail({
+            email: enrollee.email,
+            firstName: firstName,
+          });
+
+          if (emailSent) {
+            console.log(`✅ Last call email sent to ${enrollee.email}`);
+            return { success: true, email: enrollee.email };
+          } else {
+            throw new Error("Email service returned false");
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(
+            `❌ Failed to send to ${enrollee.email}:`,
+            errorMessage
+          );
+          return { success: false, email: enrollee.email, error: errorMessage };
+        }
+      });
+
+      const batchResults = await Promise.allSettled(batchPromises);
+
+      batchResults.forEach((batchResult) => {
+        if (batchResult.status === "fulfilled") {
+          if (batchResult.value.success) {
+            result.totalSent++;
+          } else {
+            result.totalFailed++;
+            result.errors.push({
+              email: batchResult.value.email,
+              error: batchResult.value.error || "Unknown error",
+            });
+          }
+        } else {
+          result.totalFailed++;
+          result.errors.push({
+            email: "unknown",
+            error: batchResult.reason,
+          });
+        }
+      });
+
+      // Delay between batches
+      if (i + batchSize < enrollees.length) {
+        console.log(`⏳ Waiting ${delayBetweenBatches}ms before next batch...`);
+        await new Promise((resolve) =>
+          setTimeout(resolve, delayBetweenBatches)
+        );
+      }
+    }
+
+    if (result.totalFailed > 0) {
+      result.success = false;
+    }
+
+    console.log(
+      `✅ Last call emails completed: ${result.totalSent} sent, ${result.totalFailed} failed`
+    );
+    return result;
+  } catch (error) {
+    console.error("Critical error in bulk last call email sending:", error);
+    result.success = false;
+    result.errors.push({
+      email: "bulk_process",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    return result;
+  }
 }

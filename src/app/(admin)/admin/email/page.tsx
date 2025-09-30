@@ -139,6 +139,43 @@ export default function BulkEmailDashboard() {
     }
   };
 
+  // Send last call emails to all users
+  const sendLastCallEmails = async () => {
+    setIsLoading(true);
+    setResult("🚀 Starting bulk last call email send...");
+    setLastResult(null);
+
+    try {
+      const response = await fetch("/api/users/emails/last-call-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          batchSize: 15,
+          delayBetweenBatches: 2000,
+          onlyQualified: true,
+        }),
+      });
+
+      const data: BulkEmailResult = await response.json();
+      setLastResult(data);
+
+      if (data.success) {
+        setResult(`✅ Last call emails sent successfully! 
+          📧 Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}`);
+      } else {
+        setResult(`⚠️ Partial success: 
+          📧 Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}`);
+      }
+    } catch (error) {
+      console.error("Error sending last call emails:", error);
+      setResult(`❌ Error sending last call emails: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Reset email status (for testing)
   const resetEmailStatus = async () => {
     if (
@@ -314,6 +351,26 @@ export default function BulkEmailDashboard() {
             {isLoading
               ? "Sending Motivational Emails..."
               : "Send Motivational Emails to All"}
+          </button>
+        </div>
+
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-red-800 mb-3">
+            ⏰ Send Last Call Emails
+          </h3>
+          <p className="text-red-700 mb-4">
+            Send the urgent "Last Call - 7 Days Left!" email to all qualified
+            users. This reminds users about the contest deadline and encourages
+            final submissions.
+          </p>
+          <button
+            onClick={sendLastCallEmails}
+            disabled={isLoading}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading
+              ? "Sending Last Call Emails..."
+              : "Send Last Call Emails to All"}
           </button>
         </div>
 

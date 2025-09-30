@@ -486,3 +486,206 @@ Let's go!
 Conference of Nigerian Engineering Students
 `;
 };
+
+
+
+// Add to lib/templates.ts
+
+export interface LastCallEmailData {
+  firstName: string;
+  email: string;
+}
+
+export const getLastCallEmailHTML = (data: LastCallEmailData): string => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Call - Contest Ends in 7 Days</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #002B5B 0%, #00B894 100%); padding: 40px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: bold;">CONCES</h1>
+                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Logo Rebrand Challenge 2025</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Urgent Badge -->
+                    <tr>
+                        <td align="center" style="padding: 30px 40px 0;">
+                            <div style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%); display: inline-block; padding: 10px 30px; border-radius: 25px;">
+                                <span style="color: #ffffff; font-size: 16px; font-weight: bold;">⏰ Last Call - 7 Days Left!</span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 30px 40px;">
+                            <h2 style="color: #002B5B; font-size: 24px; margin: 0 0 20px 0;">
+                                Hi ${data.firstName},
+                            </h2>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                You've signed up for the <strong>CONCES Logo Rebrand Challenge</strong> — now it's time to finish strong.
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                <strong>If you have not submitted your entry, it's time.</strong>
+                            </p>
+                            
+                            <!-- Deadline Box -->
+                            <div style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center; border: 2px solid #F59E0B;">
+                                <p style="color: #92400E; margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; font-weight: bold;">Deadline to Submit</p>
+                                <h3 style="color: #78350F; margin: 0; font-size: 32px; font-weight: bold;">October 7</h3>
+                                <p style="color: #92400E; margin: 10px 0 0 0; font-size: 14px;">⏳ Don't miss this opportunity!</p>
+                            </div>
+                            
+                            <!-- Prize Highlight -->
+                            <div style="background: linear-gradient(135deg, #002B5B 0%, #004080 100%); padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                                <h3 style="color: #ffffff; margin: 0 0 10px 0; font-size: 20px;">₦1 Million in Prizes</h3>
+                                <p style="color: #FDE68A; font-size: 16px; margin: 0;">
+                                    Including a <strong>₦500,000 grand prize</strong>
+                                </p>
+                            </div>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                Over <strong>700 students</strong> have joined the challenge. Some amazing designs are already in — and we'd love to see yours in the final mix.
+                            </p>
+                            
+                            <!-- Next Steps -->
+                            <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 20px; margin: 25px 0; border-radius: 4px;">
+                                <h3 style="color: #1E40AF; margin: 0 0 15px 0; font-size: 18px;">
+                                    🎯 What to do now:
+                                </h3>
+                                <ol style="color: #1E3A8A; font-size: 15px; margin: 0; padding-left: 20px;">
+                                    <li style="margin: 8px 0;"><strong>Finalize your design</strong></li>
+                                    <li style="margin: 8px 0;"><strong>Submit your entry via the website</strong></li>
+                                </ol>
+                            </div>
+                            
+                            <!-- CTA Button -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://brandchallenge.conces.org/submit" 
+                                           style="display: inline-block; background-color: #00B894; color: #ffffff; padding: 16px 50px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0, 184, 148, 0.3);">
+                                            👉 Submit Your Entry Now
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Help Section -->
+                            <div style="background-color: #F3F4F6; padding: 20px; margin: 25px 0; border-radius: 4px;">
+                                <h4 style="color: #374151; margin: 0 0 10px 0; font-size: 16px;">
+                                    Need help?
+                                </h4>
+                                <p style="color: #6B7280; font-size: 14px; margin: 0;">
+                                    If you're facing any issues or have questions, reply to this email. We're here to help.
+                                </p>
+                            </div>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                                <strong>Let's make your entry count.</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 30px 40px; text-align: center; border-radius: 0 0 10px 10px;">
+                            <p style="color: #333333; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">
+                                – The CONCES Team
+                            </p>
+                            
+                            <p style="color: #666666; font-size: 14px; margin: 10px 0;">
+                                <a href="https://brandchallenge.conces.org" style="color: #00B894; text-decoration: none; font-weight: bold;">
+                                    brandchallenge.conces.org
+                                </a>
+                            </p>
+                            
+                            <!-- Social Links -->
+                            <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
+                              <tr>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/173jPb1P73/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M22.675 0h-21.35C.597 0 0 .598 0 1.333v21.333C0 23.402.597 24 1.325 24H12.82V14.708h-3.13V11.08h3.13V8.414c0-3.1 1.893-4.788 4.657-4.788 1.325 0 2.466.099 2.797.143v3.243l-1.918.001c-1.504 0-1.795.715-1.795 1.764v2.303h3.587l-.467 3.628h-3.12V24h6.116c.728 0 1.325-.598 1.325-1.334V1.333C24 .598 23.403 0 22.675 0z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.197-6.803-5.94 6.803H1.726l7.72-8.85L1.25 2.25h7.59l4.713 6.231L18.244 2.25zm-1.16 17.52h1.833L7.084 4.63H5.117l11.967 15.14z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.348 3.608 1.322.975.975 1.26 2.242 1.322 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.347 2.633-1.322 3.608-.975.975-2.242 1.26-3.608 1.322-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.347-3.608-1.322-.975-.975-1.26-2.242-1.322-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.347-2.633 1.322-3.608.975-.975 2.242-1.26 3.608-1.322C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.17 0-3.548.012-4.795.07-1.042.048-1.61.218-1.982.417-.5.27-.855.594-1.225 1.225-.199.372-.369.94-.417 1.982-.058 1.247-.07 1.625-.07 4.795s.012 3.548.07 4.795c.048 1.042.218 1.61.417 1.982.37.63.725.955 1.225 1.225.372.199.94.369 1.982.417 1.247.058 1.625.07 4.795.07s3.548-.012 4.795-.07c1.042-.048 1.61-.218 1.982-.417.5-.27.855-.594 1.225-1.225.199-.372.369-.94.417-1.982.058-1.247.07-1.625.07-4.795s-.012-3.548-.07-4.795c-.048-1.042-.218-1.61-.417-1.982-.37-.63-.725-.955-1.225-1.225-.372-.199-.94-.369-1.982-.417-1.247-.058-1.625-.07-4.795-.07zm0 3.945a5.892 5.892 0 1 1 0 11.784 5.892 5.892 0 0 1 0-11.784zm0 1.837a4.055 4.055 0 1 0 0 8.11 4.055 4.055 0 0 0 0-8.11zm6.406-3.394a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                            
+                            <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
+                                © 2025 CONCES. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+export const getLastCallEmailText = (data: LastCallEmailData): string => {
+  return `
+Last Call: Submit Your Entry — Contest Ends in 7 Days!
+
+Hi ${data.firstName},
+
+You've signed up for the CONCES Logo Rebrand Challenge — now it's time to finish strong.
+
+If you have not submitted your entry, it's time.
+
+The deadline to submit your entry is almost here: October 7 ⏳
+
+₦1 million in prizes is still up for grabs — including a ₦500,000 grand prize.
+
+Over 700 students have joined the challenge. Some amazing designs are already in — and we'd love to see yours in the final mix.
+
+🎯 What to do now:
+1. Finalize your design
+2. Submit your entry via the website
+
+👉 https://brandchallenge.conces.org/submit
+
+Need help?
+If you're facing any issues or have questions, reply to this email. We're here to help.
+
+Let's make your entry count.
+
+– The CONCES Team
+brandchallenge.conces.org
+
+© 2025 CONCES. All rights reserved.
+`;
+};
+
+// Add to lib/email-service.ts
