@@ -709,7 +709,7 @@ function ProjectCard({
 
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700 mb-1">
+            <p className=" text-conces-green mb-1 font-bold">
               by {project.candidate.fullName}
             </p>
             <p className="text-xs text-gray-500 line-clamp-1">
