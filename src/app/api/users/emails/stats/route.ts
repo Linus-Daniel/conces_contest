@@ -1,3 +1,4 @@
+// app/api/users/emails/stats/route.ts
 import { NextResponse } from "next/server";
 import { getUsersStats } from "@/lib/email/send-motivational";
 
@@ -15,6 +16,14 @@ export async function GET() {
           percentage:
             stats.totalUsers > 0
               ? Math.round((stats.welcomeEmailsSent / stats.totalUsers) * 100)
+              : 0,
+        },
+        lastCallEmailProgress: {
+          sent: stats.lastCallEmailsSent,
+          pending: stats.lastCallEmailsPending,
+          percentage:
+            stats.totalUsers > 0
+              ? Math.round((stats.lastCallEmailsSent / stats.totalUsers) * 100)
               : 0,
         },
       },

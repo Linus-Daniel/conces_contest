@@ -1,11 +1,11 @@
-
-
 import mongoose, { Schema, Model } from "mongoose";
 import crypto from "crypto";
 
 export interface IEnroll {
   fullName: string;
   _id: string;
+  lastmail?: boolean;
+  lastmailSentAt?: Date;
   email: string;
   phone: string;
   institution: string;
@@ -69,6 +69,13 @@ const EnrollSchema = new Schema<IEnroll>(
       type: String,
       required: [true, "School name is required"],
       trim: true,
+    },
+    lastmail: {
+      type: Boolean,
+      default: false,
+    },
+    lastmailSentAt: {
+      type: Date,
     },
     department: {
       type: String,

@@ -58,22 +58,41 @@ export async function getAllUsers(
   }
 }
 
-// Get users count by different criteria
+// lib/email/send-motivational.ts (add this to your existing file)
+
 export async function getUsersStats() {
   try {
-    const [
-      totalUsers,
-      qualifiedUsers,
-      unqualifiedUsers,
-      welcomeEmailsSent,
-      welcomeEmailsPending,
-    ] = await Promise.all([
-      Enroll.countDocuments(),
-      Enroll.countDocuments({ isQualified: true }),
-      Enroll.countDocuments({ isQualified: false }),
-      Enroll.countDocuments({ "contestPack.sent": true }),
-      Enroll.countDocuments({ "contestPack.sent": false }),
-    ]);
+    const { default: Enroll } = await import("@/models/Enroll");
+    const { connectDB } = await import("@/lib/mongodb");
+
+    await connectDB();
+
+    // Get total counts
+    const totalUsers = await Enroll.countDocuments({});
+    const qualifiedUsers = await Enroll.countDocuments({ isQualified: true });
+    const unqualifiedUsers = await Enroll.countDocuments({ isQualified: false });
+
+    // Welcome email stats
+    const welcomeEmailsSent = await Enroll.countDocuments({
+      "contestPack.sent": true,
+    });
+    const welcomeEmailsPending = await Enroll.countDocuments({
+      $or: [
+        { "contestPack.sent": false },
+        { "contestPack.sent": { $exists: false } },
+      ],
+    });
+
+    // Last call email stats
+    const lastCallEmailsSent = await Enroll.countDocuments({
+      lastmail: true,
+    });
+    const lastCallEmailsPending = await Enroll.countDocuments({
+      $or: [
+        { lastmail: false },
+        { lastmail: { $exists: false } },
+      ],
+    });
 
     return {
       totalUsers,
@@ -81,13 +100,14 @@ export async function getUsersStats() {
       unqualifiedUsers,
       welcomeEmailsSent,
       welcomeEmailsPending,
+      lastCallEmailsSent,
+      lastCallEmailsPending,
     };
   } catch (error) {
     console.error("Error getting user stats:", error);
-    throw new Error("Failed to get user statistics");
+    throw error;
   }
 }
-
 // Send welcome emails to all users who haven't received them
 export async function sendWelcomeEmailsToAllUsers(
   options: BulkEmailOptions = {}
@@ -452,3 +472,4 @@ export async function resetEmailSentStatus() {
     throw error;
   }
 }
+

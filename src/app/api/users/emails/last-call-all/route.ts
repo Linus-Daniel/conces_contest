@@ -7,21 +7,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     const {
-      batchSize = 15,
+      batchSize = 30,
       delayBetweenBatches = 2000,
       onlyQualified = true,
+      updateDatabase = true,
     } = body;
 
     console.log("Starting bulk last call email send with options:", {
       batchSize,
       delayBetweenBatches,
       onlyQualified,
+      updateDatabase,
     });
 
     const result = await sendLastCallEmailsToAllUsers({
       batchSize,
       delayBetweenBatches,
       onlyQualified,
+      updateDatabase,
     });
 
     const statusCode = result.success ? 200 : 207; // 207 = Multi-Status (partial success)
@@ -35,9 +38,11 @@ export async function POST(request: NextRequest) {
           sent: result.sent,
           failed: result.failed,
           skipped: result.skipped,
+          updatedInDatabase: result.updatedInDatabase,
         },
         details: {
           errors: result.errors,
+          updatedUserIds: result.updatedUserIds,
         },
       },
       { status: statusCode }

@@ -8,7 +8,14 @@ interface UserStats {
   unqualifiedUsers: number;
   welcomeEmailsSent: number;
   welcomeEmailsPending: number;
+  lastCallEmailsSent: number;
+  lastCallEmailsPending: number;
   welcomeEmailProgress: {
+    sent: number;
+    pending: number;
+    percentage: number;
+  };
+  lastCallEmailProgress: {
     sent: number;
     pending: number;
     percentage: number;
@@ -153,6 +160,7 @@ export default function BulkEmailDashboard() {
           batchSize: 15,
           delayBetweenBatches: 2000,
           onlyQualified: true,
+          updateDatabase: true,
         }),
       });
 
@@ -162,12 +170,17 @@ export default function BulkEmailDashboard() {
       if (data.success) {
         setResult(`✅ Last call emails sent successfully! 
           📧 Sent: ${data.summary.sent} 
-          ❌ Failed: ${data.summary.failed}`);
+          ❌ Failed: ${data.summary.failed}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} users`);
       } else {
         setResult(`⚠️ Partial success: 
           📧 Sent: ${data.summary.sent} 
-          ❌ Failed: ${data.summary.failed}`);
+          ❌ Failed: ${data.summary.failed}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} users`);
       }
+
+      // Refresh stats after sending
+      await fetchStats();
     } catch (error) {
       console.error("Error sending last call emails:", error);
       setResult(`❌ Error sending last call emails: ${error}`);
@@ -254,7 +267,7 @@ export default function BulkEmailDashboard() {
         <h2 className="text-xl font-semibold mb-4">User Statistics</h2>
 
         {stats ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded shadow">
               <div className="text-2xl font-bold text-blue-600">
                 {stats.totalUsers}
@@ -298,6 +311,31 @@ export default function BulkEmailDashboard() {
               </div>
               <div className="text-sm text-gray-600">
                 Welcome Email Progress
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-red-600">
+                {stats.lastCallEmailsSent}
+              </div>
+              <div className="text-sm text-gray-600">Last Call Emails Sent</div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-yellow-600">
+                {stats.lastCallEmailsPending}
+              </div>
+              <div className="text-sm text-gray-600">
+                Last Call Emails Pending
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-pink-600">
+                {stats.lastCallEmailProgress.percentage}%
+              </div>
+              <div className="text-sm text-gray-600">
+                Last Call Email Progress
               </div>
             </div>
           </div>
@@ -360,8 +398,8 @@ export default function BulkEmailDashboard() {
           </h3>
           <p className="text-red-700 mb-4">
             Send the urgent "Last Call - 7 Days Left!" email to all qualified
-            users. This reminds users about the contest deadline and encourages
-            final submissions.
+            users who haven't received it yet. This will also update the
+            database to track sent emails.
           </p>
           <button
             onClick={sendLastCallEmails}

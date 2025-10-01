@@ -34,9 +34,9 @@ const createTransporter = () => {
       pass: process.env.EMAIL_PASSWORD,
     },
     pool: true,
-    maxConnections: 5, // Increased for bulk sending
-    rateDelta: 20000,
-    rateLimit: 14, // Gmail's rate limit (around 14 emails per second)
+    maxConnections: 2, // Increased for bulk sending
+    rateDelta: 60000,
+    rateLimit: 5, // Gmail's rate limit (around 14 emails per second)
   });
 };
 
