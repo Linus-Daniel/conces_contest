@@ -41,7 +41,7 @@ class WhatsAppService {
         to: formattedPhone,
         type: "template",
         template: {
-          name: "conces_contest",
+          name: "otp_verificaton",
           language: {
             code: "en_US",
           },
