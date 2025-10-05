@@ -28,6 +28,7 @@ import api from "@/lib/axiosInstance";
 interface Project {
   _id: string;
   candidate: {
+    _id: string;
     fullName: string;
     schoolName: string;
     department: string;
@@ -747,7 +748,7 @@ function ProjectCard({
                   url: window.location.href,
                 });
               } else {
-                navigator.clipboard.writeText(window.location.href);
+                navigator.clipboard.writeText(`${window.location.href}/candidate/${project._id}`);
                 toast.success("Link copied to clipboard!");
               }
             }}
