@@ -388,7 +388,7 @@ export function DynamicContestButton({
               disabled: true,
             };
       case "voting":
-        return { text: "Vote Now", link: "/voting", disabled: false };
+        return { text: "Vote Now", link: "/", disabled: false };
       case "ended":
         return {
           text: "Contest Finished - Visit Our Page",
