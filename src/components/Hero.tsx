@@ -216,12 +216,12 @@ export default function HeroSection() {
               >
                 {isGracePeriod ? (
                   <motion.span
-                    className="bg-gradient-to-r from-orange-500 via-red-500/50 to-pink-500/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wide inline-flex items-center gap-1 sm:gap-2"
+                    className="bg-gradient-to-r from-conces-blue via-sky-600 to-conces-green text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wide inline-flex items-center gap-1 sm:gap-2 border-2 border-conces-gold"
                     animate={{
                       boxShadow: [
-                        "0 0 12px rgba(255,100,0,0.6)",
-                        "0 0 20px rgba(255,0,100,0.8)",
-                        "0 0 12px rgba(255,100,0,0.6)",
+                        "0 0 12px rgba(0,184,148,0.6)",
+                        "0 0 20px rgba(255,195,0,0.8)",
+                        "0 0 12px rgba(0,184,148,0.6)",
                       ],
                       scale: [1, 1.05, 1],
                     }}
@@ -231,11 +231,11 @@ export default function HeroSection() {
                       ease: "easeInOut",
                     }}
                   >
-                    <FireIcon className="w-3 h-3 sm:w-4 sm:h-4 animate-pulse" />
+                    <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 animate-pulse" />
                     <span className="hidden xs:inline">
                       🚨 FINAL CALL - Grace Period!
                     </span>
-                    <span className="xs:hidden">🚨 Last Chance!</span>
+                    <span className="xs:hidden">Submit your design NOW!</span>
                     <BoltIcon className="w-3 h-3 sm:w-4 sm:h-4 animate-pulse" />
                   </motion.span>
                 ) : (
@@ -270,10 +270,10 @@ export default function HeroSection() {
               >
                 {isGracePeriod ? (
                   <>
-                    <span className="text-orange-400 animate-pulse">
+                    <span className="text-conces-gold animate-pulse">
                       ⏰ Last Chance!
                     </span>
-                    <span className="block bg-gradient-to-r from-conces-gold via-orange-400 to-red-400 bg-clip-text text-transparent">
+                    <span className="block bg-gradient-to-r from-sky-400 via-conces-green to-conces-gold bg-clip-text text-transparent">
                       Grace Period Active
                     </span>
                   </>
@@ -295,7 +295,7 @@ export default function HeroSection() {
               >
                 {isGracePeriod ? (
                   <>
-                    <span className="font-bold text-orange-300">
+                    <span className="font-bold text-conces-green">
                       🎯 Already registered?
                     </span>{" "}
                     This is YOUR moment! Submit your stunning logo designs
@@ -323,21 +323,21 @@ export default function HeroSection() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="mb-6 sm:mb-8 bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 border-2 border-orange-400 rounded-xl p-4 backdrop-blur-sm"
+                  className="mb-6 sm:mb-8 bg-gradient-to-r from-conces-blue/20 via-sky-600/20 to-conces-green/20 border-2 border-conces-gold rounded-xl p-4 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-3">
-                    <ClockIcon className="w-6 h-6 text-orange-400 flex-shrink-0 animate-pulse" />
+                    <ClockIcon className="w-6 h-6 text-conces-gold flex-shrink-0 animate-pulse" />
                     <div className="text-left">
                       <h3 className="text-white font-bold text-sm sm:text-base mb-1">
                         ⚡ Grace Period Alert!
                       </h3>
                       <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">
                         Already registered? Perfect! You've got{" "}
-                        <span className="font-bold text-orange-300">
+                        <span className="font-bold text-conces-green">
                           2 extra weeks
                         </span>{" "}
                         to polish and submit your designs.
-                        <span className="block mt-1 text-red-300 font-semibold">
+                        <span className="block mt-1 text-sky-300 font-semibold">
                           ⚠️ Note: New registrations are now closed!
                         </span>
                       </p>
@@ -370,7 +370,7 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, delay: 0.8 }}
                 className={`${
                   isGracePeriod
-                    ? "bg-gradient-to-br from-orange-500/30 via-red-500/30 to-pink-500/30 border-orange-400"
+                    ? "bg-gradient-to-br from-conces-blue/40 via-sky-600/30 to-conces-green/40 border-conces-gold"
                     : "bg-conces-blue/50 border-conces-blue/70"
                 } backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border-2 hover:border-conces-gold/30 transition-all duration-300`}
               >
@@ -400,7 +400,7 @@ export default function HeroSection() {
               <motion.div
                 className={`bg-gradient-to-br ${
                   isGracePeriod
-                    ? "from-orange-600 via-red-600 to-pink-600"
+                    ? "from-conces-blue via-sky-700 to-conces-green"
                     : "from-conces-blue to-conces-blue/90"
                 } rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-conces-gold relative overflow-hidden`}
                 whileHover={{ y: -5, scale: 1.02 }}
@@ -415,7 +415,7 @@ export default function HeroSection() {
               >
                 {isGracePeriod && (
                   <motion.div
-                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold z-20"
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-conces-gold text-conces-blue px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold z-20"
                     animate={{
                       scale: [1, 1.1, 1],
                     }}
