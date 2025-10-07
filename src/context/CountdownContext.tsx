@@ -18,7 +18,7 @@ interface TimeLeft {
   seconds: number;
 }
 
-type ContestStatus = "register" | "voting" | "ended" | "waiting";
+type ContestStatus = "register" | "grace" | "voting" | "ended" | "waiting";
 
 interface TimerContextType {
   timeLeft: TimeLeft;
@@ -33,11 +33,12 @@ interface TimerContextType {
 // Create Timer Context
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
-// Define dates as constants to prevent recreation
+// Define dates as constants - Updated with grace period and new voting start
 const DEFAULT_DATES = {
   contestStart: "2025-09-08T00:00:00",
   contestEnd: "2025-10-07T23:59:59",
-  votingStart: "2025-10-08T00:00:00",
+  graceEnd: "2025-10-21T23:59:59", // 2 weeks grace period (no new registrations)
+  votingStart: "2025-10-22T00:00:00", // Voting starts October 22nd
   votingEnd: "2025-11-04T23:59:59",
   finale: "2025-11-07T00:00:00",
 };
@@ -47,6 +48,7 @@ interface TimerProviderProps {
   children: ReactNode;
   contestStartDate?: string;
   contestEndDate?: string;
+  graceEndDate?: string;
   votingStartDate?: string;
   votingEndDate?: string;
   finaleDate?: string;
@@ -56,6 +58,7 @@ export function TimerProvider({
   children,
   contestStartDate = DEFAULT_DATES.contestStart,
   contestEndDate = DEFAULT_DATES.contestEnd,
+  graceEndDate = DEFAULT_DATES.graceEnd,
   votingStartDate = DEFAULT_DATES.votingStart,
   votingEndDate = DEFAULT_DATES.votingEnd,
   finaleDate = DEFAULT_DATES.finale,
@@ -76,6 +79,7 @@ export function TimerProvider({
     () => ({
       contestStart: new Date(contestStartDate).getTime(),
       contestEnd: new Date(contestEndDate).getTime(),
+      graceEnd: new Date(graceEndDate).getTime(),
       votingStart: new Date(votingStartDate).getTime(),
       votingEnd: new Date(votingEndDate).getTime(),
       finale: new Date(finaleDate).getTime(),
@@ -83,6 +87,7 @@ export function TimerProvider({
     [
       contestStartDate,
       contestEndDate,
+      graceEndDate,
       votingStartDate,
       votingEndDate,
       finaleDate,
@@ -111,7 +116,12 @@ export function TimerProvider({
         targetTime = timestamps.contestEnd;
         currentPhase = "Contest is live! Register and Submit your Logos now.";
         nextPhase = "Entry submissions will close";
-      } else if (now > timestamps.contestEnd && now < timestamps.votingStart) {
+      } else if (now > timestamps.contestEnd && now <= timestamps.graceEnd) {
+        newStatus = "grace";
+        targetTime = timestamps.graceEnd;
+        currentPhase = "Grace Period: Final chance to submit your entries!";
+        nextPhase = "Grace period ends";
+      } else if (now > timestamps.graceEnd && now < timestamps.votingStart) {
         newStatus = "waiting";
         targetTime = timestamps.votingStart;
         currentPhase = "Entry period has ended. Preparing for voting phase.";
@@ -174,8 +184,10 @@ export function TimerProvider({
     (): TimerContextType => ({
       timeLeft,
       contestStatus,
-      isContestActive: contestStatus === "register",
-      isRegistrationOpen: contestStatus === "register",
+      isContestActive:
+        contestStatus === "register" || contestStatus === "grace",
+      isRegistrationOpen:
+        contestStatus === "register" || contestStatus === "grace",
       isVotingOpen: contestStatus === "voting",
       currentPhaseDescription,
       nextPhaseDescription,
@@ -227,6 +239,13 @@ export function CountdownTimer() {
             desktop: "Challenge Ends in",
           };
         }
+        break;
+      case "grace":
+        displayText = {
+          mobile: "Grace Period Ends In",
+          tablet: "Grace Period Closes In",
+          desktop: "Final Submission Grace Period Ends In",
+        };
         break;
       case "waiting":
         const nowWaiting = Date.now();
@@ -376,6 +395,18 @@ export function DynamicContestButton({
         return candidate
           ? { text: "Submit Entry", link: "/submit", disabled: false }
           : { text: "Register Now", link: "/signup", disabled: false };
+      case "grace":
+        return candidate
+          ? {
+              text: "Submit Entry - Grace Period",
+              link: "/submit",
+              disabled: false,
+            }
+          : {
+              text: "Submit your design - Last Chance!",
+              link: "/submit",
+              disabled: false,
+            };
       case "waiting":
         const waitingNow = Date.now();
         const waitingVotingEnd = new Date(DEFAULT_DATES.votingEnd).getTime();
@@ -383,12 +414,12 @@ export function DynamicContestButton({
         return waitingNow > waitingVotingEnd
           ? { text: "Grand Finale Soon!", link: "/finale", disabled: false }
           : {
-              text: "Contest Ended - Waiting for Voting",
+              text: "Submissions Closed - Voting Soon",
               link: "#",
               disabled: true,
             };
       case "voting":
-        return { text: "Vote Now", link: "/", disabled: false };
+        return { text: "Vote Now", link: "/voting", disabled: false };
       case "ended":
         return {
           text: "Contest Finished - Visit Our Page",

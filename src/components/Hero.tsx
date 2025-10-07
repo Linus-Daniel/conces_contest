@@ -6,12 +6,19 @@ import {
   ArrowRightIcon,
   StarIcon,
   SparklesIcon,
+  ClockIcon,
+  BoltIcon,
+  FireIcon,
 } from "@heroicons/react/24/outline";
 import { FaMedal, FaTrophy, FaCrown, FaRegGem, FaPray } from "react-icons/fa";
 import { GiCash, GiCrownCoin, GiGoldBar } from "react-icons/gi";
 import Image from "next/image";
 import { ComponentType } from "react";
-import {CountdownTimer,  DynamicContestButton, useTimer } from "@/context/CountdownContext";
+import {
+  CountdownTimer,
+  DynamicContestButton,
+  useTimer,
+} from "@/context/CountdownContext";
 
 interface FloatingRewardProps {
   icon: ComponentType<{ className?: string }>;
@@ -115,7 +122,8 @@ const PrizeCard: React.FC<PrizeCardProps> = ({ prize, delay = 0 }) => {
 export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHoveringPrize, setIsHoveringPrize] = useState(false);
-  const {timeLeft} = useTimer()
+  const { timeLeft, contestStatus } = useTimer();
+
   const testimonials: Testimonial[] = [
     {
       quote: "Winning this contest changed my life! The excitement was unreal!",
@@ -162,6 +170,8 @@ export default function HeroSection() {
     },
   ];
 
+  // Grace period specific messaging
+  const isGracePeriod = contestStatus === "grace";
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-to-b from-conces-blue to-conces-blue/90">
@@ -193,7 +203,6 @@ export default function HeroSection() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           {/* Left content */}
           <div className="w-full lg:w-1/2 text-center lg:text-left">
-      
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,26 +214,52 @@ export default function HeroSection() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.1 }}
               >
-                <motion.span
-                  className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wide inline-flex items-center gap-1 sm:gap-2"
-                  animate={{
-                    boxShadow: [
-                      "0 0 8px rgba(0,184,148,0.4)",
-                      "0 0 16px rgba(0,43,91,0.6)",
-                      "0 0 8px rgba(0,184,148,0.4)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Exclusive Contest</span>
-                  <span className="xs:hidden">Contest</span>
-                  <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                </motion.span>
+                {isGracePeriod ? (
+                  <motion.span
+                    className="bg-gradient-to-r from-orange-500 via-red-500/50 to-pink-500/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wide inline-flex items-center gap-1 sm:gap-2"
+                    animate={{
+                      boxShadow: [
+                        "0 0 12px rgba(255,100,0,0.6)",
+                        "0 0 20px rgba(255,0,100,0.8)",
+                        "0 0 12px rgba(255,100,0,0.6)",
+                      ],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <FireIcon className="w-3 h-3 sm:w-4 sm:h-4 animate-pulse" />
+                    <span className="hidden xs:inline">
+                      🚨 FINAL CALL - Grace Period!
+                    </span>
+                    <span className="xs:hidden">🚨 Last Chance!</span>
+                    <BoltIcon className="w-3 h-3 sm:w-4 sm:h-4 animate-pulse" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    className="bg-gradient-to-r from-conces-green to-conces-blue text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wide inline-flex items-center gap-1 sm:gap-2"
+                    animate={{
+                      boxShadow: [
+                        "0 0 8px rgba(0,184,148,0.4)",
+                        "0 0 16px rgba(0,43,91,0.6)",
+                        "0 0 8px rgba(0,184,148,0.4)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Exclusive Contest</span>
+                    <span className="xs:hidden">Contest</span>
+                    <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </motion.span>
+                )}
               </motion.div>
 
               <motion.h1
@@ -233,10 +268,23 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6"
               >
-                Join the <span className="text-conces-gold">CONCES</span>
-                <span className="block bg-gradient-to-r from-conces-gold to-conces-green bg-clip-text text-transparent">
-                  Logo Rebrand Challenge!
-                </span>
+                {isGracePeriod ? (
+                  <>
+                    <span className="text-orange-400 animate-pulse">
+                      ⏰ Last Chance!
+                    </span>
+                    <span className="block bg-gradient-to-r from-conces-gold via-orange-400 to-red-400 bg-clip-text text-transparent">
+                      Grace Period Active
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Join the <span className="text-conces-gold">CONCES</span>
+                    <span className="block bg-gradient-to-r from-conces-gold to-conces-green bg-clip-text text-transparent">
+                      Logo Rebrand Challenge!
+                    </span>
+                  </>
+                )}
               </motion.h1>
 
               <motion.p
@@ -245,14 +293,58 @@ export default function HeroSection() {
                 transition={{ duration: 0.8, delay: 0.4 }}
                 className="text-base sm:text-lg md:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0"
               >
-                Participate in our prestigious rebranding contest for a chance
-                to win
-                <span className="font-bold text-conces-gold">
-                  {" "}
-                  life-changing prizes
-                </span>{" "}
-                and be recognized in our global community of innovators!
+                {isGracePeriod ? (
+                  <>
+                    <span className="font-bold text-orange-300">
+                      🎯 Already registered?
+                    </span>{" "}
+                    This is YOUR moment! Submit your stunning logo designs
+                    before the clock runs out.
+                    <span className="block mt-2 text-conces-gold font-semibold">
+                      ⚡ 2-Week Grace Period = Your Final Shot at ₦500,000!
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Participate in our prestigious rebranding contest for a
+                    chance to win
+                    <span className="font-bold text-conces-gold">
+                      {" "}
+                      life-changing prizes
+                    </span>{" "}
+                    and be recognized in our global community of innovators!
+                  </>
+                )}
               </motion.p>
+
+              {/* Grace Period Urgent Banner */}
+              {isGracePeriod && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-6 sm:mb-8 bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 border-2 border-orange-400 rounded-xl p-4 backdrop-blur-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <ClockIcon className="w-6 h-6 text-orange-400 flex-shrink-0 animate-pulse" />
+                    <div className="text-left">
+                      <h3 className="text-white font-bold text-sm sm:text-base mb-1">
+                        ⚡ Grace Period Alert!
+                      </h3>
+                      <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">
+                        Already registered? Perfect! You've got{" "}
+                        <span className="font-bold text-orange-300">
+                          2 extra weeks
+                        </span>{" "}
+                        to polish and submit your designs.
+                        <span className="block mt-1 text-red-300 font-semibold">
+                          ⚠️ Note: New registrations are now closed!
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -276,7 +368,11 @@ export default function HeroSection() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="bg-conces-blue/50 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border border-conces-blue/70 hover:border-conces-gold/30 transition-all duration-300"
+                className={`${
+                  isGracePeriod
+                    ? "bg-gradient-to-br from-orange-500/30 via-red-500/30 to-pink-500/30 border-orange-400"
+                    : "bg-conces-blue/50 border-conces-blue/70"
+                } backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 border-2 hover:border-conces-gold/30 transition-all duration-300`}
               >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -302,7 +398,11 @@ export default function HeroSection() {
           >
             <div className="relative">
               <motion.div
-                className="bg-gradient-to-br from-conces-blue to-conces-blue/90 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-conces-gold relative overflow-hidden"
+                className={`bg-gradient-to-br ${
+                  isGracePeriod
+                    ? "from-orange-600 via-red-600 to-pink-600"
+                    : "from-conces-blue to-conces-blue/90"
+                } rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-conces-gold relative overflow-hidden`}
                 whileHover={{ y: -5, scale: 1.02 }}
                 onHoverStart={() => setIsHoveringPrize(true)}
                 onHoverEnd={() => setIsHoveringPrize(false)}
@@ -313,7 +413,21 @@ export default function HeroSection() {
                 }}
                 transition={{ duration: 0.3 }}
               >
-            
+                {isGracePeriod && (
+                  <motion.div
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold z-20"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                    }}
+                  >
+                    🔥 FINAL HOURS!
+                  </motion.div>
+                )}
+
                 <div className="absolute inset-0 overflow-hidden">
                   {isHoveringPrize && (
                     <motion.div
@@ -379,7 +493,13 @@ export default function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <span className="inline-block bg-conces-blue/50 text-conces-gold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold border border-conces-gold/30">
+                    <span
+                      className={`inline-block ${
+                        isGracePeriod
+                          ? "bg-white/20 text-white border-white/40"
+                          : "bg-conces-blue/50 text-conces-gold border-conces-gold/30"
+                      } px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold border`}
+                    >
                       💰 Additional Bonus Prizes Available!
                     </span>
                   </motion.div>

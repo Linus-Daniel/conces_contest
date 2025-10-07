@@ -24,6 +24,8 @@ import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import OTPVotingModal from "@/components/OtpVotingModal";
 import api from "@/lib/axiosInstance";
+import { useAdminAuth } from "@/context/AdminAuth";
+import Link from "next/link";
 
 interface Project {
   _id: string;
@@ -260,6 +262,8 @@ export default function VotingPage() {
   const [sortBy, setSortBy] = useState<"votes" | "newest" | "title">("votes");
   const [filterSchool, setFilterSchool] = useState<string>("all");
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const {user,checkAuth} = useAdminAuth()
+  console.log(user,"user")
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
 
@@ -366,6 +370,21 @@ export default function VotingPage() {
   const schools = Array.from(
     new Set(projects.map((p) => p.candidate.schoolName))
   );
+
+  if(!user){
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+
+        <div>
+          Voting Processes are yet to begin and will commence soon.
+        </div>
+        <Link href={"/"} className="text-blue-500 underline">
+          Go back
+        </Link>
+
+        </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
