@@ -37,7 +37,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 const DEFAULT_DATES = {
   contestStart: "2025-09-08T00:00:00",
   contestEnd: "2025-10-07T23:59:59",
-  graceEnd: "2025-10-14T23:59:59", // 2 weeks grace period (no new registrations)
+  graceEnd: "2025-10-12T23:59:59", // 2 weeks grace period (no new registrations)
   votingStart: "2025-10-29T00:00:00", // Voting starts October 29th (1 week waiting period)
   votingEnd: "2025-10-22T23:59:59", // Voting ends November 4th (1 week voting period)
   finale: "2025-11-07T00:00:00",
