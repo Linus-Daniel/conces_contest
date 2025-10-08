@@ -301,7 +301,7 @@ export default function HeroSection() {
                     This is YOUR moment! Submit your stunning logo designs
                     before the clock runs out.
                     <span className="block mt-2 text-conces-gold font-semibold">
-                      ⚡ 2-Week Grace Period = Your Final Shot at ₦500,000!
+                      ⚡ 1-Week Grace Period = Your Final Shot at ₦500,000!
                     </span>
                   </>
                 ) : (
