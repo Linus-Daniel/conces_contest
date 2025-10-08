@@ -334,7 +334,7 @@ export default function HeroSection() {
                       <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">
                         Already registered? Perfect! You've got{" "}
                         <span className="font-bold text-conces-green">
-                          One extra weeks
+                          One extra week
                         </span>{" "}
                         to polish and submit your designs.
                         <span className="block mt-1 text-sky-300 font-semibold">
