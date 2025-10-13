@@ -17,9 +17,7 @@ async function exportQualifiedPhones() {
     const phones = users
       .map((u) => {
         let phone = u.phone?.toString().trim() || "";
-        phone = phone.replace(/\D/g, ""); // remove non-digits
-
-        // ✅ Format to +234
+        phone = phone.replace(/\D/g, ""); 
         if (phone.startsWith("234")) {
           phone = `+${phone}`;
         } else if (phone.startsWith("0")) {
@@ -31,11 +29,7 @@ async function exportQualifiedPhones() {
         return phone;
       })
       .filter(Boolean);
-
-    // ✅ Optional: Remove duplicates
     const uniquePhones = [...new Set(phones)];
-
-    // ✅ Save to CSV (comma-separated, each on new line)
     const formatted = uniquePhones.map((p) => `${p},`).join("\n");
 
     fs.writeFileSync("qualified_phones.csv", formatted);
