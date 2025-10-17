@@ -1,3 +1,4 @@
+"use client"
 import SubmitProjectForm from "@/components/SubmitForm";
 import { useTimer } from "@/context/CountdownContext";
 

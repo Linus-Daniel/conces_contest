@@ -19,7 +19,7 @@ async function countSubmittedAndSelected() {
     // ✅ Find selected projects and populate candidate info
     const selectedProjects = await Project.find({
       status: "selected",
-    }).populate("candidate", "email fullName phone");
+    }).populate("candidate", "email fullName avatar");
 
     console.log("📊 Project Statistics:");
     console.log(`• Total Submitted Projects: ${submittedCount}`);
@@ -32,8 +32,9 @@ async function countSubmittedAndSelected() {
         const candidate = project.candidate as any;
         const name = candidate?.fullName || "";
         const email = candidate?.email || "";
-        const phone = candidate?.phone || "";
-        return `"${name}","${email}","${phone}"`;
+        const avatar = candidate?.avatar || "";
+        const votingLink = `https://brandchallenge.conces.org/voting/candidate/${project._id}`;
+        return `"${name}","${email}","${avatar}", "${votingLink}"`;
       })
       .join("\n");
 
