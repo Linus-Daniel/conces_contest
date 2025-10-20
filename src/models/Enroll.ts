@@ -15,6 +15,10 @@ export interface IEnroll {
   avatar: string;
   agreeToTerms: boolean;
   isQualified: boolean;
+  receivedQualifiedEmail?: boolean;
+  receivedQualifiedEmailAt?: Date;
+  votingStageEmailSent?: boolean;
+  votingStageEmailSentAt?: Date;
   contestPack: {
     sent: boolean;
     sentAt?: Date;
@@ -113,6 +117,20 @@ const EnrollSchema = new Schema<IEnroll>(
       default: true,
       required: true,
     },
+    receivedQualifiedEmail: {
+      type: Boolean,
+      default: false,
+    },
+    receivedQualifiedEmailAt: {
+      type: Date,
+    },
+    votingStageEmailSent: {
+      type: Boolean,
+      default: false,
+    },
+    votingStageEmailSentAt: {
+      type: Date,
+    },
     contestPack: {
       sent: {
         type: Boolean,
@@ -145,6 +163,8 @@ EnrollSchema.pre("save", function (next) {
 EnrollSchema.index({ email: 1, authToken: 1 });
 EnrollSchema.index({ createdAt: -1 });
 EnrollSchema.index({ isQualified: 1 });
+EnrollSchema.index({ receivedQualifiedEmail: 1 });
+EnrollSchema.index({ votingStageEmailSent: 1 });
 
 EnrollSchema.post("save", function (error: any, doc: any, next: any) {
   if (error.name === "MongoServerError" && error.code === 11000) {
