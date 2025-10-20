@@ -689,3 +689,255 @@ brandchallenge.conces.org
 };
 
 // Add to lib/email-service.ts
+
+
+
+
+// Add to templates.ts
+
+export interface VotingStageEmailData {
+  firstName: string;
+  email: string;
+}
+
+export const getVotingStageEmailHTML = (data: VotingStageEmailData): string => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Made It! Time to Prepare for the Voting Stage</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #002B5B 0%, #00B894 100%); padding: 40px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: bold;">CONCES</h1>
+                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Logo Rebrand Challenge 2025</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Success Badge -->
+                    <tr>
+                        <td align="center" style="padding: 30px 40px 0;">
+                            <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); display: inline-block; padding: 10px 30px; border-radius: 25px;">
+                                <span style="color: #ffffff; font-size: 16px; font-weight: bold;">🗳️✨ You Made It!</span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Hero Message -->
+                    <tr>
+                        <td align="center" style="padding: 20px 40px;">
+                            <h2 style="color: #002B5B; font-size: 28px; margin: 0; line-height: 1.3;">
+                                You're in. Now, it's time to show<br>the world what you've created.
+                            </h2>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 30px 40px;">
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                Dear ${data.firstName},
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                <strong>Congratulations! 🎉</strong>
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                Out of <strong>over a thousand students</strong> across Nigeria, your entry has qualified for the first voting stage of the CONCES Logo Rebrand Challenge.
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                <strong>This is no small feat, and we're proud of what you've done.</strong>
+                            </p>
+                            
+                            <!-- What Happens Next Section -->
+                            <div style="background-color: #F0F9FF; border-radius: 8px; padding: 25px; margin: 30px 0;">
+                                <h3 style="color: #002B5B; font-size: 20px; margin: 0 0 20px 0;">
+                                    Here's what happens next:
+                                </h3>
+                                
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <span style="font-size: 20px; vertical-align: middle;">🗓️</span>
+                                            <span style="color: #333333; font-size: 15px; margin-left: 10px;">
+                                                <strong>Voting opens October 22 and closes November 4.</strong>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <span style="font-size: 20px; vertical-align: middle;">📲</span>
+                                            <span style="color: #333333; font-size: 15px; margin-left: 10px;">
+                                                <strong>You'll receive a unique voting link for your entry.</strong> Share it widely: friends, classmates, groups, alumni.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <span style="font-size: 20px; vertical-align: middle;">🌍</span>
+                                            <span style="color: #333333; font-size: 15px; margin-left: 10px;">
+                                                <strong>You can also share the general contest link</strong> to let others see all entries.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <span style="font-size: 20px; vertical-align: middle;">📣</span>
+                                            <span style="color: #333333; font-size: 15px; margin-left: 10px;">
+                                                <strong>The entries with the most votes and with the Judges blessing</strong> will move on to the semi-final stage, where things get even more exciting.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <span style="font-size: 20px; vertical-align: middle;">🎯</span>
+                                            <span style="color: #333333; font-size: 15px; margin-left: 10px;">
+                                                <strong>And yes, the final goal remains that ₦500,000 Grand Prize</strong>—and over ₦1,000,000 in total rewards.
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- Prize Highlight -->
+                            <div style="background: linear-gradient(135deg, #FFC300 0%, #FF6B00 100%); padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                                <h3 style="color: #ffffff; margin: 0 0 10px 0; font-size: 24px;">₦500,000</h3>
+                                <p style="color: #ffffff; font-size: 16px; margin: 0;">
+                                    Grand Prize Winner
+                                </p>
+                                <p style="color: #ffffff; font-size: 14px; margin: 10px 0 0 0; opacity: 0.9;">
+                                    Over ₦1,000,000 in total rewards
+                                </p>
+                            </div>
+                            
+                            <!-- Next Steps -->
+                            <div style="background-color: #F9FAFB; border-left: 4px solid #00B894; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                                <h3 style="color: #002B5B; font-size: 18px; margin: 0 0 15px 0;">
+                                    Next Steps:
+                                </h3>
+                                <ul style="color: #333333; font-size: 15px; margin: 0; padding-left: 20px;">
+                                    <li style="margin: 8px 0;">Get ready to promote your design.</li>
+                                    <li style="margin: 8px 0;">Use your voice and creativity to share your story.</li>
+                                    <li style="margin: 8px 0;">Watch out for your link—it's coming soon via SMS.</li>
+                                </ul>
+                            </div>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 30px 0; text-align: center; font-weight: bold;">
+                                Let the journey to the top begin.
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0; text-align: center;">
+                                <strong>You've earned your place here. Now own it.</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 30px 40px; text-align: center; border-radius: 0 0 10px 10px;">
+                            <p style="color: #333333; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">
+                                — Team CONCES
+                            </p>
+                            
+                            <p style="color: #666666; font-size: 14px; margin: 15px 0;">
+                                Need help? Contact us at <a href="mailto:goodnews@conces.org" style="color: #00B894; text-decoration: none;">goodnews@conces.org</a>
+                            </p>
+                            
+                            <!-- Social Links -->
+                            <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
+                              <tr>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/173jPb1P73/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M22.675 0h-21.35C.597 0 0 .598 0 1.333v21.333C0 23.402.597 24 1.325 24H12.82V14.708h-3.13V11.08h3.13V8.414c0-3.1 1.893-4.788 4.657-4.788 1.325 0 2.466.099 2.797.143v3.243l-1.918.001c-1.504 0-1.795.715-1.795 1.764v2.303h3.587l-.467 3.628h-3.12V24h6.116c.728 0 1.325-.598 1.325-1.334V1.333C24 .598 23.403 0 22.675 0z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.197-6.803-5.94 6.803H1.726l7.72-8.85L1.25 2.25h7.59l4.713 6.231L18.244 2.25zm-1.16 17.52h1.833L7.084 4.63H5.117l11.967 15.14z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.348 3.608 1.322.975.975 1.26 2.242 1.322 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.347 2.633-1.322 3.608-.975.975-2.242 1.26-3.608 1.322-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.347-3.608-1.322-.975-.975-1.26-2.242-1.322-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.347-2.633 1.322-3.608.975-.975 2.242-1.26 3.608-1.322C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.17 0-3.548.012-4.795.07-1.042.048-1.61.218-1.982.417-.5.27-.855.594-1.225 1.225-.199.372-.369.94-.417 1.982-.058 1.247-.07 1.625-.07 4.795s.012 3.548.07 4.795c.048 1.042.218 1.61.417 1.982.37.63.725.955 1.225 1.225.372.199.94.369 1.982.417 1.247.058 1.625.07 4.795.07s3.548-.012 4.795-.07c1.042-.048 1.61-.218 1.982-.417.5-.27.855-.594 1.225-1.225.199-.372.369-.94.417-1.982.058-1.247.07-1.625.07-4.795s-.012-3.548-.07-4.795c-.048-1.042-.218-1.61-.417-1.982-.37-.63-.725-.955-1.225-1.225-.372-.199-.94-.369-1.982-.417-1.247-.058-1.625-.07-4.795-.07zm0 3.945a5.892 5.892 0 1 1 0 11.784 5.892 5.892 0 0 1 0-11.784zm0 1.837a4.055 4.055 0 1 0 0 8.11 4.055 4.055 0 0 0 0-8.11zm6.406-3.394a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                            
+                            <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
+                                © 2025 CONCES. All rights reserved.<br>
+                                Conference of Nigerian Christian Engineering Students
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+export const getVotingStageEmailText = (data: VotingStageEmailData): string => {
+  return `
+You Made It! Time to Prepare for the Voting Stage 🗳️✨
+
+You're in. Now, it's time to show the world what you've created.
+
+Dear ${data.firstName},
+
+Congratulations! 🎉
+
+Out of over a thousand students across Nigeria, your entry has qualified for the first voting stage of the CONCES Logo Rebrand Challenge.
+
+This is no small feat, and we're proud of what you've done.
+
+Here's what happens next:
+
+🗓️ Voting opens October 22 and closes November 4.
+
+📲 You'll receive a unique voting link for your entry. Share it widely: friends, classmates, groups, alumni.
+
+🌍 You can also share the general contest link to let others see all entries.
+
+📣 The entries with the most votes and with the Judges blessing will move on to the semi-final stage, where things get even more exciting.
+
+🎯 And yes, the final goal remains that ₦500,000 Grand Prize—and over ₦1,000,000 in total rewards.
+
+Next Steps:
+- Get ready to promote your design.
+- Use your voice and creativity to share your story.
+- Watch out for your link—it's coming soon via SMS.
+
+Let the journey to the top begin.
+
+You've earned your place here. Now own it.
+
+— Team CONCES
+
+Need help? Contact us at goodnews@conces.org
+Visit: https://brandchallenge.conces.org
+
+© 2025 CONCES. All rights reserved.
+Conference of Nigerian Christian Engineering Students
+`;
+};
+
+// Add to email-service.ts

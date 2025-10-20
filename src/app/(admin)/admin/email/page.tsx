@@ -10,12 +10,19 @@ interface UserStats {
   welcomeEmailsPending: number;
   lastCallEmailsSent: number;
   lastCallEmailsPending: number;
+  votingStageEmailsSent: number;
+  votingStageEmailsPending: number;
   welcomeEmailProgress: {
     sent: number;
     pending: number;
     percentage: number;
   };
   lastCallEmailProgress: {
+    sent: number;
+    pending: number;
+    percentage: number;
+  };
+  votingStageEmailProgress: {
     sent: number;
     pending: number;
     percentage: number;
@@ -189,11 +196,53 @@ export default function BulkEmailDashboard() {
     }
   };
 
+  // Send voting stage emails to qualified candidates
+  const sendVotingStageEmails = async () => {
+    setIsLoading(true);
+    setResult("🚀 Starting voting stage email send to qualified candidates...");
+    setLastResult(null);
+
+    try {
+      const response = await fetch("/api/users/emails/voting-stage-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          batchSize: 15,
+          delayBetweenBatches: 2000,
+          updateDatabase: true,
+        }),
+      });
+
+      const data: BulkEmailResult = await response.json();
+      setLastResult(data);
+
+      if (data.success) {
+        setResult(`✅ Voting stage emails sent successfully! 
+          🗳️ Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} users`);
+      } else {
+        setResult(`⚠️ Partial success: 
+          🗳️ Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} users`);
+      }
+
+      // Refresh stats after sending
+      await fetchStats();
+    } catch (error) {
+      console.error("Error sending voting stage emails:", error);
+      setResult(`❌ Error sending voting stage emails: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Reset email status (for testing)
   const resetEmailStatus = async () => {
     if (
       !confirm(
-        "Are you sure you want to reset all email statuses? This will mark all users as not having received welcome emails."
+        "Are you sure you want to reset all email statuses? This will mark all users as not having received any emails."
       )
     ) {
       return;
@@ -226,7 +275,7 @@ export default function BulkEmailDashboard() {
   const markAllAsSent = async () => {
     if (
       !confirm(
-        "Are you sure you want to mark all qualified users as having received welcome emails?"
+        "Are you sure you want to mark all qualified users as having received all emails?"
       )
     ) {
       return;
@@ -338,6 +387,31 @@ export default function BulkEmailDashboard() {
                 Last Call Email Progress
               </div>
             </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-indigo-600">
+                {stats.votingStageEmailsSent || 0}
+              </div>
+              <div className="text-sm text-gray-600">
+                Voting Stage Emails Sent
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-teal-600">
+                {stats.votingStageEmailsPending || 0}
+              </div>
+              <div className="text-sm text-gray-600">
+                Voting Stage Emails Pending
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-2xl font-bold text-cyan-600">
+                {stats.votingStageEmailProgress?.percentage || 0}%
+              </div>
+              <div className="text-sm text-gray-600">Voting Stage Progress</div>
+            </div>
           </div>
         ) : (
           <div className="text-gray-500">Loading statistics...</div>
@@ -389,6 +463,43 @@ export default function BulkEmailDashboard() {
             {isLoading
               ? "Sending Motivational Emails..."
               : "Send Motivational Emails to All"}
+          </button>
+        </div>
+
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-purple-800 mb-3">
+            🗳️✨ Send Voting Stage Emails
+          </h3>
+          <p className="text-purple-700 mb-4">
+            <strong>
+              Congratulate qualified candidates who made it to the voting stage!
+            </strong>
+            This email notifies them that out of 1000+ students, their entry has
+            been selected for the first voting round (Oct 22 - Nov 4). They'll
+            receive voting links via SMS to share with their network.
+          </p>
+          <div className="bg-white rounded p-3 mb-4 border border-purple-100">
+            <p className="text-sm text-gray-600 mb-2">
+              <span className="font-semibold">
+                📊 What this email contains:
+              </span>
+            </p>
+            <ul className="text-sm text-gray-600 space-y-1 ml-4">
+              <li>• Congratulations on making it to voting stage</li>
+              <li>• Voting period dates (October 22 - November 4)</li>
+              <li>• Instructions for sharing their voting link</li>
+              <li>• Prize reminders (₦500,000 grand prize)</li>
+              <li>• Next steps and preparation tips</li>
+            </ul>
+          </div>
+          <button
+            onClick={sendVotingStageEmails}
+            disabled={isLoading}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading
+              ? "Sending Voting Stage Emails..."
+              : "Send Voting Stage Emails to Qualified"}
           </button>
         </div>
 

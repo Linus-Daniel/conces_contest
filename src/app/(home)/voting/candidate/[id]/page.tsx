@@ -21,6 +21,8 @@ import {
   Video,
   File,
   Image as ImageIcon,
+  Mail,
+  Phone,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
@@ -30,14 +32,13 @@ import api from "@/lib/axiosInstance";
 interface Candidate {
   _id: string;
   fullName: string;
-  schoolName: string;
-  department: string;
   avatar: string;
   email: string;
   phone: string;
-  bio: string;
-  year: string;
-  submittedAt: string;
+  institution: string;
+  department: string;
+  matricNumber: string;
+  isQualified: boolean;
 }
 
 interface Project {
@@ -52,6 +53,8 @@ interface Project {
   vote: number;
   status: string;
   submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Enhanced Media Renderer Component
@@ -466,39 +469,32 @@ function LogoGrid({
 export default function CandidateDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const candidateId = params.id as string;
+  const projectId = params.id as string;
 
-  const [candidate, setCandidate] = useState<Candidate | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [votedProjects, setVotedProjects] = useState<Set<string>>(new Set());
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<"projects" | "about">("projects");
+  const [activeTab, setActiveTab] = useState<"project" | "about">("project");
 
   useEffect(() => {
     const stored = localStorage.getItem("votedProjects");
     if (stored) {
       setVotedProjects(new Set(JSON.parse(stored)));
     }
-    fetchCandidateData();
-  }, [candidateId]);
+    fetchProjectData();
+  }, [projectId]);
 
-  const fetchCandidateData = async () => {
+  const fetchProjectData = async () => {
     try {
       setLoading(true);
-      const [candidateResponse, projectsResponse] = await Promise.all([
-        api.get(`/candidates/${candidateId}`),
-        api.get(`/projects?candidateId=${candidateId}`),
-      ]);
-
-      setCandidate(candidateResponse.data.candidate);
-      setProjects(projectsResponse.data.projects);
+      const response = await api.get(`/projects/${projectId}`);
+      setProject(response.data.project);
     } catch (error) {
-      toast.error("Failed to load candidate data");
-      console.error("Error fetching candidate data:", error);
+      toast.error("Failed to load project data");
+      console.error("Error fetching project data:", error);
     } finally {
       setLoading(false);
     }
@@ -517,22 +513,12 @@ export default function CandidateDetailPage() {
     setVotedProjects(newVoted);
     localStorage.setItem("votedProjects", JSON.stringify([...newVoted]));
 
-    setProjects((prev) =>
-      prev.map((p) =>
-        p._id === selectedProjectToVote._id ? { ...p, vote: newVoteCount } : p
-      )
-    );
+    setProject((prev) => (prev ? { ...prev, vote: newVoteCount } : null));
 
     setShowOTPModal(false);
     setSelectedProjectToVote(null);
     toast.success("Vote confirmed successfully! 🎉");
   };
-
-  const totalVotes = projects.reduce(
-    (sum, project) => sum + (project.vote || 0),
-    0
-  );
-  const totalProjects = projects.length;
 
   if (loading) {
     return (
@@ -542,12 +528,12 @@ export default function CandidateDetailPage() {
     );
   }
 
-  if (!candidate) {
+  if (!project) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-600 mb-4">
-            Candidate Not Found
+            Project Not Found
           </h2>
           <button
             onClick={() => router.push("/voting")}
@@ -559,6 +545,9 @@ export default function CandidateDetailPage() {
       </div>
     );
   }
+
+  const candidate = project.candidate;
+  const isVoted = votedProjects.has(project._id);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -596,24 +585,27 @@ export default function CandidateDetailPage() {
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-conces-gold text-white rounded-2xl px-3 py-1 text-sm font-bold shadow-lg">
                   <TrendingUp className="w-4 h-4 inline mr-1" />
-                  {totalVotes} votes
+                  {project.vote || 0} votes
                 </div>
               </div>
             </div>
 
-            {/* Candidate Info */}
+            {/* Candidate & Project Info */}
             <div className="flex-1 min-w-0">
               <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                {candidate.fullName}
+                {project.projectTitle}
               </h1>
+              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+                {project.designConcept}
+              </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
                   <School className="w-6 h-6 text-conces-gold" />
                   <div>
                     <div className="text-white/80 text-sm">School</div>
                     <div className="font-semibold text-white">
-                      {candidate.schoolName}
+                      {candidate.institution}
                     </div>
                   </div>
                 </div>
@@ -631,25 +623,23 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
                   <Award className="w-6 h-6 text-conces-gold" />
                   <div>
-                    <div className="text-white/80 text-sm">Projects</div>
+                    <div className="text-white/80 text-sm">Matric No</div>
                     <div className="font-semibold text-white">
-                      {totalProjects}
+                      {candidate.matricNumber}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                  <Users className="w-6 h-6 text-conces-gold" />
+                  <div>
+                    <div className="text-white/80 text-sm">Designer</div>
+                    <div className="font-semibold text-white">
+                      {candidate.fullName}
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Bio */}
-              {candidate.bio && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                  <h3 className="font-semibold text-white mb-2 text-lg">
-                    About Me
-                  </h3>
-                  <p className="text-white/90 leading-relaxed">
-                    {candidate.bio}
-                  </p>
-                </div>
-              )}
             </div>
           </motion.div>
         </div>
@@ -660,15 +650,15 @@ export default function CandidateDetailPage() {
         <div className="container mx-auto px-6">
           <div className="flex space-x-8">
             <button
-              onClick={() => setActiveTab("projects")}
+              onClick={() => setActiveTab("project")}
               className={`py-4 px-1 border-b-2 font-semibold text-lg transition-all duration-200 ${
-                activeTab === "projects"
+                activeTab === "project"
                   ? "border-conces-blue text-conces-blue"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              <Users className="w-5 h-5 inline mr-2" />
-              Projects ({totalProjects})
+              <Award className="w-5 h-5 inline mr-2" />
+              Project Details
             </button>
             <button
               onClick={() => setActiveTab("about")}
@@ -679,7 +669,7 @@ export default function CandidateDetailPage() {
               }`}
             >
               <BookOpen className="w-5 h-5 inline mr-2" />
-              About Candidate
+              About Designer
             </button>
           </div>
         </div>
@@ -687,66 +677,81 @@ export default function CandidateDetailPage() {
 
       {/* Content */}
       <div className="container mx-auto px-6 py-8">
-        {activeTab === "projects" ? (
-          <div className="space-y-8">
-            {projects.map((project, index) => (
-              <motion.div
-                key={project._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-3xl shadow-lg border border-gray-200/60 overflow-hidden"
-              >
-                {/* Project Header */}
-                <div className="bg-gradient-to-r from-conces-blue to-blue-600 text-white p-6 lg:p-8">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                      <h2 className="text-2xl lg:text-3xl font-bold mb-2">
-                        {project.projectTitle}
-                      </h2>
-                      <p className="text-blue-100 text-lg">
-                        {project.designConcept}
-                      </p>
+        {activeTab === "project" ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl shadow-lg border border-gray-200/60 overflow-hidden"
+          >
+            {/* Project Header */}
+            <div className="bg-gradient-to-r from-conces-blue to-blue-600 text-white p-6 lg:p-8">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl lg:text-3xl font-bold mb-2">
+                    {project.projectTitle}
+                  </h2>
+                  <p className="text-blue-100 text-lg">
+                    {project.designConcept}
+                  </p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-white">
+                      {project.vote || 0}
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-white">
-                          {project.vote || 0}
-                        </div>
-                        <div className="text-blue-200 text-sm">Votes</div>
-                      </div>
-                      <motion.button
-                        onClick={() => handleVoteClick(project)}
-                        disabled={votedProjects.has(project._id)}
-                        whileHover={
-                          !votedProjects.has(project._id) ? { scale: 1.05 } : {}
-                        }
-                        whileTap={
-                          !votedProjects.has(project._id) ? { scale: 0.95 } : {}
-                        }
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                          votedProjects.has(project._id)
-                            ? "bg-white/20 text-white/70 cursor-not-allowed"
-                            : "bg-white text-conces-blue hover:shadow-lg"
-                        }`}
-                      >
-                        {votedProjects.has(project._id) ? "Voted" : "Vote Now"}
-                      </motion.button>
-                    </div>
+                    <div className="text-blue-200 text-sm">Votes</div>
                   </div>
+                  <motion.button
+                    onClick={() => handleVoteClick(project)}
+                    disabled={isVoted}
+                    whileHover={!isVoted ? { scale: 1.05 } : {}}
+                    whileTap={!isVoted ? { scale: 0.95 } : {}}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                      isVoted
+                        ? "bg-white/20 text-white/70 cursor-not-allowed"
+                        : "bg-white text-conces-blue hover:shadow-lg"
+                    }`}
+                  >
+                    {isVoted ? "Voted" : "Vote Now"}
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Content */}
+            <div className="p-6 lg:p-8">
+              <LogoGrid
+                project={project}
+                onVote={() => handleVoteClick(project)}
+                isVoted={isVoted}
+              />
+
+              {/* Project Details */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                {/* Color Palette */}
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 rounded-2xl border border-purple-200/60">
+                  <h3 className="font-bold text-conces-blue mb-3 text-lg flex items-center gap-3">
+                    <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+                    Color Palette
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {project.colorPalette}
+                  </p>
                 </div>
 
-                {/* Project Content */}
-                <div className="p-6 lg:p-8">
-                  <LogoGrid
-                    project={project}
-                    onVote={() => handleVoteClick(project)}
-                    isVoted={votedProjects.has(project._id)}
-                  />
+                {/* Inspiration */}
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-6 rounded-2xl border border-amber-200/60">
+                  <h3 className="font-bold text-conces-blue mb-3 text-lg flex items-center gap-3">
+                    <div className="w-2 h-8 bg-amber-500 rounded-full"></div>
+                    Inspiration
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {project.inspiration}
+                  </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </div>
+          </motion.div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
@@ -755,16 +760,16 @@ export default function CandidateDetailPage() {
           >
             <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Candidate Information
+                Designer Information
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
                   <School className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">School</div>
+                    <div className="text-gray-600 text-sm">Institution</div>
                     <div className="font-semibold text-gray-900">
-                      {candidate.schoolName}
+                      {candidate.institution}
                     </div>
                   </div>
                 </div>
@@ -780,53 +785,62 @@ export default function CandidateDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                  <Calendar className="w-8 h-8 text-conces-blue" />
+                  <Award className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">Year</div>
+                    <div className="text-gray-600 text-sm">Matric Number</div>
                     <div className="font-semibold text-gray-900">
-                      {candidate.year || "Not specified"}
+                      {candidate.matricNumber}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                  <Award className="w-8 h-8 text-conces-blue" />
+                  <Calendar className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">Total Projects</div>
+                    <div className="text-gray-600 text-sm">Submission Date</div>
                     <div className="font-semibold text-gray-900">
-                      {totalProjects}
+                      {new Date(project.submittedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                  <Mail className="w-8 h-8 text-conces-blue" />
+                  <div>
+                    <div className="text-gray-600 text-sm">Email</div>
+                    <div className="font-semibold text-gray-900">
+                      {candidate.email}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                  <Phone className="w-8 h-8 text-conces-blue" />
+                  <div>
+                    <div className="text-gray-600 text-sm">Phone</div>
+                    <div className="font-semibold text-gray-900">
+                      {candidate.phone}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {candidate.bio && (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/60">
-                  <h3 className="font-bold text-conces-blue mb-4 text-xl">
-                    Personal Bio
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">
-                    {candidate.bio}
-                  </p>
-                </div>
-              )}
-
               <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200/60">
                 <h3 className="font-bold text-conces-green mb-3 text-xl">
-                  Voting Statistics
+                  Project Statistics
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-conces-green">
-                      {totalVotes}
+                      {project.vote || 0}
                     </div>
                     <div className="text-gray-600">Total Votes</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-conces-blue">
-                      {totalProjects}
+                      {project.primaryFileUrls?.length || 0}
                     </div>
-                    <div className="text-gray-600">Projects Submitted</div>
+                    <div className="text-gray-600">Logo Files</div>
                   </div>
                 </div>
               </div>
@@ -835,7 +849,7 @@ export default function CandidateDetailPage() {
         )}
       </div>
 
-      {/* Modals */}
+      {/* OTP Modal */}
       {showOTPModal && selectedProjectToVote && (
         <OTPVotingModal
           projectId={selectedProjectToVote._id}
