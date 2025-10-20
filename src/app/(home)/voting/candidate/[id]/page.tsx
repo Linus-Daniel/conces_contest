@@ -18,9 +18,9 @@ import {
   FileText,
   Download,
   ExternalLink,
-  Palette,
-  Lightbulb,
-  Target,
+  Video,
+  File,
+  Image as ImageIcon,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
@@ -38,9 +38,6 @@ interface Candidate {
   bio: string;
   year: string;
   submittedAt: string;
-  institution: string;
-  matricNumber: string;
-  isQualified: boolean;
 }
 
 interface Project {
@@ -55,109 +52,252 @@ interface Project {
   vote: number;
   status: string;
   submittedAt: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-// PDF Viewer Component
-function PDFViewer({ url, title }: { url: string; title: string }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <div className="w-full h-full flex flex-col bg-gray-50 rounded-lg overflow-hidden border">
-      <div className="flex items-center justify-between p-3 bg-gray-100 border-b">
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium text-gray-700 truncate">
-            {title}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <a
-            href={url}
-            download
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
-            title="Download PDF"
-          >
-            <Download className="w-4 h-4 text-gray-600" />
-          </a>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
-            title="Open in new tab"
-          >
-            <ExternalLink className="w-4 h-4 text-gray-600" />
-          </a>
-        </div>
-      </div>
-      <div className="flex-1 relative">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
-          </div>
-        )}
-        {error ? (
-          <div className="absolute inset-0 flex items-center justify-center flex-col gap-2 p-4">
-            <FileText className="w-12 h-12 text-gray-400" />
-            <p className="text-gray-500 text-center text-sm">{error}</p>
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-conces-blue hover:underline text-sm"
-            >
-              Open PDF directly
-            </a>
-          </div>
-        ) : (
-          <iframe
-            src={url}
-            className="w-full h-full border-0"
-            onLoad={() => setIsLoading(false)}
-            onError={() => {
-              setError("Failed to load PDF preview");
-              setIsLoading(false);
-            }}
-            title={title}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Media Renderer Component
+// Enhanced Media Renderer Component
 function MediaRenderer({
   url,
   alt,
   className = "",
   onLoad,
+  thumbnail = false,
 }: {
   url: string;
   alt: string;
   className?: string;
   onLoad?: () => void;
+  thumbnail?: boolean;
 }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isPDF, setIsPDF] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<
+    "image" | "pdf" | "video" | "document" | "unknown"
+  >("unknown");
 
   useEffect(() => {
-    setIsPDF(
-      url?.toLowerCase().endsWith(".pdf") || url?.includes("/pdf/") || false
-    );
+    // Determine file type from URL and extension
+    const determineFileType = () => {
+      if (!url) return "unknown";
+
+      const lowerUrl = url.toLowerCase();
+
+      // Check for PDF
+      if (
+        lowerUrl.endsWith(".pdf") ||
+        lowerUrl.includes("/pdf/") ||
+        lowerUrl.includes("application/pdf")
+      ) {
+        return "pdf";
+      }
+
+      // Check for images
+      const imageExtensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".svg",
+        ".bmp",
+        ".tiff",
+      ];
+      if (imageExtensions.some((ext) => lowerUrl.includes(ext))) {
+        return "image";
+      }
+
+      // Check for videos
+      const videoExtensions = [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".mkv",
+      ];
+      if (videoExtensions.some((ext) => lowerUrl.includes(ext))) {
+        return "video";
+      }
+
+      // Check for documents
+      const documentExtensions = [".doc", ".docx", ".txt", ".rtf", ".odt"];
+      if (documentExtensions.some((ext) => lowerUrl.includes(ext))) {
+        return "document";
+      }
+
+      return "unknown";
+    };
+
+    setFileType(determineFileType());
   }, [url]);
 
-  if (isPDF) {
+  const getFileIcon = () => {
+    switch (fileType) {
+      case "pdf":
+        return <FileText className="w-8 h-8 text-red-500" />;
+      case "video":
+        return <Video className="w-8 h-8 text-purple-500" />;
+      case "document":
+        return <File className="w-8 h-8 text-blue-500" />;
+      case "unknown":
+        return <File className="w-8 h-8 text-gray-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getFileTypeLabel = () => {
+    switch (fileType) {
+      case "pdf":
+        return "PDF";
+      case "video":
+        return "Video";
+      case "document":
+        return "Document";
+      case "unknown":
+        return "File";
+      default:
+        return "";
+    }
+  };
+
+  // PDF Viewer
+  if (fileType === "pdf") {
     return (
-      <div className={`${className} relative`}>
-        <PDFViewer url={url} title={alt} />
+      <div
+        className={`${className} w-full h-full flex flex-col bg-gray-50 rounded-lg overflow-hidden border`}
+      >
+        <div className="flex items-center justify-between p-3 bg-gray-100 border-b">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-red-500" />
+            <span className="text-sm font-medium text-gray-700 truncate">
+              {alt}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <a
+              href={url}
+              download
+              className="p-1 hover:bg-gray-200 rounded transition-colors"
+              title="Download PDF"
+            >
+              <Download className="w-4 h-4 text-gray-600" />
+            </a>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1 hover:bg-gray-200 rounded transition-colors"
+              title="Open in new tab"
+            >
+              <ExternalLink className="w-4 h-4 text-gray-600" />
+            </a>
+          </div>
+        </div>
+        <div className="flex-1 relative">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
+            </div>
+          )}
+          {error ? (
+            <div className="absolute inset-0 flex items-center justify-center flex-col gap-2 p-4">
+              <FileText className="w-12 h-12 text-gray-400" />
+              <p className="text-gray-500 text-center text-sm">{error}</p>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-conces-blue hover:underline text-sm"
+              >
+                Open PDF directly
+              </a>
+            </div>
+          ) : (
+            <iframe
+              src={url}
+              className="w-full h-full border-0"
+              onLoad={() => setIsLoading(false)}
+              onError={() => {
+                setError("Failed to load PDF preview");
+                setIsLoading(false);
+              }}
+              title={alt}
+            />
+          )}
+        </div>
       </div>
     );
   }
 
+  // Video Player
+  if (fileType === "video") {
+    return (
+      <div
+        className={`${className} relative bg-gray-100 rounded-lg overflow-hidden`}
+      >
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
+          </div>
+        )}
+        <video
+          src={url}
+          controls
+          className="w-full h-full object-contain"
+          onLoadStart={() => setIsLoading(false)}
+          onError={() => setIsLoading(false)}
+        >
+          Your browser does not support the video tag.
+        </video>
+        {thumbnail && (
+          <div className="absolute top-2 left-2 bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold">
+            Video
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Document/Other File Types
+  if (fileType === "document" || fileType === "unknown") {
+    return (
+      <div
+        className={`${className} bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center flex-col p-6`}
+      >
+        {getFileIcon()}
+        <div className="mt-3 text-center">
+          <div className="font-semibold text-gray-700">
+            {getFileTypeLabel()}
+          </div>
+          <div className="text-sm text-gray-500 mt-1 truncate max-w-[200px]">
+            {alt}
+          </div>
+        </div>
+        <div className="mt-4 flex gap-2">
+          <a
+            href={url}
+            download
+            className="flex items-center gap-1 px-3 py-1 bg-conces-blue text-white rounded text-sm hover:bg-blue-600 transition-colors"
+          >
+            <Download className="w-3 h-3" />
+            Download
+          </a>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300 transition-colors"
+          >
+            <ExternalLink className="w-3 h-3" />
+            Open
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Image Renderer (default)
   return (
     <div
       className={`${className} relative bg-gray-100 rounded-lg overflow-hidden`}
@@ -176,7 +316,149 @@ function MediaRenderer({
           setIsLoading(false);
           onLoad?.();
         }}
+        onError={() => {
+          setIsLoading(false);
+          setError("Failed to load image");
+        }}
       />
+      {thumbnail && (
+        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold">
+          Image
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center flex-col gap-2 bg-gray-100">
+          <ImageIcon className="w-8 h-8 text-gray-400" />
+          <span className="text-gray-500 text-sm">Failed to load image</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Logo Grid Component to render all logos
+function LogoGrid({
+  project,
+  onVote,
+  isVoted,
+}: {
+  project: Project;
+  onVote: () => void;
+  isVoted: boolean;
+}) {
+  const allLogos = [
+    ...(project.primaryFileUrls || []),
+    ...(project.mockupUrls || []),
+  ].filter(Boolean);
+
+  if (allLogos.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 text-center border border-gray-200">
+        <File className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-500">No logos available for this project</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Main Logo Preview */}
+      <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-sm">
+        <h3 className="font-bold text-lg text-gray-900 mb-4">Main Logo</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {project.primaryFileUrls?.map((url, index) => (
+            <div key={index} className="space-y-3">
+              <MediaRenderer
+                url={url}
+                alt={`${project.projectTitle} - Main Logo ${index + 1}`}
+                className="h-64 lg:h-80"
+              />
+              <div className="text-center text-sm text-gray-600">
+                Logo Variation {index + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Mockups Section */}
+      {project.mockupUrls && project.mockupUrls.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-4">
+            Logo Mockups ({project.mockupUrls.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {project.mockupUrls.map((url, index) => (
+              <div key={index} className="space-y-3">
+                <MediaRenderer
+                  url={url}
+                  alt={`${project.projectTitle} - Mockup ${index + 1}`}
+                  className="h-48"
+                  thumbnail
+                />
+                <div className="text-center text-sm text-gray-600">
+                  Mockup {index + 1}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All Files Grid */}
+      <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-sm">
+        <h3 className="font-bold text-lg text-gray-900 mb-4">
+          All Project Files ({allLogos.length})
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {allLogos.map((url, index) => (
+            <div key={index} className="group relative">
+              <MediaRenderer
+                url={url}
+                alt={`${project.projectTitle} - File ${index + 1}`}
+                className="h-32"
+                thumbnail
+              />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                <div className="text-white text-center text-sm p-2">
+                  View File {index + 1}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Vote Section */}
+      <div className="bg-gradient-to-r from-conces-green to-emerald-600 rounded-2xl p-6 text-center">
+        <h3 className="text-white font-bold text-xl mb-3">Like this design?</h3>
+        <p className="text-white/90 mb-4">
+          Show your support by voting for this project!
+        </p>
+        <motion.button
+          onClick={onVote}
+          disabled={isVoted}
+          whileHover={!isVoted ? { scale: 1.05 } : {}}
+          whileTap={!isVoted ? { scale: 0.95 } : {}}
+          className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 mx-auto ${
+            isVoted
+              ? "bg-white/20 text-white/70 cursor-not-allowed"
+              : "bg-white text-conces-green hover:shadow-lg"
+          }`}
+        >
+          {isVoted ? (
+            <>
+              <HeartSolidIcon className="w-6 h-6" />
+              Already Voted
+            </>
+          ) : (
+            <>
+              <MessageCircle className="w-6 h-6" />
+              Vote for this Project
+            </>
+          )}
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -187,12 +469,14 @@ export default function CandidateDetailPage() {
   const candidateId = params.id as string;
 
   const [candidate, setCandidate] = useState<Candidate | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [votedProjects, setVotedProjects] = useState<Set<string>>(new Set());
-  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showOTPModal, setShowOTPModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<"project" | "about">("project");
+  const [selectedProjectToVote, setSelectedProjectToVote] =
+    useState<Project | null>(null);
+  const [activeTab, setActiveTab] = useState<"projects" | "about">("projects");
 
   useEffect(() => {
     const stored = localStorage.getItem("votedProjects");
@@ -205,11 +489,13 @@ export default function CandidateDetailPage() {
   const fetchCandidateData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/projects/${candidateId}`);
-      console.log(response.data);
+      const [candidateResponse, projectsResponse] = await Promise.all([
+        api.get(`/candidates/${candidateId}`),
+        api.get(`/projects?candidateId=${candidateId}`),
+      ]);
 
-      setProject(response.data.project);
-      setCandidate(response.data.project.candidate);
+      setCandidate(candidateResponse.data.candidate);
+      setProjects(projectsResponse.data.projects);
     } catch (error) {
       toast.error("Failed to load candidate data");
       console.error("Error fetching candidate data:", error);
@@ -218,26 +504,35 @@ export default function CandidateDetailPage() {
     }
   };
 
-  const handleVoteClick = () => {
-    if (!project) return;
+  const handleVoteClick = (project: Project) => {
+    setSelectedProjectToVote(project);
     setShowOTPModal(true);
   };
 
   const handleVoteSuccess = (newVoteCount: number) => {
-    if (!project) return;
+    if (!selectedProjectToVote) return;
 
     const newVoted = new Set(votedProjects);
-    newVoted.add(project._id);
+    newVoted.add(selectedProjectToVote._id);
     setVotedProjects(newVoted);
     localStorage.setItem("votedProjects", JSON.stringify([...newVoted]));
 
-    setProject((prev) => (prev ? { ...prev, vote: newVoteCount } : null));
+    setProjects((prev) =>
+      prev.map((p) =>
+        p._id === selectedProjectToVote._id ? { ...p, vote: newVoteCount } : p
+      )
+    );
+
     setShowOTPModal(false);
+    setSelectedProjectToVote(null);
     toast.success("Vote confirmed successfully! 🎉");
   };
 
-  const totalVotes = project?.vote || 0;
-  const isVoted = project ? votedProjects.has(project._id) : false;
+  const totalVotes = projects.reduce(
+    (sum, project) => sum + (project.vote || 0),
+    0
+  );
+  const totalProjects = projects.length;
 
   if (loading) {
     return (
@@ -247,7 +542,7 @@ export default function CandidateDetailPage() {
     );
   }
 
-  if (!project || !candidate) {
+  if (!candidate) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
@@ -264,11 +559,6 @@ export default function CandidateDetailPage() {
       </div>
     );
   }
-
-  const allMedia = [
-    ...(project.primaryFileUrls || []),
-    ...(project.mockupUrls || []),
-  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -321,9 +611,9 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
                   <School className="w-6 h-6 text-conces-gold" />
                   <div>
-                    <div className="text-white/80 text-sm">Institution</div>
+                    <div className="text-white/80 text-sm">School</div>
                     <div className="font-semibold text-white">
-                      {candidate.institution}
+                      {candidate.schoolName}
                     </div>
                   </div>
                 </div>
@@ -341,9 +631,9 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
                   <Award className="w-6 h-6 text-conces-gold" />
                   <div>
-                    <div className="text-white/80 text-sm">Matric Number</div>
+                    <div className="text-white/80 text-sm">Projects</div>
                     <div className="font-semibold text-white">
-                      {candidate.matricNumber}
+                      {totalProjects}
                     </div>
                   </div>
                 </div>
@@ -370,15 +660,15 @@ export default function CandidateDetailPage() {
         <div className="container mx-auto px-6">
           <div className="flex space-x-8">
             <button
-              onClick={() => setActiveTab("project")}
+              onClick={() => setActiveTab("projects")}
               className={`py-4 px-1 border-b-2 font-semibold text-lg transition-all duration-200 ${
-                activeTab === "project"
+                activeTab === "projects"
                   ? "border-conces-blue text-conces-blue"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              <Target className="w-5 h-5 inline mr-2" />
-              Project Details
+              <Users className="w-5 h-5 inline mr-2" />
+              Projects ({totalProjects})
             </button>
             <button
               onClick={() => setActiveTab("about")}
@@ -397,184 +687,66 @@ export default function CandidateDetailPage() {
 
       {/* Content */}
       <div className="container mx-auto px-6 py-8">
-        {activeTab === "project" ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-8"
-          >
-            {/* Project Header */}
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                <div className="flex-1">
-                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                    {project.projectTitle}
-                  </h1>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-conces-green/10 text-conces-green px-4 py-2 rounded-full">
-                      <Award className="w-5 h-5" />
-                      <span className="font-semibold">{project.status}</span>
+        {activeTab === "projects" ? (
+          <div className="space-y-8">
+            {projects.map((project, index) => (
+              <motion.div
+                key={project._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-3xl shadow-lg border border-gray-200/60 overflow-hidden"
+              >
+                {/* Project Header */}
+                <div className="bg-gradient-to-r from-conces-blue to-blue-600 text-white p-6 lg:p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl lg:text-3xl font-bold mb-2">
+                        {project.projectTitle}
+                      </h2>
+                      <p className="text-blue-100 text-lg">
+                        {project.designConcept}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-5 h-5" />
-                      <span>
-                        Submitted:{" "}
-                        {new Date(project.submittedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <motion.button
-                  onClick={handleVoteClick}
-                  disabled={isVoted}
-                  whileHover={!isVoted ? { scale: 1.05 } : {}}
-                  whileTap={!isVoted ? { scale: 0.95 } : {}}
-                  className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200 flex items-center gap-3 shadow-lg ${
-                    isVoted
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                      : "bg-gradient-to-r from-conces-green to-emerald-600 text-white hover:shadow-xl border border-transparent"
-                  }`}
-                >
-                  {isVoted ? (
-                    <>
-                      <HeartSolidIcon className="w-6 h-6" />
-                      Already Voted
-                    </>
-                  ) : (
-                    <>
-                      <MessageCircle className="w-6 h-6" />
-                      Vote for this Project
-                    </>
-                  )}
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Project Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Design Concept */}
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Lightbulb className="w-8 h-8 text-conces-blue" />
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Design Concept
-                    </h2>
-                  </div>
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                      {project.designConcept}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Color Palette */}
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Palette className="w-8 h-8 text-conces-blue" />
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Color Palette
-                    </h2>
-                  </div>
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                      {project.colorPalette}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Inspiration */}
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Target className="w-8 h-8 text-conces-blue" />
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Inspiration
-                    </h2>
-                  </div>
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                      {project.inspiration}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-8">
-                {/* Vote Stats */}
-                <div className="bg-gradient-to-br from-conces-blue to-blue-600 text-white rounded-3xl p-8 shadow-lg">
-                  <div className="text-center">
-                    <HeartIcon className="w-12 h-12 mx-auto mb-4 text-conces-gold" />
-                    <div className="text-5xl font-bold mb-2">{totalVotes}</div>
-                    <div className="text-xl font-semibold opacity-90">
-                      Total Votes
-                    </div>
-                    <div className="mt-4 text-sm opacity-80">
-                      {isVoted
-                        ? "You've voted for this project"
-                        : "Cast your vote now!"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Project Files */}
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">
-                    Project Files
-                  </h3>
-                  <div className="space-y-3">
-                    {allMedia.map((file, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedMedia(file)}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-conces-blue hover:bg-blue-50 transition-colors"
-                      >
-                        <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-gray-700 truncate">
-                          {file.split("/").pop()}
-                        </span>
-                        <ExternalLink className="w-4 h-4 text-gray-400 ml-auto" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Project Status */}
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-200/60 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">
-                    Project Status
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Status</span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          project.status === "selected"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-white">
+                          {project.vote || 0}
+                        </div>
+                        <div className="text-blue-200 text-sm">Votes</div>
+                      </div>
+                      <motion.button
+                        onClick={() => handleVoteClick(project)}
+                        disabled={votedProjects.has(project._id)}
+                        whileHover={
+                          !votedProjects.has(project._id) ? { scale: 1.05 } : {}
+                        }
+                        whileTap={
+                          !votedProjects.has(project._id) ? { scale: 0.95 } : {}
+                        }
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                          votedProjects.has(project._id)
+                            ? "bg-white/20 text-white/70 cursor-not-allowed"
+                            : "bg-white text-conces-blue hover:shadow-lg"
                         }`}
                       >
-                        {project.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Submitted</span>
-                      <span className="text-gray-900 font-medium">
-                        {new Date(project.submittedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Last Updated</span>
-                      <span className="text-gray-900 font-medium">
-                        {new Date(project.updatedAt).toLocaleDateString()}
-                      </span>
+                        {votedProjects.has(project._id) ? "Voted" : "Vote Now"}
+                      </motion.button>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </motion.div>
+
+                {/* Project Content */}
+                <div className="p-6 lg:p-8">
+                  <LogoGrid
+                    project={project}
+                    onVote={() => handleVoteClick(project)}
+                    isVoted={votedProjects.has(project._id)}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
@@ -590,9 +762,9 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
                   <School className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">Institution</div>
+                    <div className="text-gray-600 text-sm">School</div>
                     <div className="font-semibold text-gray-900">
-                      {candidate.institution}
+                      {candidate.schoolName}
                     </div>
                   </div>
                 </div>
@@ -610,9 +782,9 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
                   <Calendar className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">Matric Number</div>
+                    <div className="text-gray-600 text-sm">Year</div>
                     <div className="font-semibold text-gray-900">
-                      {candidate.matricNumber}
+                      {candidate.year || "Not specified"}
                     </div>
                   </div>
                 </div>
@@ -620,11 +792,9 @@ export default function CandidateDetailPage() {
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
                   <Award className="w-8 h-8 text-conces-blue" />
                   <div>
-                    <div className="text-gray-600 text-sm">
-                      Qualification Status
-                    </div>
+                    <div className="text-gray-600 text-sm">Total Projects</div>
                     <div className="font-semibold text-gray-900">
-                      {candidate.isQualified ? "Qualified" : "Not Qualified"}
+                      {totalProjects}
                     </div>
                   </div>
                 </div>
@@ -653,8 +823,10 @@ export default function CandidateDetailPage() {
                     <div className="text-gray-600">Total Votes</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-conces-blue">1</div>
-                    <div className="text-gray-600">Project Submitted</div>
+                    <div className="text-3xl font-bold text-conces-blue">
+                      {totalProjects}
+                    </div>
+                    <div className="text-gray-600">Projects Submitted</div>
                   </div>
                 </div>
               </div>
@@ -663,53 +835,16 @@ export default function CandidateDetailPage() {
         )}
       </div>
 
-      {/* Media Modal */}
-      <AnimatePresence>
-        {selectedMedia && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => setSelectedMedia(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {selectedMedia.split("/").pop()}
-                </h3>
-                <button
-                  onClick={() => setSelectedMedia(null)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-6 h-6 text-gray-600" />
-                </button>
-              </div>
-              <div className="h-[calc(90vh-80px)]">
-                <MediaRenderer
-                  url={selectedMedia}
-                  alt="Project Media"
-                  className="w-full h-full"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* OTP Modal */}
-      {showOTPModal && project && (
+      {/* Modals */}
+      {showOTPModal && selectedProjectToVote && (
         <OTPVotingModal
-          projectId={project._id}
-          projectTitle={project.projectTitle}
-          candidateName={candidate.fullName}
-          onClose={() => setShowOTPModal(false)}
+          projectId={selectedProjectToVote._id}
+          projectTitle={selectedProjectToVote.projectTitle}
+          candidateName={selectedProjectToVote.candidate.fullName}
+          onClose={() => {
+            setShowOTPModal(false);
+            setSelectedProjectToVote(null);
+          }}
           onSuccess={handleVoteSuccess}
         />
       )}
