@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model, Types } from "mongoose";
 import { IEnroll } from "./Enroll";
 
 export interface IProject extends Document {
-  candidate: Types.ObjectId | IEnroll; // Candidate is stored as an ObjectId referencing Enroll
+  candidate:  IEnroll; // Candidate is stored as an ObjectId referencing Enroll
   projectTitle: string;
   designConcept: string;
   colorPalette: string;

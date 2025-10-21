@@ -3,11 +3,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Enroll from "@/models/Enroll";
-import { sendVotingStageEmail } from "@/lib/email-service";
+import { sendVotingStageEmail } from "@/lib/email/emailService";
+import Project from "@/models/Project";
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
     const body = await request.json();
     const { 
       batchSize = 15, 
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
           isQualified: true 
         };
 
-    const enrollees = await Enroll.find(query)
-      .select("_id fullName email receivedQualifiedEmail")
+    const enrollees = await Project.find({status:"selected"})
+      .populate("candidate"," fullName email receivedQualifiedEmail")
       .lean();
 
     if (enrollees.length === 0) {
@@ -82,53 +82,53 @@ export async function POST(request: NextRequest) {
       const batchPromises = batch.map(async (enrollee) => {
         try {
           // Skip if already sent (double-check)
-          if (updateDatabase && enrollee.receivedQualifiedEmail) {
+          if (updateDatabase && enrollee.candidate?.receivedQualifiedEmail) {
             result.summary.skipped++;
-            console.log(`⏩ Skipping ${enrollee.email} - already sent`);
+            console.log(`⏩ Skipping ${enrollee.candidate.email} - already sent`);
             return { 
               success: false, 
               skipped: true, 
-              email: enrollee.email,
-              userId: enrollee._id.toString()
+              email: enrollee.candidate.email,
+              userId: enrollee.candidate._id.toString()
             };
           }
 
           // Extract first name
-          const firstName = enrollee.fullName.split(" ")[0];
+          const firstName = enrollee.candidate.fullName.split(" ")[0];
 
           // Send the email
           const emailSent = await sendVotingStageEmail({
-            email: enrollee.email,
+            email: enrollee.candidate.email,
             firstName: firstName,
           });
 
           if (emailSent) {
             result.summary.sent++;
-            console.log(`✅ Voting stage email sent to ${enrollee.email}`);
+            console.log(`✅ Voting stage email sent to ${enrollee.candidate.email}`);
 
             // Update database if enabled
             if (updateDatabase) {
               try {
                 await Enroll.findByIdAndUpdate(
-                  enrollee._id,
+                  enrollee.candidate._id,
                   { 
                     receivedQualifiedEmail: true,
                     receivedQualifiedEmailAt: new Date()
                   }
                 );
                 result.summary.updatedInDatabase++;
-                result.details.updatedUserIds.push(enrollee._id.toString());
-                console.log(`📝 Database updated for ${enrollee.email}`);
+                result.details.updatedUserIds.push(enrollee.candidate._id.toString());
+                console.log(`📝 Database updated for ${enrollee.candidate.email}`);
               } catch (dbError) {
-                console.error(`Failed to update DB for ${enrollee.email}:`, dbError);
+                console.error(`Failed to update DB for ${enrollee.candidate.email}:`, dbError);
                 // Email sent but DB update failed - log but don't fail the whole operation
               }
             }
 
             return { 
               success: true, 
-              email: enrollee.email,
-              userId: enrollee._id.toString()
+              email: enrollee.candidate.email,
+              userId: enrollee.candidate._id.toString()
             };
           } else {
             throw new Error("Email service returned false");
@@ -138,18 +138,18 @@ export async function POST(request: NextRequest) {
           const errorMessage = error instanceof Error ? error.message : "Unknown error";
           
           result.details.errors.push({
-            email: enrollee.email,
+            email: enrollee.candidate.email,
             error: errorMessage,
-            userId: enrollee._id.toString(),
+            userId: enrollee.candidate._id.toString(),
           });
           
-          console.error(`❌ Failed to send to ${enrollee.email}:`, errorMessage);
+          console.error(`❌ Failed to send to ${enrollee.candidate.email}:`, errorMessage);
           
           return { 
             success: false, 
-            email: enrollee.email, 
+            email: enrollee.candidate.email, 
             error: errorMessage,
-            userId: enrollee._id.toString()
+            userId: enrollee.candidate._id.toString()
           };
         }
       });

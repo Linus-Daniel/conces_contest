@@ -13,27 +13,35 @@ export interface IVote extends Document {
 const VoteSchema = new Schema<IVote>({
   phoneNumber: {
     type: String,
-    required: true,
+    required: [true, 'Phone number is required'],
+    validate: {
+      validator: function(v: string): boolean {
+        return !!(v && v.length > 0);
+      },
+      message: 'Phone number cannot be empty'
+    },
     index: true,
   },
   projectId: {
     type: String,
-    required: true,
+    required: [true, 'Project ID is required'],
     ref: "Project",
     index: true,
   },
   otpId: {
     type: String,
-    required: true,
+    required: [true, 'OTP ID is required'],
     ref: "OTP",
   },
   ipAddress: {
     type: String,
-    required: true,
+    required: [true, 'IP address is required'],
+    default: 'unknown',
   },
   userAgent: {
     type: String,
-    required: true,
+    required: [true, 'User agent is required'],
+    default: 'unknown',
   },
   votedAt: {
     type: Date,

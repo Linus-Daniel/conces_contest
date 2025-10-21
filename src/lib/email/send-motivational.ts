@@ -71,6 +71,8 @@ export async function getUsersStats() {
     const totalUsers = await Enroll.countDocuments({});
     const qualifiedUsers = await Enroll.countDocuments({ isQualified: true });
     const unqualifiedUsers = await Enroll.countDocuments({ isQualified: false });
+    const qualifiedEmails = await Enroll.countDocuments({receivedQualifiedEmail:true});
+    const qualifiedEmailsPending = await Enroll.countDocuments({receivedQualifiedEmail:false});
 
     // Welcome email stats
     const welcomeEmailsSent = await Enroll.countDocuments({
@@ -102,6 +104,8 @@ export async function getUsersStats() {
       welcomeEmailsPending,
       lastCallEmailsSent,
       lastCallEmailsPending,
+      qualifiedEmails,
+      qualifiedEmailsPending,
     };
   } catch (error) {
     console.error("Error getting user stats:", error);

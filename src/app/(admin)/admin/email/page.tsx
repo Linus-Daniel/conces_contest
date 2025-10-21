@@ -22,7 +22,7 @@ interface UserStats {
     pending: number;
     percentage: number;
   };
-  votingStageEmailProgress: {
+  votingStage: {
     sent: number;
     pending: number;
     percentage: number;
@@ -303,8 +303,9 @@ export default function BulkEmailDashboard() {
       console.error("Error marking as sent:", error);
       setResult(`❌ Error marking as sent: ${error}`);
     }
-  };
+  }
 
+  console.log(stats)
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">
@@ -390,7 +391,7 @@ export default function BulkEmailDashboard() {
 
             <div className="bg-white p-4 rounded shadow">
               <div className="text-2xl font-bold text-indigo-600">
-                {stats.votingStageEmailsSent || 0}
+                {stats.votingStage.sent || 0}
               </div>
               <div className="text-sm text-gray-600">
                 Voting Stage Emails Sent
@@ -399,19 +400,14 @@ export default function BulkEmailDashboard() {
 
             <div className="bg-white p-4 rounded shadow">
               <div className="text-2xl font-bold text-teal-600">
-                {stats.votingStageEmailsPending || 0}
+                {stats.votingStage.pending || 0}
               </div>
               <div className="text-sm text-gray-600">
                 Voting Stage Emails Pending
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded shadow">
-              <div className="text-2xl font-bold text-cyan-600">
-                {stats.votingStageEmailProgress?.percentage || 0}%
-              </div>
-              <div className="text-sm text-gray-600">Voting Stage Progress</div>
-            </div>
+           
           </div>
         ) : (
           <div className="text-gray-500">Loading statistics...</div>

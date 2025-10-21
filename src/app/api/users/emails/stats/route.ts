@@ -20,10 +20,18 @@ export async function GET() {
         },
         lastCallEmailProgress: {
           sent: stats.lastCallEmailsSent,
-          pending: stats.lastCallEmailsPending,
+          pending: stats.qualifiedEmailsPending,
           percentage:
             stats.totalUsers > 0
               ? Math.round((stats.lastCallEmailsSent / stats.totalUsers) * 100)
+              : 0,
+        },
+        votingStage: {
+          sent: stats.qualifiedEmails,
+          pending: stats.qualifiedEmailsPending,
+          percentage:
+            stats.totalUsers > 0
+              ? Math.round((stats.qualifiedEmails / stats.qualifiedEmailsPending===0?1:stats.qualifiedEmailsPending) * 100)
               : 0,
         },
       },

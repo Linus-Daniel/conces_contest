@@ -8,18 +8,30 @@ import crypto from "crypto";
 
 // Encryption function (same as in request-otp route)
 function encrypt(text: string): string {
-  const algorithm = "aes-256-gcm";
-  const keyString =
-    process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
-  const key = crypto.createHash("sha256").update(keyString).digest();
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  try {
+    if (!text || typeof text !== 'string') {
+      console.error("Invalid input to encrypt function:", text);
+      throw new Error("Invalid input for encryption");
+    }
 
-  let encrypted = cipher.update(text, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  const authTag = cipher.getAuthTag();
+    const algorithm = "aes-256-gcm";
+    const keyString =
+      process.env.ENCRYPTION_KEY || "your-32-char-secret-key-here123";
+    const key = crypto.createHash("sha256").update(keyString).digest();
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
 
-  return iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
+    let encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    const authTag = cipher.getAuthTag();
+
+    const result = iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted;
+    console.log("Encryption successful, result length:", result.length);
+    return result;
+  } catch (error) {
+    console.error("Encryption failed:", error);
+    throw new Error("Failed to encrypt phone number");
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -161,6 +173,8 @@ export async function POST(request: NextRequest) {
     console.log("Project found:", project.projectTitle);
 
     // Encrypt phone number for vote storage (consistent with request-otp route)
+    console.log("Phone number to encrypt:", otp.phoneNumber ? "PROVIDED" : "MISSING");
+    console.log("Phone number type:", typeof otp.phoneNumber);
     const encryptedPhone = encrypt(otp.phoneNumber);
 
     // Double-check: Has this phone number already voted for this project?
@@ -211,15 +225,28 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || "unknown";
 
     console.log("Creating vote record...");
+    console.log("Encrypted phone (length):", encryptedPhone?.length);
+    console.log("Project ID:", otp.projectId);
+    console.log("OTP ID:", otp._id?.toString());
 
-    // Create vote record first (using encrypted phone number)
+    if (!encryptedPhone || !otp.projectId || !otp._id) {
+      console.error("Missing required vote data:", {
+        hasEncryptedPhone: !!encryptedPhone,
+        hasProjectId: !!otp.projectId,
+        hasOtpId: !!otp._id
+      });
+      throw new Error("Missing required vote data");
+    }
+
     const newVote = new Vote({
-      phoneNumber: encryptedPhone, // Store encrypted phone number
+      phoneNumber: encryptedPhone,
       projectId: otp.projectId,
-      otpId: otp._id,
+      otpId: otp._id.toString(),
       ipAddress,
       userAgent,
     });
+
+    console.log(" New Vote Data", newVote)
 
     await newVote.save();
     console.log("✅ Vote record created with ID:", newVote._id);
