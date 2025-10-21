@@ -371,20 +371,7 @@ export default function VotingPage() {
     new Set(projects.map((p) => p.candidate.schoolName))
   );
 
-  if(!user){
-    return (
-      <div className="h-screen w-full flex items-center justify-center">
-
-        <div>
-          Voting Processes are yet to begin and will commence soon.
-        </div>
-        <Link href={"/"} className="text-blue-500 underline">
-          Go back
-        </Link>
-
-        </div>
-    )
-  }
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
