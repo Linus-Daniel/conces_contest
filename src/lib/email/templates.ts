@@ -940,4 +940,259 @@ Conference of Nigerian Christian Engineering Students
 `;
 };
 
-// Add to email-service.ts
+// Voting Card Email Template
+export interface VotingCardEmailData {
+  firstName: string;
+  email: string;
+  projectTitle?: string;
+  candidateName: string;
+}
+
+export const getVotingCardEmailHTML = (data: VotingCardEmailData): string => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your CONCES Logo Rebrand Challenge Voting Card Is Ready!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #002B5B 0%, #00B894 100%); padding: 40px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: bold;">CONCES</h1>
+                            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Logo Rebrand Challenge 2025</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Celebration Badge -->
+                    <tr>
+                        <td align="center" style="padding: 30px 40px 0;">
+                            <div style="background: linear-gradient(135deg, #FFC300 0%, #FF6B00 100%); display: inline-block; padding: 10px 30px; border-radius: 25px;">
+                                <span style="color: #ffffff; font-size: 16px; font-weight: bold;">🎉 Your Voting Card Is Ready!</span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 30px 40px;">
+                            <h2 style="color: #002B5B; font-size: 24px; margin: 0 0 20px 0;">
+                                Dear ${data.candidateName},
+                            </h2>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                <strong>Congratulations once again on making it to the first stage of the CONCES Logo Rebrand Challenge! 👏</strong>
+                            </p>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                                We're excited to let you know that your <strong>personalized voting card and unique voting link are now available!</strong>✨
+                            </p>
+                            
+                            <!-- Facebook Link Section -->
+                            <div style="background: linear-gradient(135deg, #4267B2 0%, #365899 100%); padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                                <h3 style="color: #ffffff; margin: 0 0 15px 0; font-size: 20px;">📱 Get Your Voting Card</h3>
+                                <p style="color: #ffffff; font-size: 16px; margin: 0 0 20px 0; line-height: 1.5;">
+                                    You can download your card and copy your voting link directly from our official Facebook page using the link below 👇
+                                </p>
+                                <a href="https://www.facebook.com/share/1BdKxeLByf/?mibextid=wwXIfr" 
+                                   style="display: inline-block; background-color: #ffffff; color: #4267B2; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; margin: 10px 0;">
+                                    📲 Visit Facebook Page →
+                                </a>
+                            </div>
+                            
+                            <!-- Important Instructions -->
+                            <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                                <h3 style="color: #92400E; margin: 0 0 15px 0; font-size: 18px;">
+                                    📝 Important Instructions:
+                                </h3>
+                                <ul style="color: #92400E; font-size: 15px; margin: 0; padding-left: 20px; line-height: 1.6;">
+                                    <li style="margin: 8px 0;"><strong>There are two albums</strong> with all contestants' cards and direct voting links.</li>
+                                    <li style="margin: 8px 0;"><strong>Please go through both albums carefully</strong> to locate your card.</li>
+                                    <li style="margin: 8px 0;"><strong>Your direct voting link is written in the caption</strong> on your card.</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Share Your Card Section -->
+                            <div style="background-color: #F0F9FF; border-radius: 8px; padding: 25px; margin: 30px 0;">
+                                <h3 style="color: #002B5B; font-size: 20px; margin: 0 0 15px 0;">
+                                    🗳️ Remember: Your voting card is a powerful tool!
+                                </h3>
+                                <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0;">
+                                    <strong>Share it widely and encourage your supporters to vote for you!</strong> 🗳✨
+                                </p>
+                            </div>
+                            
+                            <!-- Action Steps -->
+                            <h3 style="color: #002B5B; font-size: 18px; margin: 30px 0 15px 0;">
+                                What to do next:
+                            </h3>
+                            
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">1</td>
+                                                <td style="padding-left: 15px; color: #333333; font-size: 15px;">
+                                                    <strong>Visit the Facebook page</strong> using the link above
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">2</td>
+                                                <td style="padding-left: 15px; color: #333333; font-size: 15px;">
+                                                    <strong>Find your card</strong> in the two albums
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">3</td>
+                                                <td style="padding-left: 15px; color: #333333; font-size: 15px;">
+                                                    <strong>Download your card</strong> and copy your voting link
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background-color: #00B894; color: #ffffff; width: 30px; height: 30px; text-align: center; border-radius: 50%; font-weight: bold;">4</td>
+                                                <td style="padding-left: 15px; color: #333333; font-size: 15px;">
+                                                    <strong>Share everywhere!</strong> WhatsApp, Instagram, Twitter, Groups
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Prize Reminder -->
+                            <div style="background: linear-gradient(135deg, #002B5B 0%, #004080 100%); padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                                <h3 style="color: #FFC300; margin: 0 0 10px 0; font-size: 24px;">₦500,000</h3>
+                                <p style="color: #ffffff; font-size: 16px; margin: 0;">
+                                    Grand Prize Still Up for Grabs!
+                                </p>
+                                <p style="color: #ffffff; font-size: 14px; margin: 10px 0 0 0; opacity: 0.9;">
+                                    Over ₦1,000,000 in total rewards
+                                </p>
+                            </div>
+                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 30px 0; text-align: center; font-weight: bold;">
+                                Wishing you the very best!
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 30px 40px; text-align: center; border-radius: 0 0 10px 10px;">
+                            <p style="color: #333333; font-size: 14px; margin: 0 0 15px 0; font-weight: bold;">
+                                –Team CONCES
+                            </p>
+                            
+                            <p style="color: #666666; font-size: 12px; margin: 15px 0; font-style: italic;">
+                                <strong>N.B:</strong> There are two albums with all contestants' cards and direct voting links.<br>
+                                Please go through both albums carefully to locate your card — your direct voting link is written in the caption on your card.
+                            </p>
+                            
+                            <!-- Social Links -->
+                            <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px 0;">
+                              <tr>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/share/173jPb1P73/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M22.675 0h-21.35C.597 0 0 .598 0 1.333v21.333C0 23.402.597 24 1.325 24H12.82V14.708h-3.13V11.08h3.13V8.414c0-3.1 1.893-4.788 4.657-4.788 1.325 0 2.466.099 2.797.143v3.243l-1.918.001c-1.504 0-1.795.715-1.795 1.764v2.303h3.587l-.467 3.628h-3.12V24h6.116c.728 0 1.325-.598 1.325-1.334V1.333C24 .598 23.403 0 22.675 0z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://x.com/concesofficial?t=l3hLqtzs5ZHcgBrUV0PfNw&s=09">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.197-6.803-5.94 6.803H1.726l7.72-8.85L1.25 2.25h7.59l4.713 6.231L18.244 2.25zm-1.16 17.52h1.833L7.084 4.63H5.117l11.967 15.14z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                                <td style="padding: 0 10px;">
+                                  <a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/concesofficial?igsh=MXZ4aW5wb2Q5M2IxNg==">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#002B5B" viewBox="0 0 24 24">
+                                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.348 3.608 1.322.975.975 1.26 2.242 1.322 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.347 2.633-1.322 3.608-.975.975-2.242 1.26-3.608 1.322-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.347-3.608-1.322-.975-.975-1.26-2.242-1.322-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.347-2.633 1.322-3.608.975-.975 2.242-1.26 3.608-1.322C8.416 2.175 8.796 2.163 12 2.163zm0 1.837c-3.17 0-3.548.012-4.795.07-1.042.048-1.61.218-1.982.417-.5.27-.855.594-1.225 1.225-.199.372-.369.94-.417 1.982-.058 1.247-.07 1.625-.07 4.795s.012 3.548.07 4.795c.048 1.042.218 1.61.417 1.982.37.63.725.955 1.225 1.225.372.199.94.369 1.982.417 1.247.058 1.625.07 4.795.07s3.548-.012 4.795-.07c1.042-.048 1.61-.218 1.982-.417.5-.27.855-.594 1.225-1.225.199-.372.369-.94.417-1.982.058-1.247.07-1.625.07-4.795s-.012-3.548-.07-4.795c-.048-1.042-.218-1.61-.417-1.982-.37-.63-.725-.955-1.225-1.225-.372-.199-.94-.369-1.982-.417-1.247-.058-1.625-.07-4.795-.07zm0 3.945a5.892 5.892 0 1 1 0 11.784 5.892 5.892 0 0 1 0-11.784zm0 1.837a4.055 4.055 0 1 0 0 8.11 4.055 4.055 0 0 0 0-8.11zm6.406-3.394a1.44 1.44 0 1 1 0 2.881 1.44 1.44 0 0 1 0-2.881z"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                            
+                            <p style="color: #999999; font-size: 12px; margin: 10px 0 0 0;">
+                                © 2025 CONCES. All rights reserved.<br>
+                                Conference of Nigerian Christian Engineering Students
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+};
+
+export const getVotingCardEmailText = (data: VotingCardEmailData): string => {
+  return `
+🎉 Your CONCES Logo Rebrand Challenge Voting Card Is Ready!
+
+Dear ${data.candidateName},
+
+Congratulations once again on making it to the first stage of the CONCES Logo Rebrand Challenge! 👏
+
+We're excited to let you know that your personalized voting card and unique voting link are now available!✨
+
+You can download your card and copy your voting link directly from our official Facebook page using the link below 👇
+
+https://www.facebook.com/share/1BdKxeLByf/?mibextid=wwXIfr
+
+Remember, your voting card is a powerful tool to help you reach more people—so share it widely and encourage your supporters to vote for you! 🗳✨
+
+WHAT TO DO NEXT:
+1. Visit the Facebook page using the link above
+2. Find your card in the two albums
+3. Download your card and copy your voting link
+4. Share everywhere! WhatsApp, Instagram, Twitter, Groups
+
+IMPORTANT:
+- There are two albums with all contestants' cards and direct voting links
+- Please go through both albums carefully to locate your card
+- Your direct voting link is written in the caption on your card
+
+₦500,000 Grand Prize Still Up for Grabs!
+Over ₦1,000,000 in total rewards
+
+Wishing you the very best!
+
+–Team CONCES
+
+N.B: There are two albums with all contestants' cards and direct voting links.
+Please go through both albums carefully to locate your card — your direct voting link is written in the caption on your card.
+
+© 2025 CONCES. All rights reserved.
+Conference of Nigerian Christian Engineering Students
+`;
+};

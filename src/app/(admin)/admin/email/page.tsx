@@ -36,11 +36,11 @@ interface BulkEmailResult {
     totalUsers: number;
     sent: number;
     failed: number;
-    skipped: number;
+    skipped?: number;
     updatedInDatabase?: number;
   };
   details: {
-    errors: Array<{ email: string; error: string; userId: string }>;
+    errors: Array<{ email: string; error: string; userId?: string }>;
     updatedUserIds?: string[];
   };
 }
@@ -233,6 +233,47 @@ export default function BulkEmailDashboard() {
     } catch (error) {
       console.error("Error sending voting stage emails:", error);
       setResult(`❌ Error sending voting stage emails: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Send voting card emails to selected contestants
+  const sendVotingCardEmails = async () => {
+    setIsLoading(true);
+    setResult("🚀 Starting voting card email send to selected contestants...");
+    setLastResult(null);
+
+    try {
+      const response = await fetch("/api/users/emails/voting-cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          batchSize: 15,
+          delayBetweenBatches: 2000,
+          updateDatabase: true,
+        }),
+      });
+
+      const data: BulkEmailResult = await response.json();
+      setLastResult(data);
+
+      if (data.success) {
+        setResult(`✅ Voting card emails sent successfully! 
+          🎉 Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}
+          ⏩ Skipped: ${data.summary.skipped || 0}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} projects`);
+      } else {
+        setResult(`⚠️ Partial success: 
+          🎉 Sent: ${data.summary.sent} 
+          ❌ Failed: ${data.summary.failed}
+          ⏩ Skipped: ${data.summary.skipped || 0}
+          📝 Database updated: ${data.summary.updatedInDatabase || 0} projects`);
+      }
+    } catch (error) {
+      console.error("Error sending voting card emails:", error);
+      setResult(`❌ Error sending voting card emails: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -516,6 +557,49 @@ export default function BulkEmailDashboard() {
             {isLoading
               ? "Sending Last Call Emails..."
               : "Send Last Call Emails to All"}
+          </button>
+        </div>
+
+        <div className="bg-gradient-to-r from-orange-50 to-pink-50 border border-orange-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-orange-800 mb-3">
+            🎉 Send Voting Card Emails
+          </h3>
+          <p className="text-orange-700 mb-4">
+            <strong>
+              Send voting card emails to selected contestants!
+            </strong>
+            This email informs them that their personalized voting cards and
+            unique voting links are now available on the Facebook page. They can
+            download their cards and share them to get votes.
+          </p>
+          <div className="bg-white rounded p-3 mb-4 border border-orange-100">
+            <p className="text-sm text-gray-600 mb-2">
+              <span className="font-semibold">
+                📋 What this email contains:
+              </span>
+            </p>
+            <ul className="text-sm text-gray-600 space-y-1 ml-4">
+              <li>• Link to Facebook page with voting cards</li>
+              <li>• Instructions to find their personalized card</li>
+              <li>• Step-by-step guide to download and share</li>
+              <li>• Voting link location (in card caption)</li>
+              <li>• Sharing strategies for maximum reach</li>
+            </ul>
+          </div>
+          <div className="bg-orange-100 rounded p-3 mb-4 border border-orange-200">
+            <p className="text-sm text-orange-800">
+              <span className="font-semibold">📌 Note:</span> Only sends to contestants 
+              with projects marked as <strong>"selected"</strong> status in the database.
+            </p>
+          </div>
+          <button
+            onClick={sendVotingCardEmails}
+            disabled={isLoading}
+            className="px-6 py-3 bg-gradient-to-r from-orange-600 to-pink-600 text-white rounded-lg hover:from-orange-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          >
+            {isLoading
+              ? "Sending Voting Card Emails..."
+              : "🎉 Send Voting Card Emails to Selected"}
           </button>
         </div>
 

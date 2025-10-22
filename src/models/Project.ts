@@ -14,6 +14,8 @@ export interface IProject extends Document {
   updatedAt?: Date;
   vote?: number;
   feedback?: string;
+  votingCardEmailSent?: boolean;
+  votingCardEmailSentAt?: Date;
 }
 
 const ProjectSchema = new Schema<IProject>(
@@ -83,6 +85,13 @@ const ProjectSchema = new Schema<IProject>(
       type: String,
       maxlength: [1000, "Feedback cannot exceed 1000 characters"],
     },
+    votingCardEmailSent: {
+      type: Boolean,
+      default: false,
+    },
+    votingCardEmailSentAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -95,6 +104,7 @@ ProjectSchema.index({ candidate: 1 }, { unique: true });
 // Other indexes for performance
 ProjectSchema.index({ candidate: 1, submittedAt: -1 });
 ProjectSchema.index({ status: 1 });
+ProjectSchema.index({ votingCardEmailSent: 1 });
 
 // ✅ Add error handling for duplicate submissions
 ProjectSchema.post("save", function (error: any, doc: any, next: any) {

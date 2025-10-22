@@ -12,6 +12,9 @@ import {
   getVotingStageEmailText,
   getVotingStageEmailHTML,
   VotingStageEmailData,
+  VotingCardEmailData,
+  getVotingCardEmailHTML,
+  getVotingCardEmailText,
 } from "./templates";
 
 // Types for bulk email operations
@@ -663,6 +666,231 @@ export async function sendVotingStageEmailsToQualified(
     return result;
   } catch (error) {
     console.error("Critical error in bulk voting stage email sending:", error);
+    result.success = false;
+    result.errors.push({
+      email: "bulk_process",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    return result;
+  }
+}
+
+// Single voting card email function
+export async function sendVotingCardEmail(
+  data: VotingCardEmailData
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter();
+
+    // Verify connection
+    await transporter.verify();
+
+    const mailOptions = {
+      from: {
+        name: "CONCES Rebrand Challenge",
+        address: process.env.EMAIL_USER || "noreply@conces.org",
+      },
+      to: data.email,
+      subject: "🎉 Your CONCES Logo Rebrand Challenge Voting Card Is Ready!",
+      text: getVotingCardEmailText(data),
+      html: getVotingCardEmailHTML(data),
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Voting card email sent to ${data.email}: ${info.messageId}`);
+
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to send voting card email to ${data.email}:`, error);
+    return false;
+  }
+}
+
+// Bulk send voting card emails to selected contestants
+export async function sendVotingCardEmailsToSelected(
+  options: {
+    batchSize?: number;
+    delayBetweenBatches?: number;
+    updateDatabase?: boolean;
+  } = {}
+): Promise<{
+  success: boolean;
+  totalSent: number;
+  totalFailed: number;
+  totalSkipped: number;
+  updatedInDatabase: number;
+  errors: Array<{ email: string; error: string }>;
+}> {
+  const { batchSize = 15, delayBetweenBatches = 2000, updateDatabase = true } = options;
+
+  const result = {
+    success: true,
+    totalSent: 0,
+    totalFailed: 0,
+    totalSkipped: 0,
+    updatedInDatabase: 0,
+    errors: [] as Array<{ email: string; error: string }>,
+  };
+
+  try {
+    // Import models
+    const { default: Project } = await import("@/models/Project");
+    const { connectDB } = await import("@/lib/mongodb");
+
+    await connectDB();
+
+    // Get selected projects with their candidates (avoid duplicates if updateDatabase is true)
+    const query = updateDatabase 
+      ? { 
+          status: "selected", 
+          votingCardEmailSent: { $ne: true } 
+        }
+      : { 
+          status: "selected" 
+        };
+
+    const selectedProjects = await Project.find(query)
+      .populate("candidate", "fullName email")
+      .select("_id projectTitle candidate votingCardEmailSent")
+      .lean();
+
+    console.log(
+      `📧 Starting voting card emails to ${selectedProjects.length} selected contestants`
+    );
+
+    if (selectedProjects.length === 0) {
+      console.log("No selected projects found");
+      return result;
+    }
+
+    const transporter = createTransporter();
+    await transporter.verify();
+    console.log("SMTP connection verified for bulk voting card emails");
+
+    // Process in batches
+    for (let i = 0; i < selectedProjects.length; i += batchSize) {
+      const batch = selectedProjects.slice(i, i + batchSize);
+      console.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+          selectedProjects.length / batchSize
+        )}`
+      );
+
+      const batchPromises = batch.map(async (project) => {
+        try {
+          if (!project.candidate) {
+            throw new Error("Project has no candidate");
+          }
+
+          const candidate = project.candidate as any;
+          const firstName = candidate.fullName.split(" ")[0];
+
+          // Skip if already sent (double-check)
+          if (updateDatabase && project.votingCardEmailSent) {
+            result.totalSkipped++;
+            console.log(`⏩ Skipping ${candidate.email} - already sent voting card`);
+            return { 
+              success: false, 
+              skipped: true, 
+              email: candidate.email,
+              projectId: project._id.toString()
+            };
+          }
+
+          const emailSent = await sendVotingCardEmail({
+            email: candidate.email,
+            firstName: firstName,
+            candidateName: candidate.fullName,
+            projectTitle: project.projectTitle,
+          });
+
+          if (emailSent) {
+            console.log(`✅ Voting card email sent to ${candidate.email}`);
+
+            // Update database if enabled
+            if (updateDatabase) {
+              try {
+                await Project.findByIdAndUpdate(
+                  project._id,
+                  { 
+                    votingCardEmailSent: true,
+                    votingCardEmailSentAt: new Date()
+                  }
+                );
+                result.updatedInDatabase++;
+                console.log(`📝 Database updated for ${candidate.email}`);
+              } catch (dbError) {
+                console.error(`Failed to update DB for ${candidate.email}:`, dbError);
+                // Email sent but DB update failed - log but don't fail the whole operation
+              }
+            }
+
+            return { success: true, email: candidate.email, projectId: project._id.toString() };
+          } else {
+            throw new Error("Email service returned false");
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(
+            `❌ Failed to send to ${project.candidate?.email}:`,
+            errorMessage
+          );
+          return { 
+            success: false, 
+            email: project.candidate?.email || "unknown", 
+            error: errorMessage,
+            projectId: project._id?.toString() || "unknown"
+          };
+        }
+      });
+
+      const batchResults = await Promise.allSettled(batchPromises);
+
+      batchResults.forEach((batchResult) => {
+        if (batchResult.status === "fulfilled") {
+          if (batchResult.value.success) {
+            result.totalSent++;
+          } else if (batchResult.value.skipped) {
+            // Already counted in totalSkipped above
+          } else {
+            result.totalFailed++;
+            result.errors.push({
+              email: batchResult.value.email,
+              error: batchResult.value.error || "Unknown error",
+            });
+          }
+        } else {
+          result.totalFailed++;
+          result.errors.push({
+            email: "unknown",
+            error: batchResult.reason,
+          });
+        }
+      });
+
+      // Delay between batches
+      if (i + batchSize < selectedProjects.length) {
+        console.log(`⏳ Waiting ${delayBetweenBatches}ms before next batch...`);
+        await new Promise((resolve) =>
+          setTimeout(resolve, delayBetweenBatches)
+        );
+      }
+    }
+
+    // Close the transporter
+    transporter.close();
+
+    if (result.totalFailed > 0) {
+      result.success = false;
+    }
+
+    console.log(
+      `✅ Voting card emails completed: ${result.totalSent} sent, ${result.totalFailed} failed`
+    );
+    return result;
+  } catch (error) {
+    console.error("Critical error in bulk voting card email sending:", error);
     result.success = false;
     result.errors.push({
       email: "bulk_process",
