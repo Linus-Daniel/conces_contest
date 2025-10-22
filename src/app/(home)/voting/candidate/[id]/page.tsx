@@ -554,18 +554,7 @@ export default function CandidateDetailPage() {
       {/* Header */}
       <header className="bg-gradient-to-br from-conces-blue via-blue-600 to-indigo-700 text-white">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
-            <motion.button
-              onClick={() => router.push("/voting")}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 bg-white/20 backdrop-blur-lg rounded-2xl px-4 py-3 hover:bg-white/30 transition-colors border border-white/20"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to Voting</span>
-            </motion.button>
-          </div>
-
+        
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

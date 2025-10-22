@@ -263,6 +263,9 @@ export default function VotingPage() {
   const [filterSchool, setFilterSchool] = useState<string>("all");
   const [showOTPModal, setShowOTPModal] = useState(false);
   const {user,checkAuth} = useAdminAuth()
+
+
+  const maintenance = true
   console.log(user,"user")
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
@@ -325,6 +328,7 @@ export default function VotingPage() {
       setFilteredProjects(data.projects);
     } catch (error) {
       toast.error("Failed to load projects");
+      console.log(error)
     } finally {
       setLoading(false);
     }
@@ -373,6 +377,17 @@ export default function VotingPage() {
 
   
 
+  if(maintenance){
+    return(
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-conces-blue to-conces-green p-6">
+        <p className=" text-white text-3xl md:text-4xl font-bold mb-4 text-center">
+          This page is currently under maintenance. 
+          We will be back soon.
+          Get your phones ready to vote!
+        </p>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Enhanced Header */}
