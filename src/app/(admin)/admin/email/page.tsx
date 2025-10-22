@@ -1,6 +1,5 @@
 "use client";
 
-import SMSSender from "@/components/smsSender";
 import React, { useState, useEffect } from "react";
 
 interface UserStats {
@@ -567,7 +566,6 @@ export default function BulkEmailDashboard() {
       )}
 
 
-      <SMSSender />
     </div>
   );
 }
