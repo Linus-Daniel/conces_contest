@@ -265,7 +265,7 @@ export default function VotingPage() {
   const {user,checkAuth} = useAdminAuth()
 
 
-  const maintenance = true
+  const maintenance = false
   console.log(user,"user")
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
