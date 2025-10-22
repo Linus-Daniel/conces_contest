@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^5.2.1",
@@ -16,6 +17,7 @@
     "africastalking": "^0.7.3",
     "axios": "^1.11.0",
     "clsx": "^2.0.0",
+    "emailjs-com": "^3.2.0",
     "framer-motion": "^12.23.12",
     "highcharts": "^11.2.0",
     "highcharts-react-official": "^3.2.1",

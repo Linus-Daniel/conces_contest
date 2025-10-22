@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IVote extends Document {
   phoneNumber: string; // Store encrypted phone number
+  voterEmail?: string; // Store encrypted email for email voting
   projectId: string;
   otpId: string; // Reference to the OTP used
   ipAddress: string;
@@ -20,6 +21,11 @@ const VoteSchema = new Schema<IVote>({
       },
       message: 'Phone number cannot be empty'
     },
+    index: true,
+  },
+  voterEmail: {
+    type: String,
+    required: false,
     index: true,
   },
   projectId: {

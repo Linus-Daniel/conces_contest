@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
-import OTPVotingModal from "@/components/OtpVotingModal";
+import EmailOTPVotingModal from "@/components/EmailOtpVotingModal";
 import api from "@/lib/axiosInstance";
 
 interface Candidate {
@@ -840,7 +840,7 @@ export default function CandidateDetailPage() {
 
       {/* OTP Modal */}
       {showOTPModal && selectedProjectToVote && (
-        <OTPVotingModal
+        <EmailOTPVotingModal
           projectId={selectedProjectToVote._id}
           projectTitle={selectedProjectToVote.projectTitle}
           candidateName={selectedProjectToVote.candidate.fullName}

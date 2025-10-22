@@ -899,3 +899,152 @@ export async function sendVotingCardEmailsToSelected(
     return result;
   }
 }
+
+// Send OTP email for voting
+export async function sendVotingOTPEmail(
+  email: string,
+  otpCode: string,
+  projectTitle: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log(`📧 [Email Service] Sending OTP to ${email}`);
+
+    const templateData = {
+      email,
+      otpCode,
+      projectTitle,
+      expiryTime: "5 minutes",
+      companyName: "CONCES",
+    };
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: `🔐 Your CONCES Voting Verification Code: ${otpCode}`,
+      html: getVotingOTPEmailTemplate(templateData),
+      text: getVotingOTPEmailTextTemplate(templateData),
+    };
+
+    const transporter = createTransporter();
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ [Email Service] OTP sent successfully to ${email}`);
+    
+    return { success: true };
+  } catch (error) {
+    console.error(`❌ [Email Service] Failed to send OTP to ${email}:`, error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Unknown error" 
+    };
+  }
+}
+
+// OTP Email Template
+function getVotingOTPEmailTemplate(data: {
+  email: string;
+  otpCode: string;
+  projectTitle: string;
+  expiryTime: string;
+  companyName: string;
+}): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voting Verification Code</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; }
+    .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #1e40af 0%, #10b981 100%); color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 30px; }
+    .otp-box { background: #f8fafc; border: 2px dashed #1e40af; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; }
+    .otp-code { font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 8px; margin: 10px 0; font-family: monospace; }
+    .project-info { background: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    .warning { background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; }
+    .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔐 Voting Verification Code</h1>
+      <p>Secure your vote for the ${data.companyName} Design Contest</p>
+    </div>
+    
+    <div class="content">
+      <p>Hi there!</p>
+      
+      <p>You have requested to vote for a project in our design contest. Use the verification code below to confirm your vote:</p>
+      
+      <div class="otp-box">
+        <p><strong>Your Verification Code:</strong></p>
+        <div class="otp-code">${data.otpCode}</div>
+        <p><small>This code expires in ${data.expiryTime}</small></p>
+      </div>
+      
+      <div class="project-info">
+        <h3>🎨 Project Details:</h3>
+        <p><strong>Project:</strong> ${data.projectTitle}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+      </div>
+      
+      <div class="warning">
+        <h4>⚠️ Important Security Information:</h4>
+        <ul>
+          <li>Never share this code with anyone</li>
+          <li>Our team will never ask for this code</li>
+          <li>Each email and phone number can only vote once</li>
+          <li>This code expires in ${data.expiryTime}</li>
+        </ul>
+      </div>
+      
+      <p>If you did not request this verification code, please ignore this email or contact our support team.</p>
+      
+      <p>Thank you for participating in the ${data.companyName} Design Contest!</p>
+    </div>
+    
+    <div class="footer">
+      <p>© 2024 ${data.companyName}. All rights reserved.</p>
+      <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+// OTP Email Text Template  
+function getVotingOTPEmailTextTemplate(data: {
+  email: string;
+  otpCode: string;
+  projectTitle: string;
+  expiryTime: string;
+  companyName: string;
+}): string {
+  return `🔐 VOTING VERIFICATION CODE
+
+Hi there!
+
+You have requested to vote for a project in our design contest. Use the verification code below to confirm your vote:
+
+VERIFICATION CODE: ${data.otpCode}
+(This code expires in ${data.expiryTime})
+
+PROJECT DETAILS:
+- Project: ${data.projectTitle}
+- Email: ${data.email}
+
+IMPORTANT SECURITY INFORMATION:
+- Never share this code with anyone
+- Our team will never ask for this code
+- Each email and phone number can only vote once
+- This code expires in ${data.expiryTime}
+
+If you did not request this verification code, please ignore this email or contact our support team.
+
+Thank you for participating in the ${data.companyName} Design Contest!
+
+© 2024 ${data.companyName}. All rights reserved.
+This is an automated message. Please do not reply to this email.`;
+}

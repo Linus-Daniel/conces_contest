@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IOTP extends Document {
   phoneNumber: string;
+  email?: string; // Support email OTP
   code: string;
   projectId: string;
   used: boolean;
@@ -10,9 +11,9 @@ export interface IOTP extends Document {
   attempts: number;
   ipAddress?: string;
   userAgent?: string;
+  expiresAt?: Date; // Re-add expiry for email OTP
   createdAt: Date;
   updatedAt: Date;
-  // Removed expiresAt field since OTPs don't expire
 }
 
 const OTPSchema = new Schema<IOTP>(
@@ -20,6 +21,11 @@ const OTPSchema = new Schema<IOTP>(
     phoneNumber: {
       type: String,
       required: true,
+      index: true,
+    },
+    email: {
+      type: String,
+      required: false,
       index: true,
     },
     code: {
@@ -54,6 +60,11 @@ const OTPSchema = new Schema<IOTP>(
     },
     userAgent: {
       type: String,
+    },
+    expiresAt: {
+      type: Date,
+      required: false,
+      index: true,
     },
   },
   {

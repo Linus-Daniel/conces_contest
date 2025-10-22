@@ -240,6 +240,7 @@ export async function POST(request: NextRequest) {
 
     const newVote = new Vote({
       phoneNumber: encryptedPhone,
+      voterEmail: otp.email ? encrypt(otp.email) : undefined,
       projectId: otp.projectId,
       otpId: otp._id.toString(),
       ipAddress,
