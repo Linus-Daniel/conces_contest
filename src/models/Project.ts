@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model, Types } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 import { IEnroll } from "./Enroll";
 
 export interface IProject extends Document {
@@ -24,8 +24,6 @@ const ProjectSchema = new Schema<IProject>(
       type: Schema.Types.ObjectId,
       ref: "Enroll",
       required: [true, "Candidate ID is required"],
-      index: true,
-      unique: true, // ✅ Ensure one project per candidate
     },
     projectTitle: {
       type: String,
@@ -107,7 +105,7 @@ ProjectSchema.index({ status: 1 });
 ProjectSchema.index({ votingCardEmailSent: 1 });
 
 // ✅ Add error handling for duplicate submissions
-ProjectSchema.post("save", function (error: any, doc: any, next: any) {
+ProjectSchema.post("save", function (error: any, _doc: any, next: any) {
   if (error.name === "MongoServerError" && error.code === 11000) {
     if (error.keyPattern?.candidate) {
       next(new Error("You have already submitted a project for this contest"));

@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
 
     // Get selected projects count
     const selectedProjectsCount = await Project.countDocuments({ status: "selected" });
-    const enroll = await Enroll.find()
     if (selectedProjectsCount === 0) {
       return NextResponse.json({
         success: true,
