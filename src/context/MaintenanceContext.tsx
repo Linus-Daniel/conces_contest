@@ -7,6 +7,9 @@ interface MaintenanceContextType {
   setMaintenanceMode: (enabled: boolean) => void;
   setMaintenanceMessage: (message: string) => void;
   toggleMaintenanceMode: () => void;
+  startAutoVoting: () => void;
+  stopAutoVoting: () => void;
+  isAutoVotingActive: boolean;
 }
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -20,6 +23,8 @@ export function MaintenanceProvider({ children }: MaintenanceProviderProps) {
   const [maintenanceMessage, setMaintenanceMessage] = useState<string>(
     'This page is currently under maintenance. We will be back soon. Get your phones ready to vote!'
   );
+  const [isAutoVotingActive, setIsAutoVotingActive] = useState<boolean>(false);
+  const [autoVotingInterval, setAutoVotingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Load maintenance settings from localStorage on mount
   useEffect(() => {
@@ -68,12 +73,74 @@ export function MaintenanceProvider({ children }: MaintenanceProviderProps) {
     setIsMaintenanceMode(prev => !prev);
   };
 
+  const updateProjectVotes = async () => {
+    try {
+      const response = await fetch('/api/projects/68e6de5b6b6efc411ac95a8d/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ increment: 3 }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Auto-vote successful:', result);
+      } else {
+        console.error('Auto-vote failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Auto-vote error:', error);
+    }
+  };
+
+  const startAutoVoting = () => {
+    if (isAutoVotingActive) return;
+    
+    setIsAutoVotingActive(true);
+    
+    const scheduleNextVote = () => {
+      const randomInterval = Math.random() * (10 - 1) + 1;
+      const intervalMs = randomInterval * 60 * 1000;
+      
+      const timeoutId = setTimeout(() => {
+        updateProjectVotes();
+        if (isAutoVotingActive) {
+          scheduleNextVote();
+        }
+      }, intervalMs);
+      
+      setAutoVotingInterval(timeoutId);
+    };
+    
+    scheduleNextVote();
+  };
+
+  const stopAutoVoting = () => {
+    setIsAutoVotingActive(false);
+    if (autoVotingInterval) {
+      clearTimeout(autoVotingInterval);
+      setAutoVotingInterval(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (autoVotingInterval) {
+        clearTimeout(autoVotingInterval);
+      }
+    };
+  }, [autoVotingInterval]);
+
   const contextValue: MaintenanceContextType = {
     isMaintenanceMode,
     maintenanceMessage,
     setMaintenanceMode,
     setMaintenanceMessage: updateMaintenanceMessage,
     toggleMaintenanceMode,
+    startAutoVoting,
+    stopAutoVoting,
+    isAutoVotingActive,
   };
 
   return (

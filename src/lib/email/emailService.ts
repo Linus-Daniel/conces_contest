@@ -35,7 +35,7 @@ interface BulkEmailData {
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "587"),
+    port: parseInt(process.env.SMTP_PORT || "465"),
     secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.SMTP_USER,

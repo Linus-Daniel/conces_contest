@@ -203,7 +203,7 @@ function useRealTimeVotes() {
   };
 
   const connectToSSE = (onVoteUpdate: (updates: any[]) => void) => {
-    const eventSource = new EventSource("/api/vote/stream");
+    const eventSource = new EventSource("");
 
     eventSource.onopen = () => {
       setConnectionStatus("connected");
