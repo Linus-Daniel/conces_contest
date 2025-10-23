@@ -6,7 +6,7 @@ import Vote from "@/models/Vote";
 import Enroll from "@/models/Enroll";
 import crypto from "crypto";
 import { generateOTP, validateEmail, validateNigerianPhone, normalizePhoneNumber } from "@/lib/emailOTP";
-import { sendVotingOTPEmail } from "@/lib/email/emailService";
+import { sendVotingOTPEmailWithResend } from "@/lib/email/resendService";
 
 // Utility functions
 function encrypt(text: string): string {
@@ -238,9 +238,9 @@ export async function POST(request: NextRequest) {
     await newOTP.save();
     console.log("OTP saved to database with ID:", newOTP._id);
 
-    // Send email with OTP
-    console.log("Attempting to send email OTP...");
-    const emailResult = await sendVotingOTPEmail(
+    // Send email with OTP using Resend
+    console.log("Attempting to send email OTP via Resend...");
+    const emailResult = await sendVotingOTPEmailWithResend(
       normalizedEmail,
       otpCode,
       project.projectTitle

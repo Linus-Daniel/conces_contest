@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
-import { sendVotingCardEmailsToSelected } from "@/lib/email/emailService";
+import { sendVotingCardEmailsToSelectedWithResend } from "@/lib/email/resendService";
 import Enroll from "@/models/Enroll";
 
 export async function POST(request: NextRequest) {
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
 
     console.log(`Found ${selectedProjectsCount} selected projects for voting card emails`);
 
-    // Send voting card emails to selected contestants
-    const result = await sendVotingCardEmailsToSelected({
+    // Send voting card emails to selected contestants using Resend
+    const result = await sendVotingCardEmailsToSelectedWithResend({
       batchSize,
       delayBetweenBatches,
       updateDatabase,

@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Enroll from "@/models/Enroll";
-import { sendVotingStageEmail } from "@/lib/email/emailService";
+import { sendVotingStageEmailWithResend } from "@/lib/email/resendService";
 import Project from "@/models/Project";
 
 export async function POST(request: NextRequest) {
@@ -96,8 +96,8 @@ export async function POST(request: NextRequest) {
           // Extract first name
           const firstName = enrollee.candidate.fullName.split(" ")[0];
 
-          // Send the email
-          const emailSent = await sendVotingStageEmail({
+          // Send the email using Resend
+          const emailSent = await sendVotingStageEmailWithResend({
             email: enrollee.candidate.email,
             firstName: firstName,
           });
