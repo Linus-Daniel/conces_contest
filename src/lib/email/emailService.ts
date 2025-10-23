@@ -104,7 +104,7 @@ export async function sendMotivationalEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: data.email,
       subject: "500 Reasons to Bring Your Best 🎯",
