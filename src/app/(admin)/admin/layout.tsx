@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "../../globals.css";
 import AdminLayoutWrapper from "@/components/admin/Providers";
 import { AdminAuthProvider } from "@/context/AdminAuth";
+import { MaintenanceProvider } from "@/context/MaintenanceContext";
 
 export const metadata: Metadata = {
   title: "Conces Contest Admin",
@@ -44,7 +45,9 @@ export default function AdminLayout({
         {/* End Google Tag Manager (noscript) */}
 
         <AdminAuthProvider>
-          <AdminLayoutWrapper>{children}</AdminLayoutWrapper>
+          <MaintenanceProvider>
+            <AdminLayoutWrapper>{children}</AdminLayoutWrapper>
+          </MaintenanceProvider>
         </AdminAuthProvider>
       </body>
     </html>

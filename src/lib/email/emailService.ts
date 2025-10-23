@@ -31,18 +31,20 @@ interface BulkEmailData {
   delayBetweenBatches?: number; // milliseconds
 }
 
-// Create reusable transporter
+// Create reusable transporter using AWS SES SMTP
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail",
+    host: process.env.SMTP_HOST || "email-smtp.eu-north-1.amazonaws.com",
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: false, // true for 465, false for other ports
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.SMTP_USER || "AKIAYKFQRCU7D7473264",
+      pass: process.env.SMTP_PASSWORD || "BGxHfNMWawjdN4919KXOyCafMrRepN2qqHE83mXnHhip",
     },
     pool: true,
-    maxConnections: 2, // Increased for bulk sending
-    rateDelta: 60000,
-    rateLimit: 5, // Gmail's rate limit (around 14 emails per second)
+    maxConnections: 5, // AWS SES allows higher connection limits
+    rateDelta: 1000, // AWS SES rate limit
+    rateLimit: 14, // AWS SES sending rate limit (14 emails per second for most accounts)
   });
 };
 
@@ -60,10 +62,7 @@ export async function sendWelcomeEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address:
-          process.env.EMAIL_USER ||
-          process.env.SMTP_FROM ||
-          "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: data.email,
       subject: "🎉 You're in! Here's your CONCES Rebrand Challenge Pack",
@@ -105,10 +104,7 @@ export async function sendMotivationalEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address:
-          process.env.EMAIL_USER ||
-          process.env.SMTP_FROM ||
-          "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: data.email,
       subject: "500 Reasons to Bring Your Best 🎯",
@@ -285,10 +281,7 @@ export async function sendReminderEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address:
-          process.env.EMAIL_USER ||
-          process.env.SMTP_FROM ||
-          "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: email,
       subject: `⏰ ${daysLeft} days left to submit your design!`,
@@ -363,7 +356,7 @@ export async function sendLastCallEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.EMAIL_USER || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: data.email,
       subject: "⏰ Last Call: Submit Your Entry — Contest Ends in 7 Days!",
@@ -523,7 +516,7 @@ export async function sendVotingStageEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.EMAIL_USER || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: data.email,
       subject: "You Made It! Time to Prepare for the Voting Stage 🗳️✨",
@@ -688,7 +681,7 @@ export async function sendVotingCardEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.EMAIL_USER || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "noreply@conces.org",
       },
       to: data.email,
       subject: "🎉 Your CONCES Logo Rebrand Challenge Voting Card Is Ready!",
@@ -918,7 +911,7 @@ export async function sendVotingOTPEmail(
     };
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
+      from: process.env.SMTP_FROM || "noreply@conces.org",
       to: email,
       subject: `🔐 Your CONCES Voting Verification Code: ${otpCode}`,
       html: getVotingOTPEmailTemplate(templateData),

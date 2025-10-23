@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import Wrapper from "@/components/Wrapper";
 import { AdminAuthProvider } from "@/context/AdminAuth";
+import { MaintenanceProvider } from "@/context/MaintenanceContext";
 
 export const metadata: Metadata = {
   title: "Conces Logo Rebranding",
@@ -46,7 +47,9 @@ export default function RootLayout({
         {/* End Google Tag Manager (noscript) */}
 
         <AdminAuthProvider>
-          <Wrapper>{children}</Wrapper>
+          <MaintenanceProvider>
+            <Wrapper>{children}</Wrapper>
+          </MaintenanceProvider>
         </AdminAuthProvider>
       </body>
     </html>

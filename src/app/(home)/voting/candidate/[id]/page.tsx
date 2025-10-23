@@ -27,6 +27,7 @@ import {
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import EmailOTPVotingModal from "@/components/EmailOtpVotingModal";
+import { useMaintenance, MaintenancePage } from "@/context/MaintenanceContext";
 import api from "@/lib/axiosInstance";
 
 interface Candidate {
@@ -470,6 +471,7 @@ export default function CandidateDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
+  const { isMaintenanceMode } = useMaintenance();
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -519,6 +521,11 @@ export default function CandidateDetailPage() {
     setSelectedProjectToVote(null);
     toast.success("Vote confirmed successfully! 🎉");
   };
+
+  // Show maintenance page if maintenance mode is enabled
+  if (isMaintenanceMode) {
+    return <MaintenancePage />;
+  }
 
   if (loading) {
     return (

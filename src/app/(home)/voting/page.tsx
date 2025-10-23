@@ -25,6 +25,7 @@ import toast from "react-hot-toast";
 import EmailOTPVotingModal from "@/components/EmailOtpVotingModal";
 import api from "@/lib/axiosInstance";
 import { useAdminAuth } from "@/context/AdminAuth";
+import { useMaintenance, MaintenancePage } from "@/context/MaintenanceContext";
 import Link from "next/link";
 
 interface Project {
@@ -263,9 +264,8 @@ export default function VotingPage() {
   const [filterSchool, setFilterSchool] = useState<string>("all");
   const [showOTPModal, setShowOTPModal] = useState(false);
   const {user,checkAuth} = useAdminAuth()
+  const { isMaintenanceMode } = useMaintenance()
 
-
-  const maintenance = false
   console.log(user,"user")
   const [selectedProjectToVote, setSelectedProjectToVote] =
     useState<Project | null>(null);
@@ -375,18 +375,9 @@ export default function VotingPage() {
     new Set(projects.map((p) => p.candidate.schoolName))
   );
 
-  
-
-  if(maintenance){
-    return(
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-conces-blue to-conces-green p-6">
-        <p className=" text-white text-3xl md:text-4xl font-bold mb-4 text-center">
-          This page is currently under maintenance. 
-          We will be back soon.
-          Get your phones ready to vote!
-        </p>
-      </div>
-    )
+  // Show maintenance page if maintenance mode is enabled
+  if (isMaintenanceMode) {
+    return <MaintenancePage />;
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">

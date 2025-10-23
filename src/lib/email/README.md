@@ -1,43 +1,45 @@
-# Email Services
+# Email Service Configuration
 
-This project supports two email services:
+This project uses **Nodemailer with AWS SES SMTP** for reliable email delivery.
 
-## 1. Nodemailer (emailService.ts)
-- Uses Gmail SMTP
-- Requires `EMAIL_USER` and `EMAIL_PASSWORD` environment variables
+## Email Service Setup
 
-## 2. Resend (resendService.ts) - **NEW**
-- Modern email service with better deliverability
-- Requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL` environment variables
+### AWS SES SMTP Configuration
+- Uses Amazon Simple Email Service (SES) for high deliverability
+- SMTP endpoint: `email-smtp.eu-north-1.amazonaws.com`
+- Port: 587 (TLS)
+- Connection pooling enabled for better performance
 
 ## Environment Variables Required
 
 Add these to your `.env.local` file:
 
 ```bash
-# For Resend (recommended)
-RESEND_API_KEY=your_resend_api_key_here
-RESEND_FROM_EMAIL="CONCES Rebrand Challenge <noreply@yourdomain.com>"
+# AWS SES SMTP Configuration (Primary)
+SMTP_HOST=email-smtp.eu-north-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=AKIAYKFQRCU7D7473264
+SMTP_PASSWORD=BGxHfNMWawjdN4919KXOyCafMrRepN2qqHE83mXnHhip
+SMTP_FROM="CONCES Rebrand Challenge <noreply@conces.org>"
 
-# For Nodemailer (existing)
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASSWORD=your_gmail_app_password
+# Optional fallback values are hardcoded in the service
 ```
 
-## Getting Started with Resend
+## Email Service Features
 
-1. Sign up at [https://resend.com](https://resend.com)
-2. Get your API key from the dashboard
-3. Set up your sender domain (or use the free resend.dev domain for testing)
-4. Add the environment variables above
+- **High Deliverability**: AWS SES provides excellent inbox delivery rates
+- **Rate Limiting**: 14 emails/second (AWS SES default limit)
+- **Connection Pooling**: Up to 5 concurrent connections
+- **Error Handling**: Comprehensive error logging and retry logic
+- **Bulk Operations**: Batch processing for mass email campaigns
 
 ## Usage Examples
 
 ### Send Voting OTP Email
 ```typescript
-import { sendVotingOTPEmailWithResend } from '@/lib/email/resendService';
+import { sendVotingOTPEmail } from '@/lib/email/emailService';
 
-const result = await sendVotingOTPEmailWithResend(
+const result = await sendVotingOTPEmail(
   'user@example.com',
   '123456',
   'Amazing Project Title'
@@ -52,9 +54,9 @@ if (result.success) {
 
 ### Send Voting Stage Email
 ```typescript
-import { sendVotingStageEmailWithResend } from '@/lib/email/resendService';
+import { sendVotingStageEmail } from '@/lib/email/emailService';
 
-const success = await sendVotingStageEmailWithResend({
+const success = await sendVotingStageEmail({
   email: 'candidate@example.com',
   firstName: 'John'
 });
@@ -62,9 +64,9 @@ const success = await sendVotingStageEmailWithResend({
 
 ### Send Voting Card Email
 ```typescript
-import { sendVotingCardEmailWithResend } from '@/lib/email/resendService';
+import { sendVotingCardEmail } from '@/lib/email/emailService';
 
-const success = await sendVotingCardEmailWithResend({
+const success = await sendVotingCardEmail({
   email: 'candidate@example.com',
   firstName: 'John',
   candidateName: 'John Doe',
@@ -75,36 +77,80 @@ const success = await sendVotingCardEmailWithResend({
 ### Bulk Email Operations
 ```typescript
 import { 
-  sendVotingStageEmailsToQualifiedWithResend,
-  sendVotingCardEmailsToSelectedWithResend 
-} from '@/lib/email/resendService';
+  sendVotingStageEmailsToQualified,
+  sendVotingCardEmailsToSelected 
+} from '@/lib/email/emailService';
 
 // Send voting stage emails to all qualified candidates
-const result1 = await sendVotingStageEmailsToQualifiedWithResend({
+const result1 = await sendVotingStageEmailsToQualified({
   batchSize: 15,
   delayBetweenBatches: 2000
 });
 
 // Send voting card emails to selected contestants
-const result2 = await sendVotingCardEmailsToSelectedWithResend({
+const result2 = await sendVotingCardEmailsToSelected({
   batchSize: 15,
   delayBetweenBatches: 2000,
   updateDatabase: true
 });
 ```
 
-## API Endpoints Updated
+## API Endpoints
 
-The following API endpoints now use Resend:
+The following API endpoints use the AWS SES email service:
 
 - `POST /api/vote/request-otp-email` - Sends OTP emails for voting
 - `POST /api/users/emails/voting-stage-all` - Bulk voting stage emails
 - `POST /api/users/emails/voting-cards` - Bulk voting card emails
 
-## Benefits of Resend
+## AWS SES Benefits
 
-- Better email deliverability
-- Modern API design
-- Built-in analytics
-- No need for SMTP configuration
-- Better error handling and logging
+- **High Deliverability**: Industry-leading inbox placement rates
+- **Scalability**: Handle high-volume email campaigns
+- **Cost-Effective**: Pay only for emails sent
+- **Reliable**: 99.9% uptime SLA
+- **Monitoring**: Built-in bounce and complaint handling
+- **Security**: TLS encryption and AWS IAM integration
+
+## Email Templates
+
+All email templates include:
+- Professional HTML formatting
+- Plain text fallbacks
+- Mobile-responsive design
+- Brand consistency
+- Security warnings for OTP emails
+
+## Rate Limits & Performance
+
+- **Sending Rate**: 14 emails/second
+- **Connection Pool**: 5 concurrent connections
+- **Batch Processing**: Automatic batching for bulk operations
+- **Retry Logic**: Built-in error handling and retries
+- **Monitoring**: Comprehensive logging for debugging
+
+## Testing
+
+Use the `testEmailConnection()` function to verify SMTP configuration:
+
+```typescript
+import { testEmailConnection } from '@/lib/email/emailService';
+
+const isWorking = await testEmailConnection();
+console.log('Email service status:', isWorking ? 'OK' : 'Failed');
+```
+
+## Configuration Files
+
+The SMTP credentials are sourced from:
+- **Environment variables** (`.env.local`)
+- **SMTP CSV file** (`smtp.csv`) containing AWS SES credentials
+- **Fallback values** hardcoded in the service for development
+
+## Migration Notes
+
+This service has been updated from Resend to AWS SES SMTP for:
+- Better integration with existing AWS infrastructure
+- Lower costs for high-volume email campaigns
+- More control over email delivery and monitoring
+- Compliance with enterprise email requirements
