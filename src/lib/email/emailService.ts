@@ -62,7 +62,7 @@ export async function sendWelcomeEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: data.email,
       subject: "🎉 You're in! Here's your CONCES Rebrand Challenge Pack",
@@ -163,7 +163,7 @@ export async function sendBulkMotivationalEmails(
               address:
                 process.env.EMAIL_USER ||
                 process.env.SMTP_FROM ||
-                "noreply@conces.org",
+                "goodnews@conces.org",
             },
             to: recipient.email,
             subject: "500 Reasons to Bring Your Best 🎯",
@@ -281,7 +281,7 @@ export async function sendReminderEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: email,
       subject: `⏰ ${daysLeft} days left to submit your design!`,
@@ -356,7 +356,7 @@ export async function sendLastCallEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: data.email,
       subject: "⏰ Last Call: Submit Your Entry — Contest Ends in 7 Days!",
@@ -516,7 +516,7 @@ export async function sendVotingStageEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: data.email,
       subject: "You Made It! Time to Prepare for the Voting Stage 🗳️✨",
@@ -681,7 +681,7 @@ export async function sendVotingCardEmail(
     const mailOptions = {
       from: {
         name: "CONCES Rebrand Challenge",
-        address: process.env.SMTP_FROM || "noreply@conces.org",
+        address: process.env.SMTP_FROM || "goodnews@conces.org",
       },
       to: data.email,
       subject: "🎉 Your CONCES Logo Rebrand Challenge Voting Card Is Ready!",
@@ -911,7 +911,7 @@ export async function sendVotingOTPEmail(
     };
 
     const mailOptions = {
-      from: process.env.SMTP_FROM || "noreply@conces.org",
+      from: process.env.SMTP_FROM || "goodnews@conces.org",
       to: email,
       subject: `🔐 Your CONCES Voting Verification Code: ${otpCode}`,
       html: getVotingOTPEmailTemplate(templateData),
