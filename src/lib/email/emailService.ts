@@ -35,11 +35,14 @@ interface BulkEmailData {
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "465"),
+    port: parseInt(process.env.SMTP_PORT || "587"),
     secure: false, // true for 465, false for other ports
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      // user: process.env.SMTP_USER,
+      // pass: process.env.SMTP_PASSWORD,
+
+      user:process.env.EMAIL_USER,
+      pass:process.env.EMAIL_PASSWORD,
     },
     pool: true,
     maxConnections: 5, // AWS SES allows higher connection limits
