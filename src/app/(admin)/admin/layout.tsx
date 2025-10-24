@@ -4,6 +4,7 @@ import "../../globals.css";
 import AdminLayoutWrapper from "@/components/admin/Providers";
 import { AdminAuthProvider } from "@/context/AdminAuth";
 import { MaintenanceProvider } from "@/context/MaintenanceContext";
+import Head from "next/head";
 
 export const metadata: Metadata = {
   title: "Conces Contest Admin",
@@ -20,7 +21,7 @@ export default function AdminLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
+      <Head>
         {/* Google Tag Manager */}
         <script
           dangerouslySetInnerHTML={{
@@ -31,7 +32,7 @@ export default function AdminLayout({
             })(window,document,'script','dataLayer','GTM-PRR6FNLR');`,
           }}
         />
-      </head>
+      </Head>
       <body className="antialiased">
         {/* Google Tag Manager (noscript) */}
         <noscript>
