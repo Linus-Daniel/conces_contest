@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         )
         .lean();
 
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           hasSubmitted: !!existingProject,
           project: existingProject
@@ -164,6 +164,11 @@ export async function GET(request: NextRequest) {
         },
         { status: 200 }
       );
+
+      // Cache submission check for 30 seconds
+      response.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+      
+      return response;
     }
 
     if (projectId) {
@@ -188,7 +193,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           project: {
             ...project,
@@ -197,6 +202,11 @@ export async function GET(request: NextRequest) {
         },
         { status: 200 }
       );
+
+      // Cache individual project for 5 minutes
+      response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+      
+      return response;
     }
 
     // Get all projects
@@ -237,7 +247,7 @@ export async function GET(request: NextRequest) {
       })),
     };
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         projects: transformedProjects,
@@ -250,6 +260,12 @@ export async function GET(request: NextRequest) {
       },
       { status: 200 }
     );
+
+    // Cache for 2 minutes, allow stale for 10 minutes
+    response.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
+    response.headers.set("CDN-Cache-Control", "public, s-maxage=300");
+    
+    return response;
   } catch (error) {
     console.error("Error fetching projects:", error);
     return NextResponse.json(

@@ -1,4 +1,9 @@
 import { NextRequest } from "next/server";
+import { connectDB } from "@/lib/mongodb";
+import Project from "@/models/Project";
+
+let lastVoteUpdate = 0;
+let cachedVoteData: any = null;
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -10,30 +15,55 @@ export async function GET(request: NextRequest) {
         encoder.encode(`data: ${JSON.stringify({ type: "connected" })}\n\n`)
       );
 
-      // Set up interval to send vote updates
+      // Set up interval to send vote updates with caching
       const interval = setInterval(async () => {
         try {
-          // Fetch latest vote counts
-          const response = await fetch(
-            `${process.env.NODE_ENV == "production"?"https://brandchallenge.conces.org/api/projects":"http://localhost:3000/api/projects/"}`
-          );
-          const data = await response.json();
+          const now = Date.now();
+          
+          // Only fetch from DB if we don't have recent cached data (cache for 30 seconds)
+          if (!cachedVoteData || now - lastVoteUpdate > 30000) {
+            await connectDB();
+            
+            // Only fetch vote counts, not full project data
+            const projects = await Project.find({}, { _id: 1, vote: 1 })
+              .populate("candidate", "isQualified")
+              .lean();
+            
+            const qualifiedProjects = projects.filter(
+              (project: any) => project.candidate?.isQualified === true
+            );
+            
+            cachedVoteData = {
+              votes: qualifiedProjects.map((p: any) => ({
+                id: p._id.toString(),
+                votes: p.vote || 0,
+              })),
+              totalVotes: qualifiedProjects.reduce((sum: number, p: any) => sum + (p.vote || 0), 0),
+              timestamp: new Date().toISOString(),
+            };
+            lastVoteUpdate = now;
+          }
 
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 type: "update",
-                votes: data.projects.map((p: any) => ({
-                  id: p._id,
-                  votes: p.vote,
-                })),
+                ...cachedVoteData,
               })}\n\n`
             )
           );
         } catch (error) {
           console.error("Error sending update:", error);
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: "error",
+                message: "Failed to fetch vote updates",
+              })}\n\n`
+            )
+          );
         }
-      }, 5000); // Update every 5 seconds
+      }, 10000); // Update every 10 seconds (reduced frequency)
 
       // Clean up on close
       request.signal.addEventListener("abort", () => {
@@ -46,8 +76,12 @@ export async function GET(request: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
       Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Cache-Control",
     },
   });
 }
