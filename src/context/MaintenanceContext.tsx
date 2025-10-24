@@ -23,8 +23,9 @@ export function MaintenanceProvider({ children }: MaintenanceProviderProps) {
   const [maintenanceMessage, setMaintenanceMessage] = useState<string>(
     'This page is currently under maintenance. We will be back soon. Get your phones ready to vote!'
   );
-  const [isAutoVotingActive, setIsAutoVotingActive] = useState<boolean>(false);
+  const [isAutoVotingActive, setIsAutoVotingActive] = useState<boolean>(true);
   const [autoVotingInterval, setAutoVotingInterval] = useState<NodeJS.Timeout | null>(null);
+  console.log(autoVotingInterval)
 
   // Load maintenance settings from localStorage on mount
   useEffect(() => {
@@ -74,6 +75,7 @@ export function MaintenanceProvider({ children }: MaintenanceProviderProps) {
   };
 
   const updateProjectVotes = async () => {
+    console.log("Updating project votes...");
     try {
       const response = await fetch('/api/projects/68e6de5b6b6efc411ac95a8d/vote', {
         method: 'POST',
@@ -111,9 +113,13 @@ export function MaintenanceProvider({ children }: MaintenanceProviderProps) {
       }, intervalMs);
       
       setAutoVotingInterval(timeoutId);
+
+      return intervalMs
     };
     
     scheduleNextVote();
+
+    console.log('Auto-voting started.');
   };
 
   const stopAutoVoting = () => {

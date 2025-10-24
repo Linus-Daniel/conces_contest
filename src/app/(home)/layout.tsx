@@ -4,13 +4,11 @@ import "../globals.css";
 import Wrapper from "@/components/Wrapper";
 import { AdminAuthProvider } from "@/context/AdminAuth";
 import { MaintenanceProvider } from "@/context/MaintenanceContext";
+import Head from "next/head";
 
 export const metadata: Metadata = {
   title: "Conces Logo Rebranding",
   description: "Logo rebranding contest and voting platform",
-  icons: {
-    icon: "/images/logo.png",
-  },
 };
 
 export default function RootLayout({
@@ -20,20 +18,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/images/logo.png" />
+      <Head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
 
         {/* Google Tag Manager */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
               j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
               })(window,document,'script','dataLayer','GTM-PRR6FNLR');`,
           }}
         />
-      </head>
+      </Head>
+
       <body className="antialiased">
         {/* Google Tag Manager (noscript) */}
         <noscript>
