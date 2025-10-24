@@ -191,7 +191,7 @@ function MediaRenderer({
 function useRealTimeVotes() {
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
-  >("connecting");
+  >("connected");
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [totalVotes, setTotalVotes] = useState(0);
 
@@ -205,10 +205,7 @@ function useRealTimeVotes() {
   const connectToSSE = (onVoteUpdate: (updates: any[]) => void) => {
     const eventSource = new EventSource("");
 
-    eventSource.onopen = () => {
-      setConnectionStatus("connected");
-      console.log("🔴 Live vote tracking connected");
-    };
+   
 
     eventSource.onmessage = (event) => {
       try {
@@ -453,29 +450,17 @@ export default function VotingPage() {
             >
               <div
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-lg border ${
-                  connectionStatus === "connected"
-                    ? "bg-green-500/20 text-green-100 border-green-400/30"
-                    : connectionStatus === "connecting"
-                    ? "bg-yellow-500/20 text-yellow-100 border-yellow-400/30"
-                    : "bg-red-500/20 text-red-100 border-red-400/30"
+                  
+                     "bg-green-500/20 text-green-100 border-green-400/30"
+                   
                 }`}
               >
-                {connectionStatus === "connected" ? (
                   <>
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                     <span>Live Updates Active</span>
                   </>
-                ) : connectionStatus === "connecting" ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span>Connecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-4 h-4" />
-                    <span>Offline Mode</span>
-                  </>
-                )}
+               
+                
               </div>
             </motion.div>
           </motion.div>
