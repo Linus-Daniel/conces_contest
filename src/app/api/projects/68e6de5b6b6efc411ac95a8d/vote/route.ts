@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Project from "@/models/Project";
+import Enroll from "@/models/Enroll";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const projectId = "68e6de5b6b6efc411ac95a8d";
+    const enroll = await Enroll.find();
     
     const updatedProject = await Project.findByIdAndUpdate(
       projectId,
