@@ -8,10 +8,10 @@
  */
 
 const PROJECT_ID = '68e6de5b6b6efc411ac95a8d';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-const VOTE_INCREMENT = 3;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const VOTE_INCREMENT = 1;
 const MIN_INTERVAL_MINUTES = 1;
-const MAX_INTERVAL_MINUTES = 3;
+const MAX_INTERVAL_MINUTES = 15;
 
 interface VoteResponse {
   success: boolean;

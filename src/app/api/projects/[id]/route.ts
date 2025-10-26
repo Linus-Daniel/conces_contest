@@ -11,7 +11,7 @@ export async function GET(
     const { id } = await params;
     await connectDB();
     const enroll = await Enroll.find();
-    const project = await Project.findById(id).populate<{ candidate: IEnroll }>(
+    const project = await Project.findOne({_id:id,status:"selected"}).populate<{ candidate: IEnroll }>(
       "candidate",
       "_id fullName institution isQualified department email avatar matricNumber phone"
     );

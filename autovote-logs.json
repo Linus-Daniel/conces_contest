@@ -1,0 +1,23 @@
+[
+  {
+    "timestamp": "2025-10-25T10:10:56.129Z",
+    "type": "VOTE_FAILED",
+    "status": 500,
+    "error": "Internal Server Error",
+    "increment": 1
+  },
+  {
+    "timestamp": "2025-10-25T10:31:08.271Z",
+    "type": "VOTE_SUCCESS",
+    "increment": 1,
+    "newTotal": 905,
+    "projectTitle": "Bridging Faith and Engineering"
+  },
+  {
+    "timestamp": "2025-10-25T11:07:55.497Z",
+    "type": "VOTE_SUCCESS",
+    "increment": 1,
+    "newTotal": 908,
+    "projectTitle": "Bridging Faith and Engineering"
+  }
+]

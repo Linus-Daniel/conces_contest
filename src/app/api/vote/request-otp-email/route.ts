@@ -7,6 +7,8 @@ import Enroll from "@/models/Enroll";
 import crypto from "crypto";
 import { generateOTP, validateEmail, validateNigerianPhone, normalizePhoneNumber } from "@/lib/emailOTP";
 import { sendVotingOTPEmail } from "@/lib/email/emailService";
+import { detectBotAttack } from "@/lib/antiBot";
+import { validateEmailDomain, isDisposableEmail } from "@/lib/emailValidator";
 
 // Utility functions
 function encrypt(text: string): string {
@@ -113,6 +115,20 @@ async function validateUserAndOTPStatus(
 // Main POST handler
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ ANTI-BOT PROTECTION: Check for automated scripts
+    const botCheck = detectBotAttack(request);
+    if (botCheck.isBot) {
+      console.log(`🚨 BOT ATTACK BLOCKED: ${botCheck.reason} from IP: ${botCheck.ipAddress}`);
+      return NextResponse.json(
+        {
+          error: "Access denied",
+          message: "Automated requests are not allowed. Please use a web browser.",
+          code: "BOT_DETECTED"
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { projectId, voterEmail, voterPhone } = body;
 
@@ -120,6 +136,8 @@ export async function POST(request: NextRequest) {
     console.log("Project ID:", projectId);
     console.log("Voter Email:", voterEmail);
     console.log("Voter Phone:", voterPhone);
+    console.log("User Agent:", botCheck.userAgent);
+    console.log("IP Address:", botCheck.ipAddress);
     console.log("Timestamp:", new Date().toISOString());
 
     // Validate input
@@ -141,6 +159,20 @@ export async function POST(request: NextRequest) {
         {
           error: "Invalid email",
           message: "Please provide a valid email address",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 🚨 ANTI-FRAUD: Block disposable email addresses
+    const emailDomainCheck = validateEmailDomain(voterEmail);
+    if (!emailDomainCheck.valid) {
+      console.error("Disposable/suspicious email blocked:", voterEmail);
+      return NextResponse.json(
+        {
+          error: "Invalid email domain",
+          message: emailDomainCheck.reason,
+          code: "DISPOSABLE_EMAIL_BLOCKED"
         },
         { status: 400 }
       );

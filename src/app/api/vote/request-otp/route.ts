@@ -6,6 +6,7 @@ import OTP from "@/models/OTP";
 import Vote from "@/models/Vote";
 import crypto from "crypto";
 import axios from "axios";
+import { detectBotAttack } from "@/lib/antiBot";
 
 class WhatsAppService {
   private accessToken: string;
@@ -278,12 +279,28 @@ async function validatePhoneAndOTPStatus(
 // Main POST handler
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ ANTI-BOT PROTECTION: Check for automated scripts
+    const botCheck = detectBotAttack(request);
+    if (botCheck.isBot) {
+      console.log(`🚨 BOT ATTACK BLOCKED: ${botCheck.reason} from IP: ${botCheck.ipAddress}`);
+      return NextResponse.json(
+        {
+          error: "Access denied",
+          message: "Automated requests are not allowed. Please use a web browser.",
+          code: "BOT_DETECTED"
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { projectId, voterPhone } = body;
 
     console.log("\n=== New OTP Request ===");
     console.log("Project ID:", projectId);
     console.log("Voter Phone:", voterPhone);
+    console.log("User Agent:", botCheck.userAgent);
+    console.log("IP Address:", botCheck.ipAddress);
     console.log("Timestamp:", new Date().toISOString());
 
     // Validate input

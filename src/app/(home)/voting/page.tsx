@@ -36,7 +36,7 @@ async function getProjectsData(): Promise<{
     
     // Get all projects
     const enroll =  await Enroll.find();
-    const allProjects = await Project.find({})
+    const allProjects = await Project.find({status:"selected"})
       .populate<{ candidate: IEnroll }>(
         "candidate",
         "_id fullName institution isQualified department email avatar matricNumber phone"

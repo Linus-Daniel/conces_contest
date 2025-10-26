@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import OTP from "@/models/OTP";
+import { detectBotAttack } from "@/lib/antiBot";
 
 // Response interfaces
 interface CheckOTPResponse {
@@ -51,11 +52,27 @@ function formatNigerianPhone(phone: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ ANTI-BOT PROTECTION: Check for automated scripts
+    const botCheck = detectBotAttack(request);
+    if (botCheck.isBot) {
+      console.log(`🚨 BOT ATTACK BLOCKED: ${botCheck.reason} from IP: ${botCheck.ipAddress}`);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Access denied",
+          message: "Automated requests are not allowed. Please use a web browser."
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { phoneNumber } = body;
 
     console.log("\n=== OTP Check Request ===");
     console.log("Phone Number:", phoneNumber);
+    console.log("User Agent:", botCheck.userAgent);
+    console.log("IP Address:", botCheck.ipAddress);
     console.log("Timestamp:", new Date().toISOString());
 
     // Validate input
@@ -170,6 +187,20 @@ export async function POST(request: NextRequest) {
 // Optional: GET endpoint to check OTP status by sessionId
 export async function GET(request: NextRequest) {
   try {
+    // 🛡️ ANTI-BOT PROTECTION: Check for automated scripts
+    const botCheck = detectBotAttack(request);
+    if (botCheck.isBot) {
+      console.log(`🚨 BOT ATTACK BLOCKED: ${botCheck.reason} from IP: ${botCheck.ipAddress}`);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Access denied",
+          message: "Automated requests are not allowed. Please use a web browser."
+        },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("sessionId");
 
@@ -186,6 +217,8 @@ export async function GET(request: NextRequest) {
 
     console.log("\n=== OTP Status Check ===");
     console.log("Session ID:", sessionId);
+    console.log("User Agent:", botCheck.userAgent);
+    console.log("IP Address:", botCheck.ipAddress);
 
     // Connect to database
     await connectDB();
