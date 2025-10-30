@@ -458,6 +458,46 @@ export default function VotingClientComponent({
         </div>
       </header>
 
+      {/* Fraud Cleanup Notice */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.0, duration: 0.5 }}
+        className="bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-b border-amber-200 shadow-sm"
+      >
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-start gap-4 max-w-5xl mx-auto">
+            <div className="flex-shrink-0 bg-amber-100 rounded-full p-2 mt-0.5">
+              <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-amber-800 mb-1">
+                Notice: Vote Count Adjustments
+              </h4>
+              <p className="text-sm text-amber-700 leading-relaxed">
+                If you notice a reduction in vote counts for any candidate, this is due to our recent cleanup of 
+                <strong className="font-medium"> fraudulent voting activities</strong> including the removal of votes from 
+                disposable email addresses and attempts to bypass the one-vote-per-person system. This ensures fair 
+                competition and maintains the integrity of the voting process.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const notice = document.querySelector('[data-notice="fraud-cleanup"]');
+                if (notice) notice.remove();
+              }}
+              className="flex-shrink-0 text-amber-600 hover:text-amber-800 p-1 rounded-full hover:bg-amber-100 transition-colors"
+              data-notice="fraud-cleanup"
+              aria-label="Dismiss notice"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Enhanced Filters Section */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/60">
         <div className="container mx-auto px-6 py-4">

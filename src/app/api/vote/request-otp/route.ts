@@ -209,36 +209,35 @@ async function validatePhoneAndOTPStatus(
 ) {
   console.log("=== Starting Phone/OTP Validation ===");
 
-  // 1. Check if this phone number has already voted for this project
+  // 1. GLOBAL CHECK: Has this phone number already voted for ANY project?
   const existingVote = await Vote.findOne({
     phoneNumber: encryptedPhone,
   });
 
   if (existingVote) {
-    console.log("❌ Phone number already voted for this project");
+    console.log("❌ Phone number already voted globally");
     return {
       canSendOTP: false,
       reason: "ALREADY_VOTED",
       message:
-        "This phone number has already voted for this project. Each phone number can only vote once.",
+        "This phone number has already been used to vote. Each phone number can only vote once globally.",
     };
   }
 
-  // 2. Check if this phone number has any confirmed votes (used OTP that resulted in vote)
+  // 2. GLOBAL CHECK: Has this phone number been used for any confirmed vote via OTP?
   const confirmedOTP = await OTP.findOne({
     phoneNumber: formattedPhone,
-    projectId,
     used: true,
     voteConfirmed: true,
   });
 
   if (confirmedOTP) {
-    console.log("❌ Phone number has confirmed vote via OTP");
+    console.log("❌ Phone number has confirmed vote via OTP globally");
     return {
       canSendOTP: false,
       reason: "VOTE_CONFIRMED",
       message:
-        "This phone number has already been used to vote for this project and cannot request another OTP.",
+        "This phone number has already been used to vote and cannot request another OTP.",
     };
   }
 

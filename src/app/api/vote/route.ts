@@ -194,42 +194,104 @@ export async function POST(request: NextRequest) {
     console.log("Phone number type:", typeof otp.phoneNumber);
     const encryptedPhone = encrypt(otp.phoneNumber);
 
-    // Double-check: Has this phone number already voted for this project?
-    const existingVote = await Vote.findOne({
+    // COMPREHENSIVE VALIDATION: Check both phone and email across Vote and OTP collections
+    
+    // 1. Double-check: Has this phone number already voted for any project?
+    const existingPhoneVote = await Vote.findOne({
       phoneNumber: encryptedPhone,
-      projectId: otp.projectId,
     });
 
-    if (existingVote) {
-      console.warn("Phone number already voted for this project");
+    if (existingPhoneVote) {
+      console.warn("Phone number already voted (found existing vote)");
       return NextResponse.json(
         {
           error: "Already voted",
-          message: "This phone number has already voted for this project",
+          message: "This phone number has already been used to vote. Each phone number can only vote once.",
         },
         { status: 409 }
       );
     }
 
-    // Additional check: Has this phone number been used for any confirmed vote for this project?
-    const existingConfirmedOTP = await OTP.findOne({
+    // 2. If this OTP has an email, check if email already voted for any project
+    if (otp.email) {
+      const encryptedEmail = encrypt(otp.email);
+      const existingEmailVote = await Vote.findOne({
+        voterEmail: encryptedEmail,
+      });
+
+      if (existingEmailVote) {
+        console.warn("Email already voted (found existing vote)");
+        return NextResponse.json(
+          {
+            error: "Already voted",
+            message: "This email address has already been used to vote. Each email can only vote once.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // 3. Check if email has been used in any confirmed OTP
+      const existingEmailOTP = await OTP.findOne({
+        email: otp.email,
+        used: true,
+        voteConfirmed: true,
+        _id: { $ne: otp._id }, // Exclude current session
+      });
+
+      if (existingEmailOTP) {
+        console.warn("Email already used for confirmed vote via OTP");
+        return NextResponse.json(
+          {
+            error: "Email already used",
+            message: "This email address has already been used to vote via a confirmed OTP.",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // 4. Check if phone number has been used for any confirmed vote via OTP
+    const existingPhoneOTP = await OTP.findOne({
       phoneNumber: otp.phoneNumber,
-      projectId: otp.projectId,
       used: true,
       voteConfirmed: true,
       _id: { $ne: otp._id }, // Exclude current session
     });
 
-    if (existingConfirmedOTP) {
-      console.warn("Phone number already used for confirmed vote");
+    if (existingPhoneOTP) {
+      console.warn("Phone number already used for confirmed vote via OTP");
       return NextResponse.json(
         {
           error: "Phone already used",
-          message:
-            "This phone number has already been used to vote for this project",
+          message: "This phone number has already been used to vote via a confirmed OTP.",
         },
         { status: 409 }
       );
+    }
+
+    // 5. Check if this email/phone combination exists in Enroll (registration) model
+    if (otp.email) {
+      const encryptedEmail = encrypt(otp.email);
+      const existingEnrollUser = await OTP.findOne({
+        $or: [
+          { email: otp.email },
+          { phoneNumber: otp.phoneNumber }
+        ],
+        used: true,
+        voteConfirmed: true,
+        _id: { $ne: otp._id }
+      });
+
+      if (existingEnrollUser) {
+        console.warn("Email or phone already used in previous voting session");
+        return NextResponse.json(
+          {
+            error: "Already voted",
+            message: "This email or phone number has already been used in a previous voting session.",
+          },
+          { status: 409 }
+        );
+      }
     }
 
     console.log("✅ Phone number validation passed");

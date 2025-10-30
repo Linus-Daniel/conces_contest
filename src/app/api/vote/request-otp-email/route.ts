@@ -50,31 +50,31 @@ async function validateUserAndOTPStatus(
     };
   }
 
-  // 3. Check if this email has already voted for this project
+  // 3. GLOBAL CHECK: Has this email already voted for ANY project?
   const existingEmailVote = await Vote.findOne({
     voterEmail: encryptedEmail,
   });
 
   if (existingEmailVote) {
-    console.log("❌ Email already voted for this project");
+    console.log("❌ Email already voted globally");
     return {
       canSendOTP: false,
       reason: "ALREADY_VOTED_EMAIL",
-      message: "This email has already been used to vote. Each email can only vote once.",
+      message: "This email has already been used to vote. Each email can only vote once globally.",
     };
   }
 
-  // 4. Check if this phone number has already voted for this project
+  // 4. GLOBAL CHECK: Has this phone number already voted for ANY project?
   const existingPhoneVote = await Vote.findOne({
     phoneNumber: encryptedPhone,
   });
 
   if (existingPhoneVote) {
-    console.log("❌ Phone number already voted for this project");
+    console.log("❌ Phone number already voted globally");
     return {
       canSendOTP: false,
       reason: "ALREADY_VOTED_PHONE",
-      message: "This phone number has already been used to vote. Each phone number can only vote once.",
+      message: "This phone number has already been used to vote. Each phone number can only vote once globally.",
     };
   }
 

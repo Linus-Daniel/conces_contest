@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-10-30T09:15:51.155Z",
+  "duration": "14.31 seconds",
+  "statistics": {
+    "initialVotes": 19927,
+    "finalVotes": 16381,
+    "votesRemoved": 3546,
+    "targetFraudulentVotes": 3546
+  },
+  "projectUpdates": {
+    "attempted": 6,
+    "successful": 6,
+    "reductions": {
+      "68d6e90c85632704a907c17c": 511,
+      "68e3f0f493d1f4da4ef4ae01": 2010,
+      "68ddb5ee8b0e98d91cccf8de": 580,
+      "68e6de5b6b6efc411ac95a8d": 241,
+      "68e51a840ef35960f056825b": 203,
+      "68eb7990f07b7097aa22945f": 1
+    }
+  },
+  "otpCleanup": {
+    "checked": 3546,
+    "deleted": 0
+  },
+  "fraudulentVoteBreakdown": {
+    "guerrillamailblock.com": 3545,
+    "mailinator.com": 1
+  }
+}
