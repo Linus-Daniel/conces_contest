@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, use } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
@@ -18,6 +18,9 @@ import {
   FileText,
   Download,
   ExternalLink,
+  Filter,
+  SortAsc,
+  School,
 } from "lucide-react";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
@@ -69,11 +72,11 @@ function PDFViewer({ url, title }: { url: string; title: string }) {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="w-full h-full flex flex-col bg-gray-50 rounded-lg overflow-hidden border">
-      <div className="flex items-center justify-between p-3 bg-gray-100 border-b">
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium text-gray-700 truncate">
+    <div className="w-full h-full flex flex-col bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+      <div className="flex items-center justify-between p-4 bg-gray-100 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <FileText className="w-5 h-5 text-red-500" />
+          <span className="text-sm font-semibold text-gray-800 truncate">
             {title}
           </span>
         </div>
@@ -81,7 +84,7 @@ function PDFViewer({ url, title }: { url: string; title: string }) {
           <a
             href={url}
             download
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-200"
             title="Download PDF"
           >
             <Download className="w-4 h-4 text-gray-600" />
@@ -90,28 +93,31 @@ function PDFViewer({ url, title }: { url: string; title: string }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-200"
             title="Open in new tab"
           >
             <ExternalLink className="w-4 h-4 text-gray-600" />
           </a>
         </div>
       </div>
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-white">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
+          <div className="absolute inset-0 flex items-center justify-center bg-white">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-conces-green"></div>
+              <p className="text-sm text-gray-500">Loading PDF...</p>
+            </div>
           </div>
         )}
         {error ? (
-          <div className="absolute inset-0 flex items-center justify-center flex-col gap-2 p-4">
-            <FileText className="w-12 h-12 text-gray-400" />
+          <div className="absolute inset-0 flex items-center justify-center flex-col gap-3 p-6">
+            <FileText className="w-16 h-16 text-gray-400" />
             <p className="text-gray-500 text-center text-sm">{error}</p>
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-conces-blue hover:underline text-sm"
+              className="text-conces-blue hover:underline text-sm font-medium"
             >
               Open PDF directly
             </a>
@@ -168,7 +174,10 @@ function MediaRenderer({
     >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-conces-green"></div>
+            <p className="text-xs text-gray-500">Loading image...</p>
+          </div>
         </div>
       )}
       <img
@@ -191,7 +200,7 @@ function MediaRenderer({
 function useRealTimeVotes() {
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
-  >("connected");
+  >("connecting");
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [totalVotes, setTotalVotes] = useState(0);
 
@@ -252,24 +261,27 @@ function useRealTimeVotes() {
   };
 }
 
-export default function VotingClientComponent({ 
-  initialProjects, 
-  initialVotingStats 
+export default function VotingClientComponent({
+  initialProjects,
+  initialVotingStats,
 }: VotingClientComponentProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>(initialProjects);
+  const [filteredProjects, setFilteredProjects] =
+    useState<Project[]>(initialProjects);
   const [votingStats, setVotingStats] = useState(initialVotingStats);
   const [votedProjects, setVotedProjects] = useState<Set<string>>(new Set());
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"votes" | "newest" | "title">("votes");
   const [filterSchool, setFilterSchool] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const { user } = useAdminAuth();
   const { isMaintenanceMode } = useMaintenance();
 
-  const [selectedProjectToVote, setSelectedProjectToVote] = useState<Project | null>(null);
-  const {isVotingOpen} = useTimer();
+  const [selectedProjectToVote, setSelectedProjectToVote] =
+    useState<Project | null>(null);
+  const { isVotingOpen } = useTimer();
   const {
     connectionStatus,
     lastUpdate,
@@ -279,6 +291,10 @@ export default function VotingClientComponent({
   } = useRealTimeVotes();
 
   const handleVoteClick = (project: Project) => {
+    if (!isVotingOpen) {
+      toast.error("Voting is currently closed");
+      return;
+    }
     setSelectedProjectToVote(project);
     setShowOTPModal(true);
   };
@@ -321,6 +337,8 @@ export default function VotingClientComponent({
 
   useEffect(() => {
     let filtered = [...projects];
+
+    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
         (p) =>
@@ -330,14 +348,19 @@ export default function VotingClientComponent({
             .includes(searchTerm.toLowerCase()) ||
           p.candidate.schoolName
             .toLowerCase()
-            .includes(searchTerm.toLowerCase())
+            .includes(searchTerm.toLowerCase()) ||
+          p.designConcept.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+
+    // School filter
     if (filterSchool !== "all") {
       filtered = filtered.filter(
         (p) => p.candidate.schoolName === filterSchool
       );
     }
+
+    // Sort
     switch (sortBy) {
       case "votes":
         filtered.sort((a, b) => (b.vote || 0) - (a.vote || 0));
@@ -353,35 +376,32 @@ export default function VotingClientComponent({
         filtered.sort((a, b) => a.projectTitle.localeCompare(b.projectTitle));
         break;
     }
+
     setFilteredProjects(filtered);
   }, [searchTerm, sortBy, filterSchool, projects]);
 
   const schools = Array.from(
     new Set(projects.map((p) => p.candidate.schoolName))
-  );
+  ).sort();
 
   if (isMaintenanceMode) {
     return <MaintenancePage />;
   }
-
-
-  
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Enhanced Header */}
       <header className="relative bg-gradient-to-br from-conces-blue via-blue-600 to-indigo-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-        <div className="relative container mx-auto px-6 py-12">
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="text-center max-w-4xl mx-auto"
+            className="text-center max-w-6xl mx-auto"
           >
             <motion.h1
-              className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -389,7 +409,7 @@ export default function VotingClientComponent({
               Design Showcase
             </motion.h1>
             <motion.p
-              className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed"
+              className="text-lg sm:text-xl lg:text-2xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -397,84 +417,99 @@ export default function VotingClientComponent({
               Vote for the most innovative designs and help shape the future
             </motion.p>
 
-            {!isVotingOpen && (
-              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-                <div className=" rounded-2xl shadow-lg p-10 max-w-lg text-center">
-                  <WifiOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h2 className="text-3xl font-bold mb-2 text-gray-800">
-                    Voting Closed
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    The voting period has ended. Thank you for your interest and
-                    participation!
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    The second phase of the competition is underway. Stay tuned
-                    for updates on the next steps and results.
-                  </p>
-                </div>
-              </div>
-            )}
+            {/* Stats Grid */}
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 max-w-4xl mx-auto px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <div className="text-3xl font-bold text-conces-gold mb-2">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg">
+                <div className="text-2xl sm:text-3xl font-bold text-conces-gold mb-2">
                   {projects.length}
                 </div>
-                <div className="text-blue-100 font-medium">Total Designs</div>
+                <div className="text-blue-100 font-medium text-sm sm:text-base">
+                  Total Designs
+                </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 relative">
-                <div className="text-3xl font-bold text-conces-gold mb-2 flex items-center justify-center gap-2">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg relative">
+                <div className="text-2xl sm:text-3xl font-bold text-conces-gold mb-2 flex items-center justify-center gap-2">
                   {totalVotes ||
                     projects.reduce((sum, p) => sum + (p.vote || 0), 0)}
                   {connectionStatus === "connected" && (
-                    <TrendingUp className="w-6 h-6 text-green-300 animate-pulse" />
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-300 animate-pulse" />
                   )}
                 </div>
-                <div className="text-blue-100 font-medium">Total Votes</div>
+                <div className="text-blue-100 font-medium text-sm sm:text-base">
+                  Total Votes
+                </div>
                 {lastUpdate && connectionStatus === "connected" && (
                   <div className="text-xs text-green-300 mt-2 font-medium">
                     Live • Updated {new Date(lastUpdate).toLocaleTimeString()}
                   </div>
                 )}
               </div>
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                <div className="text-3xl font-bold text-conces-gold mb-2">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 shadow-lg">
+                <div className="text-2xl sm:text-3xl font-bold text-conces-gold mb-2">
                   {schools.length}
                 </div>
-                <div className="text-blue-100 font-medium">Schools</div>
+                <div className="text-blue-100 font-medium text-sm sm:text-base">
+                  Schools
+                </div>
               </div>
             </motion.div>
 
+            {/* Voting Status */}
+            {!isVotingOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-2xl px-6 py-4 border border-white/20 shadow-lg mb-6"
+              >
+                <WifiOff className="w-6 h-6 text-yellow-300" />
+                <div className="text-left">
+                  <div className="font-bold text-white text-lg">
+                    Voting Closed
+                  </div>
+                  <div className="text-blue-100 text-sm">
+                    The voting period has ended
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Connection Status */}
             <motion.div
-              className="flex items-center justify-center gap-4"
+              className="flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
               <div
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-lg border ${
+                className={`inline-flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold backdrop-blur-lg border ${
                   connectionStatus === "connected"
                     ? "bg-green-500/20 text-green-100 border-green-400/30"
+                    : connectionStatus === "connecting"
+                    ? "bg-yellow-500/20 text-yellow-100 border-yellow-400/30"
                     : "bg-red-500/20 text-red-100 border-red-400/30"
                 }`}
               >
-                {connectionStatus === "connected" ? (
-                  <>
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span>Live Updates Active</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-2 h-2 bg-red-400 rounded-full" />
-                    <span>Reconnecting...</span>
-                  </>
-                )}
+                <div
+                  className={`w-3 h-3 rounded-full animate-pulse ${
+                    connectionStatus === "connected"
+                      ? "bg-green-400"
+                      : connectionStatus === "connecting"
+                      ? "bg-yellow-400"
+                      : "bg-red-400"
+                  }`}
+                />
+                <span>
+                  {connectionStatus === "connected"
+                    ? "Live Updates Active"
+                    : connectionStatus === "connecting"
+                    ? "Connecting..."
+                    : "Reconnecting..."}
+                </span>
               </div>
             </motion.div>
           </motion.div>
@@ -488,8 +523,8 @@ export default function VotingClientComponent({
         transition={{ delay: 1.0, duration: 0.5 }}
         className="bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-b border-amber-200 shadow-sm"
       >
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-start gap-4 max-w-5xl mx-auto">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-start gap-4 max-w-6xl mx-auto">
             <div className="flex-shrink-0 bg-amber-100 rounded-full p-2 mt-0.5">
               <svg
                 className="w-5 h-5 text-amber-600"
@@ -503,15 +538,14 @@ export default function VotingClientComponent({
                 />
               </svg>
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-amber-800 mb-1">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-amber-800 mb-1 text-sm sm:text-base">
                 Notice: Vote Count Adjustments
               </h4>
-              <p className="text-sm text-amber-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-amber-700 leading-relaxed">
                 If you notice a reduction in vote counts for any candidate, this
-                is due to our recent cleanup of
+                is due to our recent cleanup of{" "}
                 <strong className="font-medium">
-                  {" "}
                   fraudulent voting activities
                 </strong>{" "}
                 including the removal of votes from disposable email addresses
@@ -527,7 +561,7 @@ export default function VotingClientComponent({
                 );
                 if (notice) notice.remove();
               }}
-              className="flex-shrink-0 text-amber-600 hover:text-amber-800 p-1 rounded-full hover:bg-amber-100 transition-colors"
+              className="flex-shrink-0 text-amber-600 hover:text-amber-800 p-1 rounded-full hover:bg-amber-100 transition-colors duration-200"
               data-notice="fraud-cleanup"
               aria-label="Dismiss notice"
             >
@@ -538,9 +572,10 @@ export default function VotingClientComponent({
       </motion.div>
 
       {/* Enhanced Filters Section */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/60">
-        <div className="container mx-auto px-6 py-4">
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+            {/* Search Bar */}
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -549,52 +584,117 @@ export default function VotingClientComponent({
                   placeholder="Search designs, designers, or schools..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm text-sm sm:text-base"
                 />
               </div>
             </div>
-            <div className="flex gap-3">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm min-w-[140px]"
+
+            {/* Filters Toggle for Mobile */}
+            <div className="lg:hidden">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-sm"
               >
-                <option value="votes">Most Votes</option>
-                <option value="newest">Newest First</option>
-                <option value="title">Title A-Z</option>
-              </select>
-              <select
-                value={filterSchool}
-                onChange={(e) => setFilterSchool(e.target.value)}
-                className="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm min-w-[160px]"
-              >
-                <option value="all">All Schools</option>
-                {schools.map((school) => (
-                  <option key={school} value={school}>
-                    {school}
-                  </option>
-                ))}
-              </select>
+                <Filter className="w-5 h-5 text-gray-600" />
+                <span className="text-sm font-medium">Filters</span>
+              </button>
             </div>
+
+            {/* Filters - Desktop */}
+            <div className="hidden lg:flex gap-3">
+              <div className="relative">
+                <SortAsc className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="pl-10 pr-8 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm min-w-[160px] text-sm"
+                >
+                  <option value="votes">Most Votes</option>
+                  <option value="newest">Newest First</option>
+                  <option value="title">Title A-Z</option>
+                </select>
+              </div>
+              <div className="relative">
+                <School className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={filterSchool}
+                  onChange={(e) => setFilterSchool(e.target.value)}
+                  className="pl-10 pr-8 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue transition-all duration-200 shadow-sm min-w-[180px] text-sm"
+                >
+                  <option value="all">All Schools</option>
+                  {schools.map((school) => (
+                    <option key={school} value={school}>
+                      {school}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Mobile Filters Dropdown */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="lg:hidden col-span-2 bg-white border border-gray-200 rounded-xl p-4 shadow-lg"
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Sort By
+                      </label>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as any)}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue text-sm"
+                      >
+                        <option value="votes">Most Votes</option>
+                        <option value="newest">Newest First</option>
+                        <option value="title">Title A-Z</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Filter by School
+                      </label>
+                      <select
+                        value={filterSchool}
+                        onChange={(e) => setFilterSchool(e.target.value)}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-conces-blue/20 focus:border-conces-blue text-sm"
+                      >
+                        <option value="all">All Schools</option>
+                        {schools.map((school) => (
+                          <option key={school} value={school}>
+                            {school}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
       {/* Projects Grid */}
-      <div className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {filteredProjects.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
+            className="text-center py-16 sm:py-20"
           >
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <Search className="w-10 h-10 text-gray-400" />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-600 mb-3">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-3">
               No designs found
             </h3>
-            <p className="text-gray-500 max-w-md mx-auto">
+            <p className="text-gray-500 max-w-md mx-auto text-sm sm:text-base">
               Try adjusting your search criteria or filters to see more results.
             </p>
           </motion.div>
@@ -602,7 +702,7 @@ export default function VotingClientComponent({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {filteredProjects.map((project, index) => (
               <ProjectCard
@@ -613,27 +713,28 @@ export default function VotingClientComponent({
                 onView={() => setSelectedProject(project)}
                 isLiveConnected={connectionStatus === "connected"}
                 isVoted={votedProjects.has(project._id)}
+                isVotingOpen={isVotingOpen}
               />
             ))}
           </motion.div>
         )}
-      </div>
+      </main>
 
       {/* Modals */}
-      {showOTPModal && selectedProjectToVote && (
-        <EmailOTPVotingModal
-          projectId={selectedProjectToVote._id}
-          projectTitle={selectedProjectToVote.projectTitle}
-          candidateName={selectedProjectToVote.candidate.fullName}
-          onClose={() => {
-            setShowOTPModal(false);
-            setSelectedProjectToVote(null);
-          }}
-          onSuccess={handleVoteSuccess}
-        />
-      )}
-
       <AnimatePresence>
+        {showOTPModal && selectedProjectToVote && (
+          <EmailOTPVotingModal
+            projectId={selectedProjectToVote._id}
+            projectTitle={selectedProjectToVote.projectTitle}
+            candidateName={selectedProjectToVote.candidate.fullName}
+            onClose={() => {
+              setShowOTPModal(false);
+              setSelectedProjectToVote(null);
+            }}
+            onSuccess={handleVoteSuccess}
+          />
+        )}
+
         {selectedProject && (
           <ProjectDetailModal
             project={selectedProject}
@@ -643,6 +744,7 @@ export default function VotingClientComponent({
               handleVoteClick(selectedProject);
               setSelectedProject(null);
             }}
+            isVotingOpen={isVotingOpen}
           />
         )}
       </AnimatePresence>
@@ -657,6 +759,7 @@ function ProjectCard({
   onView,
   isLiveConnected,
   isVoted,
+  isVotingOpen,
 }: {
   project: Project;
   index: number;
@@ -664,11 +767,11 @@ function ProjectCard({
   onView: () => void;
   isLiveConnected: boolean;
   isVoted: boolean;
+  isVotingOpen: boolean;
 }) {
   const [previousVotes, setPreviousVotes] = useState(project.vote || 0);
   const [showVoteAnimation, setShowVoteAnimation] = useState(false);
 
-  const {isVotingOpen} = useTimer();
   useEffect(() => {
     const currentVotes = project.vote || 0;
     if (currentVotes > previousVotes && isLiveConnected) {
@@ -691,11 +794,11 @@ function ProjectCard({
         damping: 24,
       }}
       whileHover={{
-        y: -8,
+        y: -4,
         scale: 1.02,
         transition: { duration: 0.2 },
       }}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden group relative border border-gray-200/60 transition-all duration-300"
+      className="bg-white rounded-2xl shadow-lg hover:shadow-xl overflow-hidden group relative border border-gray-200/60 transition-all duration-300"
     >
       <AnimatePresence>
         {showVoteAnimation && (
@@ -708,17 +811,17 @@ function ProjectCard({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-full flex items-center gap-2 shadow-lg"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg"
             >
-              <TrendingUp className="w-5 h-5" />
-              <span className="font-bold text-sm">New Vote!</span>
+              <TrendingUp className="w-4 h-4" />
+              <span className="font-bold text-xs">New Vote!</span>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Media Container */}
-      <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+      <div className="relative h-48 sm:h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
         {isPDF && (
           <div className="absolute top-3 left-3 z-10 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-lg">
             <FileText className="w-3 h-3" />
@@ -739,7 +842,7 @@ function ProjectCard({
               onClick={onView}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-white text-conces-blue py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg border border-white/20 backdrop-blur-sm"
+              className="w-full bg-white text-conces-blue py-2.5 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg border border-white/20 backdrop-blur-sm text-sm"
             >
               View Details
             </motion.button>
@@ -747,9 +850,9 @@ function ProjectCard({
         </div>
 
         {/* Vote Count */}
-        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2 shadow-lg border border-white/20">
+        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-lg border border-white/20">
           <ArrowUpIcon
-            className={`w-4 h-4 text-conces-green ${
+            className={`w-3 h-3 text-conces-green ${
               showVoteAnimation ? "animate-bounce" : ""
             }`}
           />
@@ -757,51 +860,53 @@ function ProjectCard({
             key={project.vote}
             initial={{ scale: showVoteAnimation ? 1.5 : 1 }}
             animate={{ scale: 1 }}
-            className="font-bold text-gray-800 text-sm"
+            className="font-bold text-gray-800 text-xs"
           >
             {project.vote || 0}
           </motion.span>
           {isLiveConnected && (
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
           )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-conces-blue transition-colors">
+      <div className="p-4 sm:p-5">
+        <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-conces-blue transition-colors text-sm sm:text-base min-h-[2.5rem]">
           {project.projectTitle}
         </h3>
 
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <p className="text-conces-green mb-1 font-bold">
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-conces-green font-semibold text-xs sm:text-sm mb-1 truncate">
               by {project.candidate.fullName}
             </p>
             <p className="text-xs text-gray-500 line-clamp-1">
               {project.candidate.schoolName}
             </p>
           </div>
-          <div className="relative">
+          <div className="flex-shrink-0 ml-3">
             <Image
               src={project.candidate?.avatar || "/placeholder-avatar.jpg"}
-              width={48}
-              height={48}
-              className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm"
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
               alt={project.candidate.fullName}
             />
           </div>
         </div>
 
         {/* Actions */}
-        {/* <div className="flex gap-3">
+        <div className="flex gap-2">
           <motion.button
             onClick={onVote}
-            disabled={!isVotingOpen}
-            whileHover={!isVoted ? { scale: 1.02 } : {}}
-            whileTap={!isVoted ? { scale: 0.98 } : {}}
-            className={`flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+            disabled={isVoted || !isVotingOpen}
+            whileHover={!isVoted && isVotingOpen ? { scale: 1.02 } : {}}
+            whileTap={!isVoted && isVotingOpen ? { scale: 0.98 } : {}}
+            className={`flex-1 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
               isVoted
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : !isVotingOpen
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-conces-green to-emerald-600 text-white hover:shadow-lg shadow-md"
             }`}
@@ -810,6 +915,11 @@ function ProjectCard({
               <>
                 <HeartSolidIcon className="w-4 h-4" />
                 Voted
+              </>
+            ) : !isVotingOpen ? (
+              <>
+                <WifiOff className="w-4 h-4" />
+                Closed
               </>
             ) : (
               <>
@@ -827,17 +937,20 @@ function ProjectCard({
                   url: window.location.href,
                 });
               } else {
-                navigator.clipboard.writeText(`${window.location.href}/candidate/${project._id}`);
+                navigator.clipboard.writeText(
+                  `${window.location.href}/candidate/${project._id}`
+                );
                 toast.success("Link copied to clipboard!");
               }
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-gray-200"
+            className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isVotingOpen}
           >
-            <Share2 className="w-5 h-5 text-gray-600" />
+            <Share2 className="w-4 h-4 text-gray-600" />
           </motion.button>
-        </div> */}
+        </div>
       </div>
     </motion.div>
   );
@@ -848,11 +961,13 @@ function ProjectDetailModal({
   isVoted,
   onClose,
   onVote,
+  isVotingOpen,
 }: {
   project: Project;
   isVoted: boolean;
   onClose: () => void;
   onVote: () => void;
+  isVotingOpen: boolean;
 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const allMedia = [
@@ -896,12 +1011,12 @@ function ProjectDetailModal({
           <div className="lg:w-3/5 bg-gradient-to-br from-gray-50 to-gray-100 relative">
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 z-20 bg-white/95 backdrop-blur-lg rounded-2xl p-3 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
+              className="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-lg rounded-2xl p-2 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
             >
-              <X className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
+              <X className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
             </button>
 
-            <div className="relative h-[500px] lg:h-full flex items-center justify-center p-8">
+            <div className="relative h-80 sm:h-96 lg:h-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentImageIndex}
@@ -925,40 +1040,40 @@ function ProjectDetailModal({
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-lg rounded-2xl p-4 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-lg rounded-2xl p-3 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
                     aria-label="Previous media"
                   >
-                    <ChevronLeftIcon className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
+                    <ChevronLeftIcon className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-lg rounded-2xl p-4 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-lg rounded-2xl p-3 hover:bg-white hover:scale-110 transition-all duration-200 shadow-xl border border-gray-200/60 group"
                     aria-label="Next media"
                   >
-                    <ChevronRightIcon className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
+                    <ChevronRightIcon className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
                   </button>
-                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur-lg text-white px-6 py-3 rounded-2xl text-sm font-semibold border border-white/20">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur-lg text-white px-4 py-2 rounded-2xl text-xs font-semibold border border-white/20">
                     {currentImageIndex + 1} / {allMedia.length}
-                    {isPDF && <span className="ml-2 text-red-300">• PDF</span>}
+                    {isPDF && <span className="ml-1 text-red-300">• PDF</span>}
                   </div>
 
                   {/* Thumbnail Strip */}
-                  <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-3 max-w-full overflow-x-auto px-6 py-3 bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20">
+                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 max-w-full overflow-x-auto px-4 py-2 bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20">
                     {allMedia.map((media, idx) => {
                       const thumbIsPDF = media.toLowerCase().endsWith(".pdf");
                       return (
                         <button
                           key={idx}
                           onClick={() => setCurrentImageIndex(idx)}
-                          className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden transition-all duration-200 border-2 ${
+                          className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden transition-all duration-200 border-2 ${
                             idx === currentImageIndex
-                              ? "ring-4 ring-conces-green scale-110 border-transparent"
+                              ? "ring-2 ring-conces-green scale-105 border-transparent"
                               : "opacity-60 hover:opacity-100 hover:scale-105 border-gray-200"
                           }`}
                         >
                           {thumbIsPDF ? (
                             <div className="w-full h-full bg-red-50 flex items-center justify-center border">
-                              <FileText className="w-8 h-8 text-red-400" />
+                              <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-red-400" />
                             </div>
                           ) : (
                             <img
@@ -977,90 +1092,97 @@ function ProjectDetailModal({
           </div>
 
           {/* Details Section */}
-          <div className="lg:w-2/5 flex flex-col max-h-[500px] lg:max-h-full">
+          <div className="lg:w-2/5 flex flex-col max-h-[60vh] lg:max-h-full">
             {/* Header */}
-            <div className="bg-gradient-to-br from-conces-blue to-blue-600 text-white p-8">
-              <h2 className="text-3xl font-bold mb-4 leading-tight">
+            <div className="bg-gradient-to-br from-conces-blue to-blue-600 text-white p-6">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 leading-tight">
                 {project.projectTitle}
               </h2>
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex-1">
-                  <p className="font-semibold text-xl text-white/95 mb-2">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-lg text-white/95 mb-1">
                     {project.candidate.fullName}
                   </p>
-                  <p className="text-white/80 mb-1">
+                  <p className="text-white/80 text-sm mb-1">
                     {project.candidate.schoolName}
                   </p>
-                  <p className="text-sm text-white/70">
+                  <p className="text-xs text-white/70">
                     {project.candidate.department}
                   </p>
                 </div>
-                <div className="flex flex-col items-center bg-white/20 backdrop-blur-lg rounded-2xl px-6 py-4 border border-white/30">
-                  <ArrowUpIcon className="w-6 h-6 text-conces-gold mb-2" />
-                  <div className="text-3xl font-bold text-white">
+                <div className="flex flex-col items-center bg-white/20 backdrop-blur-lg rounded-2xl px-4 py-3 border border-white/30">
+                  <ArrowUpIcon className="w-5 h-5 text-conces-gold mb-1" />
+                  <div className="text-2xl font-bold text-white">
                     {project.vote || 0}
                   </div>
-                  <div className="text-sm text-white/80 font-medium">votes</div>
+                  <div className="text-xs text-white/80 font-medium">votes</div>
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-2xl border border-blue-200/60">
-                <h3 className="font-bold text-conces-blue mb-3 flex items-center gap-3 text-lg">
-                  <div className="w-2 h-8 bg-conces-blue rounded-full"></div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-2xl border border-blue-200/60">
+                <h3 className="font-bold text-conces-blue mb-2 flex items-center gap-2 text-base">
+                  <div className="w-1.5 h-6 bg-conces-blue rounded-full"></div>
                   Design Concept
                 </h3>
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-700 leading-relaxed text-sm">
                   {project.designConcept}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 rounded-2xl border border-purple-200/60">
-                <h3 className="font-bold text-conces-blue mb-3 flex items-center gap-3 text-lg">
-                  <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 rounded-2xl border border-purple-200/60">
+                <h3 className="font-bold text-conces-blue mb-2 flex items-center gap-2 text-base">
+                  <div className="w-1.5 h-6 bg-purple-500 rounded-full"></div>
                   Color Palette
                 </h3>
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-700 leading-relaxed text-sm">
                   {project.colorPalette}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-6 rounded-2xl border border-amber-200/60">
-                <h3 className="font-bold text-conces-blue mb-3 flex items-center gap-3 text-lg">
-                  <div className="w-2 h-8 bg-amber-500 rounded-full"></div>
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 rounded-2xl border border-amber-200/60">
+                <h3 className="font-bold text-conces-blue mb-2 flex items-center gap-2 text-base">
+                  <div className="w-1.5 h-6 bg-amber-500 rounded-full"></div>
                   Inspiration
                 </h3>
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-700 leading-relaxed text-sm">
                   {project.inspiration}
                 </p>
               </div>
             </div>
 
             {/* Actions */}
-            {/* <div className="p-8 pt-6 bg-gradient-to-t from-gray-50 to-transparent border-t border-gray-200/60">
-              <div className="flex gap-4">
+            <div className="p-6 pt-4 bg-gradient-to-t from-gray-50 to-transparent border-t border-gray-200/60">
+              <div className="flex gap-3">
                 <motion.button
                   onClick={onVote}
-                  disabled={isVoted}
-                  whileHover={!isVoted ? { scale: 1.02 } : {}}
-                  whileTap={!isVoted ? { scale: 0.98 } : {}}
-                  className={`flex-1 py-4 rounded-2xl font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg ${
+                  disabled={isVoted || !isVotingOpen}
+                  whileHover={!isVoted && isVotingOpen ? { scale: 1.02 } : {}}
+                  whileTap={!isVoted && isVotingOpen ? { scale: 0.98 } : {}}
+                  className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm ${
                     isVoted
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                      : !isVotingOpen
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                       : "bg-gradient-to-r from-conces-green to-emerald-600 text-white hover:shadow-xl border border-transparent"
                   }`}
                 >
                   {isVoted ? (
                     <>
-                      <HeartSolidIcon className="w-6 h-6" />
-                      <span className="text-lg">Already Voted</span>
+                      <HeartSolidIcon className="w-5 h-5" />
+                      <span>Already Voted</span>
+                    </>
+                  ) : !isVotingOpen ? (
+                    <>
+                      <WifiOff className="w-5 h-5" />
+                      <span>Voting Closed</span>
                     </>
                   ) : (
                     <>
-                      <MessageCircle className="w-6 h-6" />
-                      <span className="text-lg">Vote Now</span>
+                      <MessageCircle className="w-5 h-5" />
+                      <span>Vote Now</span>
                     </>
                   )}
                 </motion.button>
@@ -1079,12 +1201,13 @@ function ProjectDetailModal({
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-6 py-4 bg-white border-2 border-gray-300 rounded-2xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-lg group"
+                  className="px-4 py-3 bg-white border-2 border-gray-300 rounded-2xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!isVotingOpen}
                 >
-                  <ShareIcon className="w-6 h-6 text-gray-600 group-hover:text-gray-800" />
+                  <ShareIcon className="w-5 h-5 text-gray-600 group-hover:text-gray-800" />
                 </motion.button>
               </div>
-            </div> */}
+            </div>
           </div>
         </div>
       </motion.div>
