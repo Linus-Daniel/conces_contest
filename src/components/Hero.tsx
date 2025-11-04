@@ -122,7 +122,8 @@ const PrizeCard: React.FC<PrizeCardProps> = ({ prize, delay = 0 }) => {
 export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHoveringPrize, setIsHoveringPrize] = useState(false);
-  const { timeLeft, contestStatus } = useTimer();
+  const { timeLeft, contestStatus, } = useTimer();
+  console.log(contestStatus);
 
   const testimonials: Testimonial[] = [
     {

@@ -29,6 +29,7 @@ import toast from "react-hot-toast";
 import EmailOTPVotingModal from "@/components/EmailOtpVotingModal";
 import { useMaintenance, MaintenancePage } from "@/context/MaintenanceContext";
 import api from "@/lib/axiosInstance";
+import { useTimer } from "@/context/CountdownContext";
 
 interface Candidate {
   _id: string;
@@ -472,6 +473,7 @@ export default function CandidateDetailPage() {
   const router = useRouter();
   const projectId = params.id as string;
   const { isMaintenanceMode } = useMaintenance();
+  const {isVotingOpen} = useTimer();
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -556,6 +558,27 @@ export default function CandidateDetailPage() {
   const candidate = project.candidate;
   const isVoted = votedProjects.has(project._id);
 
+  if (!isVotingOpen) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center p-6 bg-white rounded-3xl shadow-lg border border-gray-200/60">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Voting is Currently Closed
+          </h2>
+          <p className="text-gray-700 mb-6">
+            The voting period has ended. Thank you for your interest and
+            participation!
+          </p>
+          <button
+            onClick={() => router.push("/voting")}
+            className="bg-conces-blue text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Back to Voting Page
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}

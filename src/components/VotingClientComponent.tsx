@@ -25,6 +25,7 @@ import EmailOTPVotingModal from "@/components/EmailOtpVotingModal";
 import api from "@/lib/axiosInstance";
 import { useAdminAuth } from "@/context/AdminAuth";
 import { useMaintenance, MaintenancePage } from "@/context/MaintenanceContext";
+import { useTimer } from "@/context/CountdownContext";
 
 interface Project {
   _id: string;
@@ -268,7 +269,7 @@ export default function VotingClientComponent({
   const { isMaintenanceMode } = useMaintenance();
 
   const [selectedProjectToVote, setSelectedProjectToVote] = useState<Project | null>(null);
-
+  const {isVotingOpen} = useTimer();
   const {
     connectionStatus,
     lastUpdate,
@@ -362,6 +363,24 @@ export default function VotingClientComponent({
   if (isMaintenanceMode) {
     return <MaintenancePage />;
   }
+
+  if (!isVotingOpen){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center">
+          <WifiOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-3xl font-bold mb-2 text-gray-800">Voting Closed</h2>
+          <p className="text-gray-600 mb-6">
+            The voting period has ended. Thank you for your interest and participation!
+          </p>
+          <p className="text-sm text-gray-500">
+            The second phase of the competition is underway. Stay tuned for updates on the next steps and results.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
