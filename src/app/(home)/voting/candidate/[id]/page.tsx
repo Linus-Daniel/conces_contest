@@ -722,7 +722,7 @@ export default function CandidateDetailPage() {
                   </div>
                   <motion.button
                     onClick={() => handleVoteClick(project)}
-                    disabled={isVoted}
+                    disabled={!isVotingOpen}
                     whileHover={!isVoted ? { scale: 1.05 } : {}}
                     whileTap={!isVoted ? { scale: 0.95 } : {}}
                     className={`px-6 py-3 rounded-xl font-semibold transition-all ${

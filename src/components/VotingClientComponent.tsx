@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
@@ -648,6 +648,7 @@ function ProjectCard({
   const [previousVotes, setPreviousVotes] = useState(project.vote || 0);
   const [showVoteAnimation, setShowVoteAnimation] = useState(false);
 
+  const {isVotingOpen} = useTimer();
   useEffect(() => {
     const currentVotes = project.vote || 0;
     if (currentVotes > previousVotes && isLiveConnected) {
@@ -776,7 +777,7 @@ function ProjectCard({
         <div className="flex gap-3">
           <motion.button
             onClick={onVote}
-            disabled={isVoted}
+            disabled={!isVotingOpen}
             whileHover={!isVoted ? { scale: 1.02 } : {}}
             whileTap={!isVoted ? { scale: 0.98 } : {}}
             className={`flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
@@ -1018,7 +1019,7 @@ function ProjectDetailModal({
             </div>
 
             {/* Actions */}
-            <div className="p-8 pt-6 bg-gradient-to-t from-gray-50 to-transparent border-t border-gray-200/60">
+            {/* <div className="p-8 pt-6 bg-gradient-to-t from-gray-50 to-transparent border-t border-gray-200/60">
               <div className="flex gap-4">
                 <motion.button
                   onClick={onVote}
@@ -1063,7 +1064,7 @@ function ProjectDetailModal({
                   <ShareIcon className="w-6 h-6 text-gray-600 group-hover:text-gray-800" />
                 </motion.button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </motion.div>
