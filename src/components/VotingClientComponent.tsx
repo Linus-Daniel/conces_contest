@@ -364,22 +364,8 @@ export default function VotingClientComponent({
     return <MaintenancePage />;
   }
 
-  if (!isVotingOpen){
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center">
-          <WifiOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2 text-gray-800">Voting Closed</h2>
-          <p className="text-gray-600 mb-6">
-            The voting period has ended. Thank you for your interest and participation!
-          </p>
-          <p className="text-sm text-gray-500">
-            The second phase of the competition is underway. Stay tuned for updates on the next steps and results.
-          </p>
-        </div>
-      </div>
-    );
-  }
+
+  
 
 
   return (
@@ -411,7 +397,24 @@ export default function VotingClientComponent({
               Vote for the most innovative designs and help shape the future
             </motion.p>
 
-            {/* Stats Grid */}
+            {!isVotingOpen && (
+              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+                <div className=" rounded-2xl shadow-lg p-10 max-w-lg text-center">
+                  <WifiOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h2 className="text-3xl font-bold mb-2 text-gray-800">
+                    Voting Closed
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    The voting period has ended. Thank you for your interest and
+                    participation!
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    The second phase of the competition is underway. Stay tuned
+                    for updates on the next steps and results.
+                  </p>
+                </div>
+              </div>
+            )}
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -426,7 +429,8 @@ export default function VotingClientComponent({
               </div>
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 relative">
                 <div className="text-3xl font-bold text-conces-gold mb-2 flex items-center justify-center gap-2">
-                  {totalVotes || projects.reduce((sum, p) => sum + (p.vote || 0), 0)}
+                  {totalVotes ||
+                    projects.reduce((sum, p) => sum + (p.vote || 0), 0)}
                   {connectionStatus === "connected" && (
                     <TrendingUp className="w-6 h-6 text-green-300 animate-pulse" />
                   )}
@@ -487,8 +491,16 @@ export default function VotingClientComponent({
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-start gap-4 max-w-5xl mx-auto">
             <div className="flex-shrink-0 bg-amber-100 rounded-full p-2 mt-0.5">
-              <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-amber-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="flex-1">
@@ -496,15 +508,23 @@ export default function VotingClientComponent({
                 Notice: Vote Count Adjustments
               </h4>
               <p className="text-sm text-amber-700 leading-relaxed">
-                If you notice a reduction in vote counts for any candidate, this is due to our recent cleanup of 
-                <strong className="font-medium"> fraudulent voting activities</strong> including the removal of votes from 
-                disposable email addresses and attempts to bypass the one-vote-per-person system. This ensures fair 
-                competition and maintains the integrity of the voting process.
+                If you notice a reduction in vote counts for any candidate, this
+                is due to our recent cleanup of
+                <strong className="font-medium">
+                  {" "}
+                  fraudulent voting activities
+                </strong>{" "}
+                including the removal of votes from disposable email addresses
+                and attempts to bypass the one-vote-per-person system. This
+                ensures fair competition and maintains the integrity of the
+                voting process.
               </p>
             </div>
             <button
               onClick={() => {
-                const notice = document.querySelector('[data-notice="fraud-cleanup"]');
+                const notice = document.querySelector(
+                  '[data-notice="fraud-cleanup"]'
+                );
                 if (notice) notice.remove();
               }}
               className="flex-shrink-0 text-amber-600 hover:text-amber-800 p-1 rounded-full hover:bg-amber-100 transition-colors"
@@ -774,7 +794,7 @@ function ProjectCard({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        {/* <div className="flex gap-3">
           <motion.button
             onClick={onVote}
             disabled={!isVotingOpen}
@@ -817,7 +837,7 @@ function ProjectCard({
           >
             <Share2 className="w-5 h-5 text-gray-600" />
           </motion.button>
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );
