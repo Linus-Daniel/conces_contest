@@ -472,7 +472,7 @@ export default function VotingClientComponent({
                     Voting Closed
                   </div>
                   <div className="text-blue-100 text-sm">
-                    The voting period has ended
+                    The voting period has ended, stay tuned for the next phase of the Contest. Good Luck!
                   </div>
                 </div>
               </motion.div>
