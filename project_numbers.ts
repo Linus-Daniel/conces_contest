@@ -26,15 +26,15 @@ async function countSubmittedAndSelected() {
     console.log(`• Total Selected Projects:  ${selectedProjects.length}`);
 
     // ✅ Prepare CSV data
-    const header = "Full Name,Email,Phone,Project ID\n";
+    const header = "Full Name,Email,Candidate Link, Votes\n";
     const rows = selectedProjects
       .map((project) => {
         const candidate = project.candidate as any;
+        const vote = project.vote
         const name = candidate?.fullName || "";
         const email = candidate?.email || "";
-        const avatar = candidate?.avatar || "";
         const votingLink = `https://brandchallenge.conces.org/voting/candidate/${project._id}`;
-        return `"${name}","${email}","${avatar}", "${votingLink}"`;
+        return `"${name}","${email}","${votingLink}",${vote}`;
       })
       .join("\n");
 

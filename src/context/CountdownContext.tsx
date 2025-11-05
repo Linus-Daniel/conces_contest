@@ -40,7 +40,7 @@ const DEFAULT_DATES = {
   graceEnd: "2025-10-12T23:59:59", // 2 weeks grace period (no new registrations)
   votingStart: "2025-10-22T00:00:00", // Voting starts October 29th (1 week waiting period)
   votingEnd: "2025-11-04T23:59:59", // Voting ends November 4th (1 week voting period)
-  finale: "2025-11-07T00:00:00",
+  finale: "2025-12-03T00:00:00",
 };
 
 // Timer Provider Component
